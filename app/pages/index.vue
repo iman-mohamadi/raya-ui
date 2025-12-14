@@ -4,18 +4,6 @@ import { BackgroundRippleEffect } from '@/components/ui/background-ripple-effect
 import { LiquidGlass } from '@/components/ui/liquid-glass'
 import { Button } from '@/components/ui/button'
 
-// --- Hero Demo Data ---
-const adj = ['Modern', 'Playful', 'Robust', 'Fast', 'Sleek'].map(l => ({ value: l, label: l }))
-const nouns = ['UI', 'Components', 'Library', 'Tools', 'Kit'].map(l => ({ value: l, label: l }))
-const framework = ['for Vue', 'for Nuxt', 'for Web', 'for You', 'for App'].map(l => ({ value: l, label: l }))
-
-const state = ref({
-  adj: 'Playful',
-  noun: 'Components',
-  framework: 'for Vue'
-})
-
-// --- Copy Install Command ---
 const config = useAppConfig().raya
 const copied = ref(false)
 const installCmd = `npx shadcn-vue@latest add ${config.baseUrl}/wheel-picker.json`
