@@ -1,0 +1,1 @@
+export { default as GravityStars } from './GravityStars.vue'

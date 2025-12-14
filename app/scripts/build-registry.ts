@@ -75,6 +75,11 @@ const COMPONENTS = [
             "FloatingDockIcon.vue"
         ]
     },
+    {
+        name: "gravity-stars",
+        dependencies: ["clsx", "tailwind-merge"],
+        files: ["GravityStars.vue"]
+    }
 ];
 
 const build = () => {
