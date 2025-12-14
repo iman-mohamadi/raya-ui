@@ -7,6 +7,7 @@ import { AnimatedTabs } from '@/components/ui/animated-tabs'
 import { CodeBlock } from '@/components/ui/code-block'
 
 definePageMeta({ layout: 'docs' })
+const config = useAppConfig().raya
 
 // --- Draggable Setup ---
 const dragEl = ref<HTMLElement | null>(null)
@@ -72,10 +73,10 @@ const packageManagerTabs = [
 
 // --- Code Snippets ---
 const installCommands = {
-  npm: 'npx shadcn-vue@latest add https://enzo-ui.vercel.app/registry/liquid-glass.json',
-  pnpm: 'pnpm dlx shadcn-vue@latest add https://enzo-ui.vercel.app/registry/liquid-glass.json',
-  yarn: 'npx shadcn-vue@latest add https://enzo-ui.vercel.app/registry/liquid-glass.json',
-  bun: 'bunx shadcn-vue@latest add https://enzo-ui.vercel.app/registry/liquid-glass.json',
+  npm: `npx shadcn-vue@latest add ${config.baseUrl}/liquid-glass.json`,
+  pnpm: `pnpm dlx shadcn-vue@latest add ${config.baseUrl}/liquid-glass.json`,
+  yarn: `npx shadcn-vue@latest add ${config.baseUrl}/liquid-glass.json`,
+  bun: `bunx shadcn-vue@latest add ${config.baseUrl}/liquid-glass.json`,
   manual: `Copy the component code manually.`
 }
 

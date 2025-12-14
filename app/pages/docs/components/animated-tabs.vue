@@ -9,6 +9,7 @@ import {
 } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'docs' })
+const config = useAppConfig().raya
 
 // --- Data ---
 const items = [
@@ -49,7 +50,7 @@ const installTabs = [
 
 // --- Code Snippets ---
 const installCommands = {
-  npm: 'npx shadcn-vue@latest add https://enzo-ui.vercel.app/registry/animated-tabs.json',
+  npm: `npx shadcn-vue@latest add ${config.baseUrl}/animated-tabs.json`,
   manual: `npm install @vueuse/core`
 }
 

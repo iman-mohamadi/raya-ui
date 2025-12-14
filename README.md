@@ -1,8 +1,8 @@
-# EnzOUi
+# Raya
 
 **Beautifully designed components built with Vue & Shadcn.**
 
-EnzOUi is not a component library. It's a collection of re-usable components that you can copy and paste into your apps. Accessible. Customizable. Open Source.
+Raya is not a component library. It's a collection of re-usable components that you can copy and paste into your apps. Accessible. Customizable. Open Source.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Vue](https://img.shields.io/badge/Vue.js-3.x-4FC08D?logo=vue.js)
@@ -24,4 +24,4 @@ You can add components to your project using the `shadcn-vue` CLI or by manually
 Use the CLI to automatically install a component and its dependencies.
 
 ```bash
-npx shadcn-vue@latest add [https://enzo-ui.vercel.app/registry/wheel-picker.json](https://enzo-ui.vercel.app/registry/wheel-picker.json)
+npx shadcn-vue@latest add [https://raya-ui.com/registry/tree.json](https://raya-ui.com/registry/tree.json)

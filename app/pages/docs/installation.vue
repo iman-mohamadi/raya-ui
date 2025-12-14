@@ -3,28 +3,29 @@ import { AnimatedTabs } from '@/components/ui/animated-tabs'
 import { CodeBlock } from '@/components/ui/code-block'
 
 definePageMeta({ layout: 'docs' })
+const config = useAppConfig().raya
 
 // --- Commands for Frameworks ---
 const frameworkCommands = {
   vite: {
     create: 'npm create vite@latest my-app -- --template vue-ts',
     init: 'npx shadcn-vue@latest init',
-    add: 'npx shadcn-vue@latest add https://enzo-ui.vercel.app/registry/wheel-picker.json'
+    add: `npx shadcn-vue@latest add ${config.baseUrl}/tree.json`
   },
   nuxt: {
     create: 'npx nuxi@latest init my-app',
     init: 'npx shadcn-vue@latest init',
-    add: 'npx shadcn-vue@latest add https://enzo-ui.vercel.app/registry/wheel-picker.json'
+    add: `npx shadcn-vue@latest add ${config.baseUrl}/tree.json`
   },
   astro: {
     create: 'npm create astro@latest',
     init: 'npx shadcn-vue@latest init',
-    add: 'npx shadcn-vue@latest add https://enzo-ui.vercel.app/registry/wheel-picker.json'
+    add: `npx shadcn-vue@latest add ${config.baseUrl}/tree.json`
   },
   laravel: {
     create: 'composer create-project laravel/laravel my-app',
     init: 'npx shadcn-vue@latest init',
-    add: 'npx shadcn-vue@latest add https://enzo-ui.vercel.app/registry/wheel-picker.json'
+    add: `npx shadcn-vue@latest add ${config.baseUrl}/tree.json`
   },
   manual: {
     deps: 'npm install tailwindcss-animate class-variance-authority clsx tailwind-merge lucide-vue-next reka-ui @vueuse/core',
@@ -73,7 +74,7 @@ const frameworkTabs = [
               <CodeBlock :code="frameworkCommands.vite.init"  />
             </div>
             <div class="space-y-4">
-              <h3 class="text-lg font-semibold text-white">3. Add EnzOUi Components</h3>
+              <h3 class="text-lg font-semibold text-white">3. Add {{ config.name }} Components</h3>
               <p class="text-zinc-400">You can now add any component from our registry.</p>
               <CodeBlock :code="frameworkCommands.vite.add"  />
             </div>
@@ -93,7 +94,7 @@ const frameworkTabs = [
               <CodeBlock :code="frameworkCommands.nuxt.init"  />
             </div>
             <div class="space-y-4">
-              <h3 class="text-lg font-semibold text-white">3. Add EnzOUi Components</h3>
+              <h3 class="text-lg font-semibold text-white">3. Add {{ config.name }} Components</h3>
               <CodeBlock :code="frameworkCommands.nuxt.add"  />
             </div>
           </div>
@@ -112,7 +113,7 @@ const frameworkTabs = [
               <CodeBlock :code="frameworkCommands.astro.init"  />
             </div>
             <div class="space-y-4">
-              <h3 class="text-lg font-semibold text-white">3. Add EnzOUi Components</h3>
+              <h3 class="text-lg font-semibold text-white">3. Add {{ config.name }} Components</h3>
               <CodeBlock :code="frameworkCommands.astro.add"  />
             </div>
           </div>
@@ -131,7 +132,7 @@ const frameworkTabs = [
               <CodeBlock :code="frameworkCommands.laravel.init"  />
             </div>
             <div class="space-y-4">
-              <h3 class="text-lg font-semibold text-white">3. Add EnzOUi Components</h3>
+              <h3 class="text-lg font-semibold text-white">3. Add {{ config.name }} Components</h3>
               <CodeBlock :code="frameworkCommands.laravel.add"  />
             </div>
           </div>

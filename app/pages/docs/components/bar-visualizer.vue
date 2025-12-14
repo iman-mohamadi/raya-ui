@@ -6,6 +6,7 @@ import { CodeBlock } from '@/components/ui/code-block'
 import { Button } from '@/components/ui/button'
 
 definePageMeta({ layout: 'docs' })
+const config = useAppConfig().raya
 
 // --- Demo State ---
 const currentState = ref<AgentState>('speaking')
@@ -24,7 +25,7 @@ const installTabs = [
 
 // --- Code Snippets ---
 const installCommands = {
-  npm: 'npx shadcn-vue@latest add https://enzo-ui.vercel.app/registry/bar-visualizer.json',
+  npm: `npx shadcn-vue@latest add ${config.baseUrl}/bar-visualizer.json`,
   manual: `npm install @vueuse/core`
 }
 

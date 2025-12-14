@@ -13,9 +13,9 @@ const state = ref({
 })
 
 // --- Copy Install Command ---
-const config = useAppConfig().enzoui
+const config = useAppConfig().raya
 const copied = ref(false)
-const installCmd = 'npx shadcn-vue@latest add https://enzo-ui.vercel.app/registry/wheel-picker.json'
+const installCmd = `npx shadcn-vue@latest add ${config.baseUrl}/tree.json`
 
 const copyInstall = () => {
   navigator.clipboard.writeText(installCmd)
@@ -35,8 +35,8 @@ const copyInstall = () => {
 
     <header class="container relative z-10 mx-auto flex h-16 items-center justify-between px-6">
       <NuxtLink to="/" class="mr-6 flex items-center space-x-2 font-bold text-xl tracking-tight">
-        <div class="h-6 w-6 rounded bg-white text-black flex items-center justify-center text-xs font-black">E</div>
-        <span>{{ config?.name || 'EnzOUi' }}</span>
+        <div class="h-6 w-6 rounded bg-white text-black flex items-center justify-center text-xs font-black">R</div>
+        <span>{{ config?.name || 'Raya' }}</span>
       </NuxtLink>
       <div class="flex items-center gap-6">
         <NuxtLink to="/docs/introduction" class="text-sm font-medium text-zinc-400 hover:text-white transition-colors">
@@ -137,7 +137,7 @@ const copyInstall = () => {
 
       <section class="container mx-auto px-6 py-24 border-t border-white/5">
         <div class="text-center mb-16 space-y-4">
-          <h2 class="text-3xl font-bold tracking-tight md:text-4xl">Why EnzOUi?</h2>
+          <h2 class="text-3xl font-bold tracking-tight md:text-4xl">Why {{ config.name }}?</h2>
           <p class="text-zinc-400 max-w-2xl mx-auto">Not just another library. A collection of meticulously designed primitives.</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -160,7 +160,7 @@ const copyInstall = () => {
 
     <footer class="border-t border-white/10 bg-black/50 backdrop-blur py-8">
       <div class="container mx-auto px-6 text-center">
-        <p class="text-sm text-zinc-500">&copy; {{ new Date().getFullYear() }} EnzOUi.</p>
+        <p class="text-sm text-zinc-500">&copy; {{ new Date().getFullYear() }} {{ config.name }}.</p>
       </div>
     </footer>
   </div>

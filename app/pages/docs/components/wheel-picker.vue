@@ -5,6 +5,7 @@ import { AnimatedTabs } from '@/components/ui/animated-tabs'
 import { CodeBlock } from '@/components/ui/code-block'
 
 definePageMeta({ layout: 'docs' })
+const config = useAppConfig().raya
 
 // --- Demo Data: Time Picker ---
 const hours = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: (i + 1).toString().padStart(2, '0') }))
@@ -43,10 +44,10 @@ const packageManagerTabs = [
 
 // --- Code Snippets ---
 const installCommands = {
-  npm: 'npx shadcn-vue@latest add https://enzo-ui.vercel.app/registry/wheel-picker.json',
-  pnpm: 'pnpm dlx shadcn-vue@latest add https://enzo-ui.vercel.app/registry/wheel-picker.json',
-  yarn: 'npx shadcn-vue@latest add https://enzo-ui.vercel.app/registry/wheel-picker.json',
-  bun: 'bunx shadcn-vue@latest add https://enzo-ui.vercel.app/registry/wheel-picker.json',
+  npm: `npx shadcn-vue@latest add ${config.baseUrl}/wheel-picker.json`,
+  pnpm: `pnpm dlx shadcn-vue@latest add ${config.baseUrl}/wheel-picker.json`,
+  yarn: `npx shadcn-vue@latest add ${config.baseUrl}/wheel-picker.json`,
+  bun: `bunx shadcn-vue@latest add ${config.baseUrl}/wheel-picker.json`,
   manual: `npm install @vueuse/core`
 }
 

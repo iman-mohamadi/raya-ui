@@ -6,6 +6,7 @@ import { AnimatedTabs } from '@/components/ui/animated-tabs'
 import { Folder, File, FileCode, Image, Archive } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'docs' })
+const config = useAppConfig().raya
 
 // --- Sample Data ---
 interface FileNode {
@@ -66,7 +67,7 @@ const installTabs = [
 ]
 
 // --- Code Snippets ---
-const installationCode = `npx shadcn-vue@latest add https://enzo-ui.vercel.app/registry/tree.json`
+const installationCode = `npx shadcn-vue@latest add ${config.baseUrl}/tree.json`
 
 const usageCode = `<script setup lang="ts">
 import { ref } from 'vue'

@@ -2,6 +2,7 @@
 import { ArrowRight, Check } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'docs' })
+const config = useAppConfig().raya
 </script>
 
 <template>
@@ -21,7 +22,7 @@ definePageMeta({ layout: 'docs' })
           Philosophy
         </h2>
         <p class="leading-7 text-zinc-400">
-          EnzOUi is not a component library. It's a collection of re-usable components that you can copy and paste into your apps.
+          {{ config.name }} is not a component library. It's a collection of re-usable components that you can copy and paste into your apps.
         </p>
         <p class="leading-7 text-zinc-400">
           <strong>What do you mean by "not a component library"?</strong><br>

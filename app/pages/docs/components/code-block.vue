@@ -1,30 +1,27 @@
-{
-type: uploaded file
-fileName: iman-mohamadi/enzoui/EnzOUi-481682bc4f3f825c0131815bd4179e5da136063e/app/pages/docs/components/code-block.vue
-fullContent:
 <script setup lang="ts">
 import { AnimatedTabs } from '@/components/ui/animated-tabs'
 import { CodeBlock } from '@/components/ui/code-block'
 
 definePageMeta({ layout: 'docs' })
+const config = useAppConfig().raya
 
 const simpleCode = `function greet(name: string) {
   return \`Hello, \${name}!\`;
 }
 
-console.log(greet('Enzo'));`
+console.log(greet('${config.name}'));`
 
-const installCode = `npx shadcn-vue@latest add https://enzo-ui.vercel.app/registry/code-block.json`
+const installCode = `npx shadcn-vue@latest add ${config.baseUrl}/code-block.json`
 
 // Demo for Animated Tabs integration
 const frameworks = ['npm', 'pnpm', 'bun', 'yarn']
 const currentFramework = ref(0) // Index for v-model
 
 const commands = [
-  'npm install enzo-ui',
-  'pnpm add enzo-ui',
-  'bun add enzo-ui',
-  'yarn add enzo-ui'
+  'npm install raya-ui',
+  'pnpm add raya-ui',
+  'bun add raya-ui',
+  'yarn add raya-ui'
 ]
 
 // Animated Tabs Items
@@ -43,7 +40,7 @@ const code = \`function greet(name: string) {
   return \\\`Hello, \\\${name}!\\\`;
 }
 
-console.log(greet('Enzo'));\`
+console.log(greet('${config.name}'));\`
 <\/script>
 
 <template>
@@ -161,4 +158,3 @@ console.log(greet('Enzo'));\`
 
   </div>
 </template>
-}
