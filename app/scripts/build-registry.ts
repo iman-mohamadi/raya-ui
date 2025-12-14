@@ -10,7 +10,6 @@ const __dirname = path.dirname(__filename);
 const OUTPUT_DIR = path.join(__dirname, "../../public/registry");
 
 // Define your components here.
-// You can add more objects to this array later for new components.
 const COMPONENTS = [
     {
         name: "wheel-picker",
@@ -74,6 +73,14 @@ const COMPONENTS = [
             "BackgroundRippleEffect.vue"
         ]
     },
+    // --- NEW COMPONENT ---
+    {
+        name: "background-beams",
+        dependencies: ["clsx", "tailwind-merge"],
+        files: [
+            "BackgroundBeams.vue"
+        ]
+    },
 ];
 
 const build = () => {
@@ -105,10 +112,6 @@ const build = () => {
         });
 
         // 3. Generate index.ts content dynamically
-        // Note: This logic assumes a simple default export or specific patterns.
-        // For components with types like BarVisualizer or WheelPicker, we might want custom index content
-        // or a smarter generator. For now, we follow the previous pattern but check for types.
-
         let indexContent = '';
 
         if (component.name === "wheel-picker") {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { Github, Book, Package, Image as ImageIcon, AudioLines } from 'lucide-vue-next'
+import { Github, Book, Package, Image as ImageIcon } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 
 const config = useAppConfig().raya
@@ -36,6 +36,7 @@ const navGroups = [
       { label: 'Ambient Grid', to: '/docs/backgrounds/ambient-grid' },
       { label: 'Dotted Glow', to: '/docs/backgrounds/dotted-glow-background' },
       { label: 'Ripple Effect', to: '/docs/backgrounds/background-ripple-effect' },
+      { label: 'Background Beams', to: '/docs/backgrounds/background-beams' },
     ]
   }
 ]
