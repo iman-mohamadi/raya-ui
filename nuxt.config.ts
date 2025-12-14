@@ -11,7 +11,7 @@ export default defineNuxtConfig({
         ],
     },
 
-    modules: ["shadcn-nuxt", "@vueuse/nuxt"],
+    modules: ["shadcn-nuxt", "@vueuse/nuxt", "@nuxt/image"],
     shadcn: {
         /**
          * Prefix for all the imported component.
