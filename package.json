@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@nuxt/image": "2.0.0",
+    "@nuxtjs/sitemap": "7.4.9",
     "@tailwindcss/vite": "^4.1.17",
     "@vueuse/core": "^14.1.0",
     "@vueuse/nuxt": "14.1.0",

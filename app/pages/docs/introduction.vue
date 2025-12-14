@@ -3,6 +3,11 @@ import { ArrowRight, Check, AlertTriangle } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'docs' })
 const config = useAppConfig().raya
+
+useSeoMeta({
+  title: 'Introduction',
+  description: `Learn about the philosophy behind ${config.name}. A copy-paste component library for Vue and Nuxt.`,
+})
 </script>
 
 <template>
