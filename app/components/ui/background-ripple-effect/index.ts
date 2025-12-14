@@ -1,0 +1,1 @@
+export { default as BackgroundRippleEffect } from './BackgroundRippleEffect.vue'

@@ -1,0 +1,14 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="iconGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#00E5FF" />
+            <stop offset="100%" stop-color="#22D3EE" />
+        </linearGradient>
+    </defs>
+
+    <path d="M16 56 V8 H36 A14 14 0 0 1 36 36 H16 M36 36 L52 56"
+          stroke="url(#iconGradient)"
+          stroke-width="6"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+</svg>

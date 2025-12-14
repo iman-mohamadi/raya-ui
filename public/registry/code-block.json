@@ -1,0 +1,22 @@
+{
+  "name": "code-block",
+  "type": "registry:ui",
+  "dependencies": [
+    "highlight.js",
+    "lucide-vue-next",
+    "clsx",
+    "tailwind-merge"
+  ],
+  "files": [
+    {
+      "path": "code-block/CodeBlock.vue",
+      "content": "{\r\ntype: uploaded file\r\nfileName: iman-mohamadi/enzoui/EnzOUi-481682bc4f3f825c0131815bd4179e5da136063e/app/components/ui/code-block/CodeBlock.vue\r\nfullContent:\r\n<script setup lang=\"ts\">\r\nimport { computed, ref } from 'vue'\r\nimport { Check, Copy } from 'lucide-vue-next'\r\nimport { useClipboard } from '@vueuse/core'\r\nimport { cn } from '@/lib/utils'\r\nimport hljs from 'highlight.js'\r\nimport 'highlight.js/styles/github-dark-dimmed.css'\r\n\r\ninterface Props {\r\n  code?: string\r\n  lang?: string\r\n  fileName?: string\r\n  class?: string\r\n}\r\n\r\nconst props = withDefaults(defineProps<Props>(), {\r\n  lang: 'typescript',\r\n  code: ''\r\n})\r\n\r\nconst { copy, copied } = useClipboard({ source: () => props.code })\r\n\r\nconst highlightedCode = computed(() => {\r\n  const language = props.lang && hljs.getLanguage(props.lang) ? props.lang : 'plaintext'\r\n  return hljs.highlight(props.code, { language }).value\r\n})\r\n</script>\r\n\r\n<template>\r\n  <div\r\n      :class=\"cn(\r\n      'relative overflow-hidden rounded-xl border border-border bg-card',\r\n      props.class\r\n    )\"\r\n  >\r\n    <div\r\n        v-if=\"fileName || $slots.header\"\r\n        class=\"flex items-center bg-muted border-b border-border min-h-10\"\r\n        :class=\"fileName ? 'px-1' : ''\"\r\n    >\r\n      <div class=\"flex-1 min-w-0 text-xs font-medium text-muted-foreground font-mono flex items-center\">\r\n        <slot name=\"header\">\r\n          {{ fileName }}\r\n        </slot>\r\n      </div>\r\n    </div>\r\n\r\n    <div class=\"absolute right-0 top-0 z-10\">\r\n      <div :class=\"fileName || $slots.header ?  'bg-transparent' : 'bg-muted/30 backdrop-blur-sm'\" class=\"rounded-bl-xl  p-1.5\">\r\n        <button\r\n            @click=\"copy()\"\r\n            class=\"flex h-7 w-7 items-center justify-center rounded-md bg-transparent hover:bg-muted text-muted-foreground hover:text-foreground transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring\"\r\n        >\r\n          <Transition\r\n              enter-active-class=\"transition duration-200 ease-out\"\r\n              enter-from-class=\"opacity-0 scale-50\"\r\n              enter-to-class=\"opacity-100 scale-100\"\r\n              leave-active-class=\"transition duration-200 ease-in\"\r\n              leave-from-class=\"opacity-100 scale-100\"\r\n              leave-to-class=\"opacity-0 scale-50\"\r\n              mode=\"out-in\"\r\n          >\r\n            <Check v-if=\"copied\" class=\"h-3.5 w-3.5 text-emerald-500\" />\r\n            <Copy v-else class=\"h-3.5 w-3.5\" />\r\n          </Transition>\r\n        </button>\r\n      </div>\r\n    </div>\r\n\r\n    <div class=\"overflow-x-auto\">\r\n      <pre class=\"p-4\"><code\r\n          :class=\"`language-${lang} text-sm font-mono leading-relaxed bg-transparent p-0 block min-w-full text-foreground`\"\r\n          v-html=\"highlightedCode\"\r\n      ></code></pre>\r\n    </div>\r\n  </div>\r\n</template>\r\n}",
+      "type": "registry:ui"
+    },
+    {
+      "path": "code-block/index.ts",
+      "content": "export { default as CodeBlock } from './CodeBlock.vue'\n",
+      "type": "registry:ui"
+    }
+  ]
+}

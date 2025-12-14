@@ -1,0 +1,1 @@
+export { default as DottedGlowBackground } from './DottedGlowBackground.vue'
