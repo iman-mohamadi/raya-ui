@@ -5,6 +5,7 @@ import { AnimatedTabs } from '@/components/ui/animated-tabs'
 import { CodeBlock } from '@/components/ui/code-block'
 
 definePageMeta({ layout: 'docs' })
+const appConfig = useAppConfig().raya
 
 // --- Demo State ---
 const config = ref({
@@ -27,7 +28,7 @@ const installTabs = [
 
 // --- Code Snippets ---
 const installCommands = {
-  npm: 'npx shadcn-vue@latest add https://enzo-ui.vercel.app/registry/dotted-glow-background.json',
+  npm: `npx shadcn-vue@latest add ${appConfig.baseUrl}/dotted-glow-background.json`,
   manual: `npm install @vueuse/core` // Optional but good for consistency
 }
 

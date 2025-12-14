@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router'
 import { Github, Book, Package, Image as ImageIcon, AudioLines } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 
-const config = useAppConfig().enzoui
+const config = useAppConfig().raya
 const route = useRoute()
 
 // Navigation Data
@@ -104,8 +104,8 @@ watch(() => route.path, () => {
     <header class="sticky top-0 z-50 w-full border-b border-white/10 bg-black/80 backdrop-blur-xl supports-[backdrop-filter]:bg-black/60">
       <div class="container mx-auto flex h-14 items-center px-6">
         <NuxtLink to="/" class="mr-6 flex items-center space-x-2 font-bold text-xl tracking-tight">
-          <div class="h-6 w-6 rounded bg-white text-black flex items-center justify-center text-xs font-black">E</div>
-          <span>{{ config?.name || 'EnzOUi' }}</span>
+          <div class="h-6 w-6 rounded bg-white text-black flex items-center justify-center text-xs font-black">R</div>
+          <span>{{ config?.name || 'Raya' }}</span>
         </NuxtLink>
         <div class="flex flex-1 justify-end">
           <a :href="config?.github" target="_blank">

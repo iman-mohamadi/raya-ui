@@ -6,6 +6,7 @@ import { CodeBlock } from '@/components/ui/code-block'
 import { Button } from '@/components/ui/button'
 
 definePageMeta({ layout: 'docs' })
+const appConfig = useAppConfig().raya
 
 // --- Demo State ---
 const config = ref({
@@ -28,7 +29,7 @@ const installTabs = [
 
 // --- Code Snippets ---
 const installCommands = {
-  npm: 'npx shadcn-vue@latest add https://enzo-ui.vercel.app/registry/ambient-grid.json',
+  npm: `npx shadcn-vue@latest add ${appConfig.baseUrl}/ambient-grid.json`,
   manual: `npm install @vueuse/core`
 }
 

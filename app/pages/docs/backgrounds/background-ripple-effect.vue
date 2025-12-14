@@ -5,6 +5,7 @@ import { AnimatedTabs } from '@/components/ui/animated-tabs'
 import { CodeBlock } from '@/components/ui/code-block'
 
 definePageMeta({ layout: 'docs' })
+const appConfig = useAppConfig().raya
 
 // --- Demo State ---
 const config = ref({
@@ -28,7 +29,7 @@ const installTabs = [
 
 // --- Code Snippets ---
 const installCommands = {
-  npm: 'npx shadcn-vue@latest add https://enzo-ui.vercel.app/registry/background-ripple-effect.json',
+  npm: `npx shadcn-vue@latest add ${appConfig.baseUrl}/background-ripple-effect.json`,
   manual: `npm install @vueuse/core clsx tailwind-merge`
 }
 
