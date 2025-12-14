@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowRight, Check } from 'lucide-vue-next'
+import { ArrowRight, Check, AlertTriangle } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'docs' })
 const config = useAppConfig().raya
@@ -14,6 +14,20 @@ const config = useAppConfig().raya
         Beautifully designed components built with Vue & Shadcn.
         <span class="block mt-2 text-zinc-500 text-lg">Copy and paste into your apps. Open Source. Accessible.</span>
       </p>
+    </div>
+
+    <div class="rounded-xl border border-amber-500/20 bg-amber-500/10 p-4">
+      <div class="flex items-start gap-3">
+        <AlertTriangle class="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+        <div class="space-y-1">
+          <h3 class="font-medium text-amber-500">Prerequisite: Shadcn Vue</h3>
+          <p class="text-sm text-amber-200/80 leading-relaxed">
+            <strong>{{ config.name }}</strong> is built on top of the Shadcn Vue ecosystem.
+            <br />
+            You <u>must</u> have a working <a href="https://www.shadcn-vue.com/docs/installation.html" target="_blank" class="underline hover:text-white">Shadcn Vue</a> project set up (initialized) before adding these components, as they rely on the same `lib/utils` (cn helper), Tailwind configuration, and base dependencies.
+          </p>
+        </div>
+      </div>
     </div>
 
     <div class="space-y-6">
