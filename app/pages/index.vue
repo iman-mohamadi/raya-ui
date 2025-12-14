@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Github, Copy, Check } from 'lucide-vue-next'
+import { Github, Copy, Check, ArrowRight } from 'lucide-vue-next'
 import { BackgroundRippleEffect } from '@/components/ui/background-ripple-effect'
 import { LiquidGlass } from '@/components/ui/liquid-glass'
 import { Button } from '@/components/ui/button'
@@ -41,7 +41,7 @@ const copyInstall = () => {
 
       <div class="flex items-center gap-6">
         <NuxtLink to="/docs/introduction" class="text-sm font-medium text-zinc-400 hover:text-teal-400 transition-colors hidden sm:block">
-          مستندات
+          Documentation
         </NuxtLink>
         <a :href="config?.github" target="_blank" class="text-zinc-400 hover:text-white transition-colors">
           <Github class="h-6 w-6" />
@@ -57,7 +57,7 @@ const copyInstall = () => {
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
             <span class="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
           </span>
-          <span>نسخه ۱.۰ منتشر شد</span>
+          <span>v1.0.0 Now Available</span>
         </div>
       </div>
 
@@ -66,14 +66,14 @@ const copyInstall = () => {
           <span class="text-white drop-shadow-2xl">RAYA UI</span>
         </h1>
         <h2 class="text-4xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-teal-200 via-teal-400 to-emerald-400 pb-2">
-          اندیشه‌ای نو در طراحی
+          The Art of Thoughtful Design.
         </h2>
 
-        <p class="mx-auto max-w-2xl text-lg md:text-xl text-zinc-400 leading-relaxed mt-8 px-4" dir="rtl">
-          <span class="text-teal-400 font-bold">رایا</span> واژه‌ای اصیل ایرانی به معنای
-          <span class="text-white font-semibold">اندیشه</span> و <span class="text-white font-semibold">فکر</span> است.
+        <p class="mx-auto max-w-2xl text-lg md:text-xl text-zinc-400 leading-relaxed mt-8 px-4">
+          <span class="text-teal-400 font-bold">Raya</span> (Persian: رایا) means
+          <span class="text-white font-semibold">Thought</span> and <span class="text-white font-semibold">Vision</span>.
           <br class="hidden md:block" />
-          مجموعه‌ای از ابزارهای رابط کاربری که با ظرافت و تفکر برای توسعه‌دهندگان طراحی شده است.
+          A collection of UI primitives crafted with precision and intelligence.
         </p>
       </div>
 
@@ -87,15 +87,15 @@ const copyInstall = () => {
             :g-offset="15"
             :b-offset="15"
         >
-          <div class="flex flex-col items-center gap-8 bg-black/40 p-8 sm:p-10 backdrop-blur-xl">
+          <div class="flex flex-col items-center gap-8 bg-black/40 p-8 sm:p-10 backdrop-blur-xl border border-white/5">
 
             <div class="w-full space-y-3">
               <div class="flex items-center justify-between text-xs text-zinc-400 px-1">
-                <span>نصب با Shadcn CLI</span>
+                <span>Install via CLI</span>
                 <span class="text-teal-500/80 font-mono">Terminal</span>
               </div>
               <div class="relative group flex items-center gap-3 rounded-xl bg-zinc-950/80 border border-white/10 p-1 pl-1 pr-4 transition-all hover:border-teal-500/30 hover:shadow-[0_0_20px_rgba(20,184,166,0.1)]">
-                <div class="text-teal-500 select-none opacity-50">$</div>
+                <div class="text-teal-500 select-none opacity-50 pl-3">$</div>
                 <code class="flex-1 font-mono text-sm text-zinc-300 bg-transparent outline-none overflow-x-auto whitespace-nowrap scrollbar-hide py-3">
                   npx shadcn-vue@latest add ...
                 </code>
@@ -112,14 +112,15 @@ const copyInstall = () => {
             </div>
 
             <div class="grid grid-cols-2 gap-4 w-full">
-              <NuxtLink to="/docs/components/liquid-glass" class="w-full">
-                <Button variant="outline" class="w-full h-12 text-base border-zinc-700 hover:bg-zinc-800 hover:text-white transition-all hover:-translate-y-1">
-                  کامپوننت‌ها
+              <NuxtLink to="/docs/components/wheel-picker" class="w-full">
+                <Button variant="outline" class="w-full h-12 text-base border-zinc-700 bg-black/20 hover:bg-zinc-800 hover:text-white hover:border-zinc-500 transition-all hover:-translate-y-1">
+                  Components
                 </Button>
               </NuxtLink>
               <NuxtLink to="/docs/introduction" class="w-full">
                 <Button class="w-full h-12 text-base bg-teal-500 text-teal-950 hover:bg-teal-400 font-bold transition-all hover:-translate-y-1 shadow-[0_0_20px_rgba(20,184,166,0.3)] hover:shadow-[0_0_30px_rgba(20,184,166,0.5)]">
-                  شروع کنید
+                  Get Started
+                  <ArrowRight class="ml-2 h-4 w-4" />
                 </Button>
               </NuxtLink>
             </div>
@@ -138,9 +139,5 @@ const copyInstall = () => {
 <style scoped>
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
-}
-/* RTL Direction fix for specific texts */
-.dir-rtl {
-  direction: rtl;
 }
 </style>
