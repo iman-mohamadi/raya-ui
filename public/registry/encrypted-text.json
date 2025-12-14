@@ -1,0 +1,21 @@
+{
+  "name": "encrypted-text",
+  "type": "registry:ui",
+  "dependencies": [
+    "@vueuse/core",
+    "clsx",
+    "tailwind-merge"
+  ],
+  "files": [
+    {
+      "path": "encrypted-text/EncryptedText.vue",
+      "content": "<script setup lang=\"ts\">\r\nimport { ref, watch, onUnmounted, computed } from 'vue'\r\nimport { useElementVisibility } from '@vueuse/core'\r\nimport { cn } from '@/lib/utils'\r\n\r\nconst props = withDefaults(defineProps<{\r\n  text: string\r\n  revealDelayMs?: number\r\n  charset?: string\r\n  flipDelayMs?: number\r\n  class?: string\r\n  encryptedClass?: string\r\n  revealedClass?: string\r\n}>(), {\r\n  revealDelayMs: 50,\r\n  charset: \"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-={}[];:,.<>/?\",\r\n  flipDelayMs: 50\r\n})\r\n\r\nconst containerRef = ref<HTMLElement | null>(null)\r\nconst isVisible = useElementVisibility(containerRef)\r\nconst hasStarted = ref(false)\r\n\r\nconst revealCount = ref(0)\r\nconst scrambleChars = ref<string[]>([])\r\nlet animationFrameId: number | null = null\r\n\r\n// Helper to generate a random char\r\nfunction generateRandomCharacter(charset: string): string {\r\n  const index = Math.floor(Math.random() * charset.length)\r\n  return charset.charAt(index)\r\n}\r\n\r\n// Helper to create initial gibberish preserving spaces\r\nfunction generateGibberish(original: string, charset: string): string[] {\r\n  return original.split('').map(char =>\r\n      char === ' ' ? ' ' : generateRandomCharacter(charset)\r\n  )\r\n}\r\n\r\nconst startAnimation = () => {\r\n  // Initialize state\r\n  revealCount.value = 0\r\n  scrambleChars.value = generateGibberish(props.text, props.charset)\r\n\r\n  const startTime = performance.now()\r\n  let lastFlipTime = startTime\r\n\r\n  const update = (now: number) => {\r\n    const elapsed = now - startTime\r\n    const totalLength = props.text.length\r\n\r\n    // 1. Calculate how many characters should be revealed by now\r\n    const currentReveal = Math.floor(elapsed / Math.max(1, props.revealDelayMs))\r\n    revealCount.value = Math.min(totalLength, currentReveal)\r\n\r\n    // 2. Check if animation is complete\r\n    if (revealCount.value >= totalLength) {\r\n      return\r\n    }\r\n\r\n    // 3. Flip unrevealed characters (Gibberish effect)\r\n    if (now - lastFlipTime >= props.flipDelayMs) {\r\n      // We map over the array to create a new one (triggering reactivity)\r\n      // Only randomize characters that haven't been revealed yet\r\n      scrambleChars.value = scrambleChars.value.map((char, index) => {\r\n        if (index < revealCount.value) return props.text[index] // Already revealed (just safety)\r\n        if (props.text[index] === ' ') return ' ' // Preserve spaces\r\n        return generateRandomCharacter(props.charset)\r\n      })\r\n      lastFlipTime = now\r\n    }\r\n\r\n    animationFrameId = requestAnimationFrame(update)\r\n  }\r\n\r\n  animationFrameId = requestAnimationFrame(update)\r\n}\r\n\r\n// Watch for visibility to start (once: true behavior)\r\nwatch(isVisible, (visible) => {\r\n  if (visible && !hasStarted.value) {\r\n    hasStarted.value = true\r\n    startAnimation()\r\n  }\r\n})\r\n\r\nonUnmounted(() => {\r\n  if (animationFrameId !== null) cancelAnimationFrame(animationFrameId)\r\n})\r\n\r\n// Prepare the display characters for the template\r\nconst characters = computed(() => {\r\n  return props.text.split('').map((char, index) => {\r\n    const isRevealed = index < revealCount.value\r\n    return {\r\n      char: isRevealed ? char : (scrambleChars.value[index] || char),\r\n      isRevealed\r\n    }\r\n  })\r\n})\r\n</script>\r\n\r\n<template>\r\n  <span\r\n      ref=\"containerRef\"\r\n      :class=\"cn('inline-block whitespace-pre-wrap', props.class)\"\r\n      :aria-label=\"text\"\r\n      role=\"text\"\r\n  >\r\n    <span\r\n        v-for=\"(item, index) in characters\"\r\n        :key=\"index\"\r\n        :class=\"cn(item.isRevealed ? revealedClass : encryptedClass)\"\r\n    >{{ item.char }}</span>\r\n  </span>\r\n</template>",
+      "type": "registry:ui"
+    },
+    {
+      "path": "encrypted-text/index.ts",
+      "content": "export { default as EncryptedText } from './EncryptedText.vue'\n",
+      "type": "registry:ui"
+    }
+  ]
+}

@@ -2,43 +2,33 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
-// Fix for __dirname in ESM modules (Nuxt uses ESM)
+// Fix for __dirname in ESM modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// --- CONFIGURATION ---
 const OUTPUT_DIR = path.join(__dirname, "../../public/registry");
 
-// Define your components here.
 const COMPONENTS = [
+    // ... existing components ...
     {
         name: "wheel-picker",
         dependencies: ["@vueuse/core"],
-        files: [
-            "WheelPicker.vue",
-            "WheelPickerWrapper.vue",
-        ]
+        files: ["WheelPicker.vue", "WheelPickerWrapper.vue"]
     },
     {
         name: "ambient-grid",
         dependencies: ["clsx", "tailwind-merge"],
-        files: [
-            "AmbientGrid.vue"
-        ]
+        files: ["AmbientGrid.vue"]
     },
     {
         name: "liquid-glass",
         dependencies: [],
-        files: [
-            "LiquidGlass.vue"
-        ]
+        files: ["LiquidGlass.vue"]
     },
     {
         name: "code-block",
         dependencies: ["highlight.js", "lucide-vue-next", "clsx", "tailwind-merge"],
-        files: [
-            "CodeBlock.vue"
-        ]
+        files: ["CodeBlock.vue"]
     },
     {
         name: "animated-tabs",
@@ -48,56 +38,47 @@ const COMPONENTS = [
     {
         name: "bar-visualizer",
         dependencies: ["@vueuse/core", "clsx", "tailwind-merge"],
-        files: [
-            "BarVisualizer.vue"
-        ]
+        files: ["BarVisualizer.vue"]
     },
     {
         name: "tree",
         dependencies: [],
-        files: [
-            "Tree.vue"
-        ]
+        files: ["Tree.vue"]
     },
     {
         name: "dotted-glow-background",
         dependencies: ["clsx", "tailwind-merge"],
-        files: [
-            "DottedGlowBackground.vue"
-        ]
+        files: ["DottedGlowBackground.vue"]
     },
     {
         name: "background-ripple-effect",
         dependencies: ["clsx", "tailwind-merge"],
-        files: [
-            "BackgroundRippleEffect.vue"
-        ]
+        files: ["BackgroundRippleEffect.vue"]
     },
-    // --- NEW COMPONENT ---
     {
         name: "background-beams",
         dependencies: ["clsx", "tailwind-merge"],
-        files: [
-            "BackgroundBeams.vue"
-        ]
+        files: ["BackgroundBeams.vue"]
     },
+    // --- NEW COMPONENT ---
+    {
+        name: "encrypted-text",
+        dependencies: ["@vueuse/core", "clsx", "tailwind-merge"],
+        files: ["EncryptedText.vue"]
+    }
 ];
 
 const build = () => {
-    // 1. Create Output Directory
     if (!fs.existsSync(OUTPUT_DIR)) {
         fs.mkdirSync(OUTPUT_DIR, { recursive: true });
     }
 
-    // 2. Loop through every component
     COMPONENTS.forEach((component) => {
         const componentDir = path.join(__dirname, `../components/ui/${component.name}`);
         const fileList = [];
 
-        // Read each file defined in the config
         component.files.forEach((fileName) => {
             const filePath = path.join(componentDir, fileName);
-
             try {
                 const content = fs.readFileSync(filePath, "utf-8");
                 fileList.push({
@@ -111,26 +92,17 @@ const build = () => {
             }
         });
 
-        // 3. Generate index.ts content dynamically
         let indexContent = '';
-
+        // Custom exports for specific components
         if (component.name === "wheel-picker") {
-            indexContent = `export { default as WheelPicker } from './WheelPicker.vue'
-export { default as WheelPickerWrapper } from './WheelPickerWrapper.vue'
-export type { WheelPickerOption } from './WheelPicker.vue'
-`;
+            indexContent = `export { default as WheelPicker } from './WheelPicker.vue'\nexport { default as WheelPickerWrapper } from './WheelPickerWrapper.vue'\nexport type { WheelPickerOption } from './WheelPicker.vue'\n`;
         } else if (component.name === "bar-visualizer") {
-            indexContent = `export { default as BarVisualizer } from './BarVisualizer.vue'
-export type { AgentState } from './BarVisualizer.vue'
-`;
+            indexContent = `export { default as BarVisualizer } from './BarVisualizer.vue'\nexport type { AgentState } from './BarVisualizer.vue'\n`;
         } else if (component.name === "animated-tabs") {
-            indexContent = `export { default as AnimatedTabs } from './AnimatedTabs.vue'
-export type { TabItem } from './AnimatedTabs.vue'
-`;
+            indexContent = `export { default as AnimatedTabs } from './AnimatedTabs.vue'\nexport type { TabItem } from './AnimatedTabs.vue'\n`;
         } else {
-            // Default generation
-            indexContent = `export { default as ${toPascalCase(component.name)} } from './${component.files[0]}'
-`;
+            // Default export
+            indexContent = `export { default as ${toPascalCase(component.name)} } from './${component.files[0]}'\n`;
         }
 
         fileList.push({
@@ -139,7 +111,6 @@ export type { TabItem } from './AnimatedTabs.vue'
             type: "registry:ui",
         });
 
-        // 4. Construct the Registry JSON item
         const registryItem = {
             name: component.name,
             type: "registry:ui",
@@ -147,10 +118,8 @@ export type { TabItem } from './AnimatedTabs.vue'
             files: fileList,
         };
 
-        // 5. Write the JSON file to public/registry/
         const outputPath = path.join(OUTPUT_DIR, `${component.name}.json`);
         fs.writeFileSync(outputPath, JSON.stringify(registryItem, null, 2));
-
         console.log(`✅ Registry built: public/registry/${component.name}.json`);
     });
 };

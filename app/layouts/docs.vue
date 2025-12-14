@@ -26,6 +26,7 @@ const navGroups = [
       { label: 'Code Block', to: '/docs/components/code-block' },
       { label: 'Animated Tabs', to: '/docs/components/animated-tabs' },
       { label: 'Bar Visualizer', to: '/docs/components/bar-visualizer' },
+      { label: 'Encrypted Text', to: '/docs/components/encrypted-text' },
       { label: 'Tree', to: '/docs/components/tree' },
     ]
   },
