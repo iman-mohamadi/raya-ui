@@ -79,7 +79,7 @@ const treeExpanded = ref(['components', 'ui'])
       />
       <section class="flex flex-col items-center text-center space-y-10 mb-32 animate-in fade-in slide-in-from-bottom-8 duration-1000">
 
-        <div class="inline-flex items-center gap-2 rounded-full border border-[oklch(0.82_0.16_195)]/30 bg-[oklch(0.82_0.16_195)]/5 px-3 py-1 text-xs font-medium text-[oklch(0.82_0.16_195)]">
+        <div class="inline-flex items-center gap-2 rounded-full border border-[oklch(0.82_0.16_195)]/30 bg-[oklch(0.82_0.16_195)]/5 px-3 py-1 text-xs font-medium text-[oklch(0.82_0.16_195)] relative z-20">
           <span class="relative flex h-2 w-2">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[oklch(0.82_0.16_195)] opacity-75"></span>
             <span class="relative inline-flex rounded-full h-2 w-2 bg-[oklch(0.82_0.16_195)]"></span>
