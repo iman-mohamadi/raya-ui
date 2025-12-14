@@ -3,9 +3,10 @@ export default defineAppConfig({
         prefix: '',
         componentDir: './components/ui'
     },
-    enzoui: {
-        name: 'EnzOUi',
-        description: 'Beautifully designed components built with Vue & Shadcn.',
-        github: 'https://github.com/iman-mohamadi/EnzOUi'
+    raya: {
+        name: 'Raya',
+        description: '',
+        github: 'https://github.com/iman-mohamadi/raya-ui',
+        baseUrl: 'https://raya-ui.com/registry'
     }
 })
