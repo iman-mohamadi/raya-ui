@@ -1,7 +1,3 @@
-{
-type: uploaded file
-fileName: iman-mohamadi/enzoui/EnzOUi-481682bc4f3f825c0131815bd4179e5da136063e/app/components/ui/animated-tabs/AnimatedTabs.vue
-fullContent:
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { cn } from '@/lib/utils'
@@ -168,7 +164,7 @@ onMounted(async () => {
         :class="[
         orientation === 'vertical' ? 'flex-col items-stretch' : 'flex-row',
         variant === 'pill'
-          ? 'p-1 bg-muted/50 border border-border rounded-xl'
+          ? 'p-1 bg-muted border border-border rounded-xl'
           : 'p-0 rounded-none bg-transparent'
       ]"
         @mousedown="startDrag"
@@ -180,7 +176,7 @@ onMounted(async () => {
           class="absolute top-0 left-0 transition-all duration-300 ease-[cubic-bezier(0.25,0.8,0.25,1)]"
           :class="[
           variant === 'pill'
-            ? 'bg-background shadow-sm rounded-lg border border-border/50'
+            ? 'bg-black/10 dark:bg-white/10 shadow-sm rounded-lg border border-border/50'
             : 'bg-primary rounded-t-sm z-20'
         ]"
           :style="markerStyle"
@@ -235,4 +231,3 @@ onMounted(async () => {
   scrollbar-width: none;
 }
 </style>
-}

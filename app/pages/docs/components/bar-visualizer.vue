@@ -147,7 +147,7 @@ const state = ref('speaking')
       </template>
       <template #code>
         <div class="mt-4">
-          <CodeBlock :code="previewCode" lang="vue" />
+          <CodeBlock :code="previewCode" lang="html" />
         </div>
       </template>
     </AnimatedTabs>
@@ -156,12 +156,12 @@ const state = ref('speaking')
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
       <AnimatedTabs :items="installTabs" class="space-y-6">
         <template #cli>
-          <CodeBlock :code="installCommands.npm" lang="bash" />
+          <CodeBlock :code="installCommands.npm"  />
         </template>
         <template #manual>
           <div class="space-y-2">
             <p class="text-sm text-zinc-400">Install dependencies:</p>
-            <CodeBlock :code="installCommands.manual" lang="bash" />
+            <CodeBlock :code="installCommands.manual"  />
             <p class="text-sm text-zinc-400 mt-4">Copy the component code into your project.</p>
           </div>
         </template>
@@ -170,7 +170,7 @@ const state = ref('speaking')
 
     <div class="space-y-6">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Usage</h2>
-      <CodeBlock :code="usageCode" lang="vue" />
+      <CodeBlock :code="usageCode" lang="html" />
     </div>
 
     <div class="space-y-6">

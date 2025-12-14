@@ -33,13 +33,13 @@ const highlightedCode = computed(() => {
 <template>
   <div
       :class="cn(
-      'relative overflow-hidden rounded-xl border border-border bg-card',
+      'relative overflow-hidden rounded-xl border-4 border-border bg-black',
       props.class
     )"
   >
     <div
         v-if="fileName || $slots.header"
-        class="flex items-center bg-muted border-b border-border min-h-10"
+        class="flex items-center min-h-10 bg-border"
         :class="fileName ? 'px-1' : ''"
     >
       <div class="flex-1 min-w-0 text-xs font-medium text-muted-foreground font-mono flex items-center">
@@ -50,10 +50,10 @@ const highlightedCode = computed(() => {
     </div>
 
     <div class="absolute right-0 top-0 z-10">
-      <div :class="fileName || $slots.header ?  'bg-transparent' : 'bg-muted/30 backdrop-blur-sm'" class="rounded-bl-xl  p-1.5">
+      <div :class="fileName || $slots.header ?  'bg-transparent' : 'bg-border backdrop-blur-sm'" class="rounded-bl-xl  p-1.5">
         <button
             @click="copy()"
-            class="flex h-7 w-7 items-center justify-center rounded-md bg-transparent hover:bg-muted text-muted-foreground hover:text-foreground transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            class="flex h-7 w-7 items-center justify-center rounded-md bg-transparent hover:bg-border/80 text-muted-foreground hover:text-foreground transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         >
           <Transition
               enter-active-class="transition duration-200 ease-out"

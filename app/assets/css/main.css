@@ -118,7 +118,7 @@
     --secondary: oklch(0.20 0.04 260);
     --secondary-foreground: oklch(0.98 0 0);
 
-    --muted: oklch(0.20 0.04 260);
+    --muted: var(--color-zinc-900);
     --muted-foreground: oklch(0.70 0.03 260);
 
     /* Accent: برای هاورها */
@@ -129,8 +129,8 @@
     --destructive-foreground: oklch(0.985 0 0);
 
     /* خطوط مرزی: خیلی محو و تیره */
-    --border: oklch(0.25 0.04 260);
-    --input: oklch(0.25 0.04 260);
+    --border: var(--color-zinc-900);
+    --input: var(--color-zinc-900);
 
     /* حلقه دور اینپوت: فیروزه‌ای نئونی */
     --ring: oklch(0.82 0.16 195);

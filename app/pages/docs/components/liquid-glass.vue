@@ -118,7 +118,7 @@ const usageCode = `<template>
         <div class="relative rounded-xl border border-zinc-800 bg-zinc-950 mt-4 overflow-hidden h-[500px]">
 
           <div ref="containerEl" class="absolute inset-0 overflow-hidden select-none">
-            <AmbientGrid :grid-size="40" color1="#a855f7" color2="#3b82f6" />
+            <AmbientGrid :grid-size="40" color1="var(--primary)" color2="#3b82f6" />
 
             <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-0">
               <h1 class="text-[12rem] font-black text-white/5 leading-none tracking-tighter">GLASS</h1>
