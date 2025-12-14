@@ -1,17 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import {
-  Github, ArrowRight, Terminal, Layers,
-  Smartphone, Zap, LayoutGrid, MousePointer2,
-  Move3d, Music, Copy, Check
+  Github, Copy, Check
 } from 'lucide-vue-next'
-import { BackgroundRippleEffect } from '@/components/ui/background-ripple-effect'
-import { LiquidGlass } from '@/components/ui/liquid-glass'
+import { BackgroundBeams } from '@/components/ui/background-beams'
 import { Button } from '@/components/ui/button'
-import { AnimatedTabs } from '@/components/ui/animated-tabs'
-import { WheelPicker, WheelPickerWrapper } from '@/components/ui/wheel-picker'
-import { BarVisualizer } from '@/components/ui/bar-visualizer'
-import { Tree } from '@/components/ui/tree'
 
 const config = useAppConfig().raya
 const copied = ref(false)
@@ -24,30 +17,6 @@ const copyInstall = () => {
   setTimeout(() => copied.value = false, 2000)
 }
 
-// --- Demo Data ---
-const timeState = ref({ hour: 10, minute: 30 })
-const hours = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: (i + 1).toString().padStart(2, '0') }))
-const minutes = Array.from({ length: 60 }, (_, i) => ({ value: i, label: i.toString().padStart(2, '0') }))
-
-const tabIndex = ref(0)
-const tabs = [
-  { label: 'Design', icon: LayoutGrid },
-  { label: 'Code', icon: Terminal },
-  { label: 'Motion', icon: Zap }
-]
-
-const treeItems = [
-  {
-    label: 'components',
-    children: [
-      { label: 'ui', children: [{ label: 'button.vue' }, { label: 'glass.vue' }] },
-      { label: 'utils.ts' }
-    ]
-  },
-  { label: 'app.vue' }
-]
-const treeSelection = ref(null)
-const treeExpanded = ref(['components', 'ui'])
 </script>
 
 <template>
@@ -71,12 +40,7 @@ const treeExpanded = ref(['components', 'ui'])
     </header>
 
     <main class="relative z-10 pt-32 pb-20 container mx-auto px-6">
-      <BackgroundRippleEffect
-          :cell-size="50"
-          :interactive="true"
-          fill
-          class="text-[oklch(0.82_0.16_195)]"
-      />
+      <BackgroundBeams />
       <section class="flex flex-col items-center text-center space-y-10 mb-32 animate-in fade-in slide-in-from-bottom-8 duration-1000">
 
         <div class="inline-flex items-center gap-2 rounded-full border border-[oklch(0.82_0.16_195)]/30 bg-[oklch(0.82_0.16_195)]/5 px-3 py-1 text-xs font-medium text-[oklch(0.82_0.16_195)] relative z-20">
