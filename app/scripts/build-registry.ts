@@ -60,12 +60,21 @@ const COMPONENTS = [
         dependencies: ["clsx", "tailwind-merge"],
         files: ["BackgroundBeams.vue"]
     },
-    // --- NEW COMPONENT ---
     {
         name: "encrypted-text",
         dependencies: ["@vueuse/core", "clsx", "tailwind-merge"],
         files: ["EncryptedText.vue"]
-    }
+    },
+    {
+        name: "floating-dock",
+        dependencies: ["@vueuse/core", "clsx", "tailwind-merge"],
+        files: [
+            "FloatingDock.vue",
+            "FloatingDockDesktop.vue",
+            "FloatingDockMobile.vue",
+            "FloatingDockIcon.vue"
+        ]
+    },
 ];
 
 const build = () => {
