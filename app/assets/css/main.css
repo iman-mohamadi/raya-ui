@@ -3,11 +3,100 @@
 
 @custom-variant dark (&:is(.dark *));
 
+:root {
+    --background: oklch(1.00 0 0);
+    --foreground: oklch(0.14 0 0);
+    --card: oklch(1.00 0 0);
+    --card-foreground: oklch(0.14 0 0);
+    --popover: oklch(1.00 0 0);
+    --popover-foreground: oklch(0.14 0 0);
+    --primary: oklch(0.83 0.14 195.33);
+    --primary-foreground: oklch(0.99 0 0);
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.20 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.56 0 0);
+    --accent: oklch(0.97 0 0);
+    --accent-foreground: oklch(0.20 0 0);
+    --destructive: oklch(0.58 0.24 28.48);
+    --border: oklch(0.92 0 0);
+    --input: oklch(0.92 0 0);
+    --ring: oklch(0.71 0 0);
+    --chart-1: oklch(0.65 0.22 36.85);
+    --chart-2: oklch(0.60 0.11 184.15);
+    --chart-3: oklch(0.40 0.07 227.18);
+    --chart-4: oklch(0.83 0.17 81.03);
+    --chart-5: oklch(0.77 0.17 65.36);
+    --sidebar: oklch(0.99 0 0);
+    --sidebar-foreground: oklch(0.14 0 0);
+    --sidebar-primary: oklch(0.20 0 0);
+    --sidebar-primary-foreground: oklch(0.99 0 0);
+    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent-foreground: oklch(0.20 0 0);
+    --sidebar-border: oklch(0.92 0 0);
+    --sidebar-ring: oklch(0.708 0 0);;
+
+    --font-sans: 'Geist', 'Geist Fallback', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-serif: "Geist", "Geist Fallback", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+    --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+    --radius: 0.625rem;
+
+    --shadow-2xs: 0 1px 3px 0px oklch(0.00 0 0 / 0.05);
+    --shadow-xs: 0 1px 3px 0px oklch(0.00 0 0 / 0.05);
+    --shadow-sm: 0 1px 3px 0px oklch(0.00 0 0 / 0.10), 0 1px 2px -1px oklch(0.00 0 0 / 0.10);
+    --shadow: 0 1px 3px 0px oklch(0.00 0 0 / 0.10), 0 1px 2px -1px oklch(0.00 0 0 / 0.10);
+    --shadow-md: 0 1px 3px 0px oklch(0.00 0 0 / 0.10), 0 2px 4px -1px oklch(0.00 0 0 / 0.10);
+    --shadow-lg: 0 1px 3px 0px oklch(0.00 0 0 / 0.10), 0 4px 6px -1px oklch(0.00 0 0 / 0.10);
+    --shadow-xl: 0 1px 3px 0px oklch(0.00 0 0 / 0.10), 0 8px 10px -1px oklch(0.00 0 0 / 0.10);
+    --shadow-2xl: 0 1px 3px 0px oklch(0.00 0 0 / 0.25);
+
+}
+
+.dark {
+    --background: oklch(0.14 0 0);
+    --foreground: oklch(0.99 0 0);
+    --card: oklch(0.20 0 0);
+    --card-foreground: oklch(0.99 0 0);
+    --popover: oklch(0.20 0 0);
+    --popover-foreground: oklch(0.99 0 0);
+    --primary: oklch(0.83 0.14 195.33);
+    --primary-foreground: oklch(0.20 0 0);
+    --secondary: oklch(0.27 0 0);
+    --secondary-foreground: oklch(0.99 0 0);
+    --muted: oklch(0.27 0 0);
+    --muted-foreground: oklch(0.71 0 0);
+    --accent: oklch(0.27 0 0);
+    --accent-foreground: oklch(0.99 0 0);
+    --destructive: oklch(0.70 0.19 22.23);
+    --border: oklch(1.00 0 0 / 10%);
+    --input: oklch(1.00 0 0 / 15%);
+    --ring: oklch(0.56 0 0);
+    --chart-1: oklch(0.49 0.24 264.40);
+    --chart-2: oklch(0.70 0.16 160.43);
+    --chart-3: oklch(0.77 0.17 65.36);
+    --chart-4: oklch(0.62 0.26 305.32);
+    --chart-5: oklch(0.64 0.25 16.51);
+    --sidebar: oklch(0.20 0 0);
+    --sidebar-foreground: oklch(0.99 0 0);
+    --sidebar-primary: oklch(0.49 0.24 264.40);
+    --sidebar-primary-foreground: oklch(0.99 0 0);
+    --sidebar-accent: oklch(0.27 0 0);
+    --sidebar-accent-foreground: oklch(0.99 0 0);
+    --sidebar-border: oklch(1.00 0 0 / 10%);
+    --sidebar-ring: oklch(0.56 0 0);
+
+    --shadow-2xs: 0 1px 3px 0px oklch(0.00 0 0 / 0.05);
+    --shadow-xs: 0 1px 3px 0px oklch(0.00 0 0 / 0.05);
+    --shadow-sm: 0 1px 3px 0px oklch(0.00 0 0 / 0.10), 0 1px 2px -1px oklch(0.00 0 0 / 0.10);
+    --shadow: 0 1px 3px 0px oklch(0.00 0 0 / 0.10), 0 1px 2px -1px oklch(0.00 0 0 / 0.10);
+    --shadow-md: 0 1px 3px 0px oklch(0.00 0 0 / 0.10), 0 2px 4px -1px oklch(0.00 0 0 / 0.10);
+    --shadow-lg: 0 1px 3px 0px oklch(0.00 0 0 / 0.10), 0 4px 6px -1px oklch(0.00 0 0 / 0.10);
+    --shadow-xl: 0 1px 3px 0px oklch(0.00 0 0 / 0.10), 0 8px 10px -1px oklch(0.00 0 0 / 0.10);
+    --shadow-2xl: 0 1px 3px 0px oklch(0.00 0 0 / 0.25);
+}
+
 @theme inline {
-    --radius-sm: calc(var(--radius) - 4px);
-    --radius-md: calc(var(--radius) - 2px);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) + 4px);
     --color-background: var(--background);
     --color-foreground: var(--foreground);
     --color-card: var(--card);
@@ -39,119 +128,25 @@
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
+
+    --font-sans: var(--font-sans);
+    --font-mono: var(--font-mono);
+    --font-serif: var(--font-serif);
+
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+
+    --shadow-2xs: var(--shadow-2xs);
+    --shadow-xs: var(--shadow-xs);
+    --shadow-sm: var(--shadow-sm);
+    --shadow: var(--shadow);
+    --shadow-md: var(--shadow-md);
+    --shadow-lg: var(--shadow-lg);
+    --shadow-xl: var(--shadow-xl);
+    --shadow-2xl: var(--shadow-2xl);
 }
-
-:root {
-    /* تم روشن (روز) */
-    --radius: 0.65rem;
-
-    /* سفید یخی */
-    --background: oklch(0.99 0.005 200);
-    /* سرمه‌ای تیره */
-    --foreground: oklch(0.13 0.03 260);
-
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.13 0.03 260);
-
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.13 0.03 260);
-
-    /* رنگ اصلی: فیروزه‌ای اشباع شده (Cyan) */
-    --primary: oklch(0.60 0.15 200);
-    --primary-foreground: oklch(0.99 0.005 200);
-
-    /* رنگ‌های ثانویه: آبی خیلی روشن */
-    --secondary: oklch(0.96 0.01 260);
-    --secondary-foreground: oklch(0.13 0.03 260);
-
-    --muted: oklch(0.96 0.01 260);
-    --muted-foreground: oklch(0.55 0.02 260);
-
-    --accent: oklch(0.96 0.01 260);
-    --accent-foreground: oklch(0.13 0.03 260);
-
-    --destructive: oklch(0.6 0.2 20);
-    --destructive-foreground: oklch(0.985 0 0);
-
-    --border: oklch(0.92 0.01 260);
-    --input: oklch(0.92 0.01 260);
-    --ring: oklch(0.60 0.15 200);
-
-    /* چارت‌ها: رنگ‌های مکمل فیروزه‌ای */
-    --chart-1: oklch(0.60 0.15 200); /* Cyan */
-    --chart-2: oklch(0.55 0.15 250); /* Blue */
-    --chart-3: oklch(0.50 0.15 160); /* Teal */
-    --chart-4: oklch(0.65 0.15 85);  /* Gold */
-    --chart-5: oklch(0.60 0.15 30);  /* Orange */
-
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.13 0.03 260);
-    --sidebar-primary: oklch(0.60 0.15 200);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.96 0.01 260);
-    --sidebar-accent-foreground: oklch(0.13 0.03 260);
-    --sidebar-border: oklch(0.92 0.01 260);
-    --sidebar-ring: oklch(0.60 0.15 200);
-}
-
-.dark {
-    /* تم تاریک (شب‌های اصفهان) */
-
-    /* پس‌زمینه: لاجوردی عمیق (Deep Navy/Lapis) */
-    --background: oklch(0.12 0.04 260);
-    /* متن: سفید یخی */
-    --foreground: oklch(0.95 0.02 200);
-
-    /* کارت‌ها: کمی روشن‌تر از پس‌زمینه */
-    --card: oklch(0.16 0.04 260);
-    --card-foreground: oklch(0.95 0.02 200);
-
-    --popover: oklch(0.12 0.04 260);
-    --popover-foreground: oklch(0.95 0.02 200);
-
-    /* رنگ اصلی: فیروزه‌ای نئونی (Neon Turquoise) */
-    --primary: oklch(0.82 0.16 195);
-    /* متن روی دکمه اصلی: تیره */
-    --primary-foreground: oklch(0.12 0.04 260);
-
-    /* رنگ‌های ثانویه: سرمه‌ای ملایم */
-    --secondary: oklch(0.20 0.04 260);
-    --secondary-foreground: oklch(0.98 0 0);
-
-    --muted: var(--color-zinc-900);
-    --muted-foreground: oklch(0.70 0.03 260);
-
-    /* Accent: برای هاورها */
-    --accent: oklch(0.25 0.05 260);
-    --accent-foreground: oklch(0.98 0 0);
-
-    --destructive: oklch(0.45 0.2 25);
-    --destructive-foreground: oklch(0.985 0 0);
-
-    /* خطوط مرزی: خیلی محو و تیره */
-    --border: var(--color-zinc-900);
-    --input: var(--color-zinc-900);
-
-    /* حلقه دور اینپوت: فیروزه‌ای نئونی */
-    --ring: oklch(0.82 0.16 195);
-
-    /* چارت‌های تم تاریک */
-    --chart-1: oklch(0.82 0.16 195); /* Neon Cyan */
-    --chart-2: oklch(0.70 0.15 250); /* Neon Blue */
-    --chart-3: oklch(0.75 0.15 160); /* Teal */
-    --chart-4: oklch(0.80 0.15 85);  /* Gold */
-    --chart-5: oklch(0.70 0.15 30);  /* Orange */
-
-    --sidebar: oklch(0.12 0.04 260);
-    --sidebar-foreground: oklch(0.95 0.02 200);
-    --sidebar-primary: oklch(0.82 0.16 195);
-    --sidebar-primary-foreground: oklch(0.98 0 0);
-    --sidebar-accent: oklch(0.20 0.04 260);
-    --sidebar-accent-foreground: oklch(0.98 0 0);
-    --sidebar-border: oklch(0.25 0.04 260);
-    --sidebar-ring: oklch(0.82 0.16 195);
-}
-
 
 @layer base {
     * {
