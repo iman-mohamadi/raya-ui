@@ -1,0 +1,20 @@
+{
+  "name": "morphing-text",
+  "type": "registry:ui",
+  "dependencies": [
+    "clsx",
+    "tailwind-merge"
+  ],
+  "files": [
+    {
+      "path": "morphing-text/MorphingText.vue",
+      "content": "<script setup lang=\"ts\">\r\nimport { cn } from \"@/lib/utils\";\r\nimport { ref, onMounted, onUnmounted } from \"vue\";\r\n\r\nconst TEXT_CLASSES = \"absolute inset-x-0 top-0 m-auto inline-block w-full\";\r\n\r\ninterface Props {\r\n  class?: string;\r\n  texts: string[];\r\n  morphTime?: number;\r\n  coolDownTime?: number;\r\n}\r\n\r\nconst props = withDefaults(defineProps<Props>(), {\r\n  morphTime: 1.5,\r\n  coolDownTime: 0.5,\r\n});\r\n\r\nconst textIndex = ref(0);\r\nconst morph = ref(0);\r\nconst coolDown = ref(0);\r\nconst time = ref(new Date());\r\n\r\nconst text1Ref = ref<HTMLSpanElement>();\r\nconst text2Ref = ref<HTMLSpanElement>();\r\n\r\nfunction setStyles(fraction: number) {\r\n  if (!text1Ref.value || !text2Ref.value) return;\r\n\r\n  text2Ref.value.style.filter = `blur(${Math.min(8 / fraction - 8, 100)}px)`;\r\n  text2Ref.value.style.opacity = `${Math.pow(fraction, 0.4) * 100}%`;\r\n\r\n  const invertedFraction = 1 - fraction;\r\n  text1Ref.value.style.filter = `blur(${Math.min(8 / invertedFraction - 8, 100)}px)`;\r\n  text1Ref.value.style.opacity = `${Math.pow(invertedFraction, 0.4) * 100}%`;\r\n\r\n  text1Ref.value.textContent = props.texts[textIndex.value % props.texts.length];\r\n  text2Ref.value.textContent = props.texts[(textIndex.value + 1) % props.texts.length];\r\n}\r\n\r\nfunction doMorph() {\r\n  morph.value -= coolDown.value;\r\n  coolDown.value = 0;\r\n\r\n  let fraction = morph.value / props.morphTime;\r\n\r\n  if (fraction > 1) {\r\n    coolDown.value = props.coolDownTime;\r\n    fraction = 1;\r\n  }\r\n\r\n  setStyles(fraction);\r\n\r\n  if (fraction === 1) {\r\n    textIndex.value++;\r\n  }\r\n}\r\n\r\nfunction doCoolDown() {\r\n  morph.value = 0;\r\n\r\n  if (text1Ref.value && text2Ref.value) {\r\n    text2Ref.value.style.filter = \"none\";\r\n    text2Ref.value.style.opacity = \"100%\";\r\n    text1Ref.value.style.filter = \"none\";\r\n    text1Ref.value.style.opacity = \"0%\";\r\n  }\r\n}\r\n\r\nlet animationFrameId: number = 0;\r\nfunction animate() {\r\n  animationFrameId = requestAnimationFrame(animate);\r\n\r\n  const newTime = new Date();\r\n  const dt = (newTime.getTime() - time.value.getTime()) / 1000;\r\n  time.value = newTime;\r\n\r\n  coolDown.value -= dt;\r\n\r\n  if (coolDown.value <= 0) {\r\n    doMorph();\r\n  } else {\r\n    doCoolDown();\r\n  }\r\n}\r\n\r\nonMounted(() => {\r\n  animate();\r\n});\r\n\r\nonUnmounted(() => {\r\n  cancelAnimationFrame(animationFrameId);\r\n});\r\n</script>\r\n\r\n<template>\r\n  <div\r\n      :class=\"\r\n      cn(\r\n        'relative mx-auto h-16 w-full max-w-screen-md text-center font-sans text-[40pt] font-bold leading-none [filter:url(#threshold)_blur(0.6px)] md:h-24 lg:text-[6rem]',\r\n        props.class,\r\n      )\r\n    \"\r\n  >\r\n    <span\r\n        ref=\"text1Ref\"\r\n        :class=\"cn(TEXT_CLASSES)\"\r\n    />\r\n    <span\r\n        ref=\"text2Ref\"\r\n        :class=\"cn(TEXT_CLASSES)\"\r\n    />\r\n\r\n    <svg\r\n        id=\"filters\"\r\n        class=\"fixed size-0\"\r\n        preserveAspectRatio=\"xMidYMid slice\"\r\n    >\r\n      <defs>\r\n        <filter id=\"threshold\">\r\n          <feColorMatrix\r\n              in=\"SourceGraphic\"\r\n              type=\"matrix\"\r\n              values=\"1 0 0 0 0\r\n                  0 1 0 0 0\r\n                  0 0 1 0 0\r\n                  0 0 0 255 -140\"\r\n          />\r\n        </filter>\r\n      </defs>\r\n    </svg>\r\n  </div>\r\n</template>",
+      "type": "registry:ui"
+    },
+    {
+      "path": "morphing-text/index.ts",
+      "content": "export { default as MorphingText } from './MorphingText.vue'\n",
+      "type": "registry:ui"
+    }
+  ]
+}

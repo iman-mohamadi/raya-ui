@@ -1,0 +1,21 @@
+{
+  "name": "animated-input",
+  "type": "registry:ui",
+  "dependencies": [
+    "@vueuse/core",
+    "clsx",
+    "tailwind-merge"
+  ],
+  "files": [
+    {
+      "path": "animated-input/AnimatedInput.vue",
+      "content": "<script setup lang=\"ts\">\r\nimport { ref, computed, type HTMLAttributes } from 'vue'\r\nimport { useVModel } from '@vueuse/core'\r\nimport { cn } from '@/lib/utils'\r\n\r\ndefineOptions({\r\n  inheritAttrs: false,\r\n})\r\n\r\nconst props = withDefaults(defineProps<{\r\n  defaultValue?: string | number\r\n  modelValue?: string | number\r\n  class?: HTMLAttributes['class']\r\n  containerClass?: HTMLAttributes['class']\r\n  glowColor?: string\r\n}>(), {\r\n  glowColor: '#14b8a6' // Default to Raya Teal\r\n})\r\n\r\nconst emits = defineEmits<{\r\n  (e: 'update:modelValue', payload: string | number): void\r\n}>()\r\n\r\nconst modelValue = useVModel(props, 'modelValue', emits, {\r\n  passive: true,\r\n  defaultValue: props.defaultValue,\r\n})\r\n\r\nconst inputContainerRef = ref<HTMLDivElement | null>(null)\r\nconst mouse = ref({ x: 0, y: 0 })\r\nconst visible = ref(false)\r\nconst radius = 100\r\n\r\nconst containerBg = computed(() => {\r\n  return `radial-gradient(\r\n    ${visible.value ? radius + 'px' : '0px'} circle at ${mouse.value.x}px ${mouse.value.y}px,\r\n    ${props.glowColor},\r\n    transparent 80%\r\n  )`\r\n})\r\n\r\nfunction handleMouseMove({ clientX, clientY }: MouseEvent) {\r\n  if (!inputContainerRef.value) return\r\n  const { left, top } = inputContainerRef.value.getBoundingClientRect()\r\n  mouse.value = { x: clientX - left, y: clientY - top }\r\n}\r\n</script>\r\n\r\n<template>\r\n  <div\r\n      ref=\"inputContainerRef\"\r\n      :class=\"cn('group/input rounded-lg p-[2px] transition duration-300', props.containerClass)\"\r\n      :style=\"{ background: containerBg }\"\r\n      @mouseenter=\"visible = true\"\r\n      @mouseleave=\"visible = false\"\r\n      @mousemove=\"handleMouseMove\"\r\n  >\r\n    <input\r\n        v-bind=\"$attrs\"\r\n        v-model=\"modelValue\"\r\n        :class=\"cn(\r\n        'flex h-10 w-full border-none bg-gray-50 dark:bg-zinc-900 text-black dark:text-white shadow-input rounded-md px-3 py-2 text-sm',\r\n        'file:border-0 file:bg-transparent file:text-sm file:font-medium',\r\n        'placeholder:text-neutral-400 dark:placeholder-text-neutral-600',\r\n        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600',\r\n        'disabled:cursor-not-allowed disabled:opacity-50',\r\n        'dark:shadow-[0px_0px_1px_1px_var(--neutral-700)]',\r\n        'group-hover/input:shadow-none transition duration-400',\r\n        props.class\r\n      )\"\r\n    />\r\n  </div>\r\n</template>\r\n\r\n<style scoped>\r\ninput {\r\n  box-shadow:\r\n      0px 2px 3px -1px rgba(0, 0, 0, 0.1),\r\n      0px 1px 0px 0px rgba(25, 28, 33, 0.02),\r\n      0px 0px 0px 1px rgba(25, 28, 33, 0.08);\r\n}\r\n</style>",
+      "type": "registry:ui"
+    },
+    {
+      "path": "animated-input/index.ts",
+      "content": "export { default as AnimatedInput } from './AnimatedInput.vue'\n",
+      "type": "registry:ui"
+    }
+  ]
+}

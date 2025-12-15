@@ -29,6 +29,8 @@ const navGroups = [
       { label: 'Bar Visualizer', to: '/docs/components/bar-visualizer' },
       { label: 'Encrypted Text', to: '/docs/components/encrypted-text' },
       { label: 'Animated Input', to: '/docs/components/animated-input' },
+      { label: 'Morphing Text', to: '/docs/components/morphing-text' },
+      { label: 'Pixelated Button', to: '/docs/components/pixelated-button' },
       { label: 'Tree', to: '/docs/components/tree' },
     ]
   },

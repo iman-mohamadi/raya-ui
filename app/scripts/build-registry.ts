@@ -84,6 +84,16 @@ const COMPONENTS = [
         name: "animated-input",
         dependencies: ["@vueuse/core", "clsx", "tailwind-merge"],
         files: ["AnimatedInput.vue"]
+    },
+    {
+        name: "morphing-text",
+        dependencies: ["clsx", "tailwind-merge"],
+        files: ["MorphingText.vue"]
+    },
+    {
+        name: "pixelated-button",
+        dependencies: ["clsx", "tailwind-merge"],
+        files: ["PixelatedButton.vue"]
     }
 ];
 
