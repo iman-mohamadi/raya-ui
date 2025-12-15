@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PixelGameButton } from '@/components/ui/pixel-game-button'
+import { PixelatedButton } from '@/components/ui/pixelated-button'
 import { AnimatedTabs } from '@/components/ui/animated-tabs'
 import { CodeBlock } from '@/components/ui/code-block'
 import { Crown, Ghost, Sword } from 'lucide-vue-next'
