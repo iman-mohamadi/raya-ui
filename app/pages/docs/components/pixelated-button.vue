@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PixelatedButton } from '@/components/ui/pixelated-button'
+import { PixelGameButton } from '@/components/ui/pixel-game-button'
 import { AnimatedTabs } from '@/components/ui/animated-tabs'
 import { CodeBlock } from '@/components/ui/code-block'
 import { Crown, Ghost, Sword } from 'lucide-vue-next'
@@ -190,6 +190,20 @@ import { Crown } from 'lucide-vue-next'
           </tbody>
         </table>
       </div>
+    </div>
+
+    <div class="border-t border-zinc-800 pt-6 text-sm text-zinc-500 flex justify-end">
+      <p>
+        Inspired by
+        <a
+            href="https://uiverse.io/wolf_3808/gentle-jellyfish-74"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-zinc-300 hover:text-white underline underline-offset-4 transition-colors"
+        >
+          'wolf_3808'
+        </a>
+      </p>
     </div>
 
   </div>
