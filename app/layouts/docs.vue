@@ -21,6 +21,9 @@ const navGroups = [
     title: 'Components',
     icon: Package,
     items: [
+      { label: 'Raya Button', to: '/docs/components/raya-button' },
+      { label: 'Pixelated Button', to: '/docs/components/pixelated-button' },
+      { label: 'Animated Input', to: '/docs/components/animated-input' },
       { label: 'Wheel Picker', to: '/docs/components/wheel-picker' },
       { label: 'Liquid Glass', to: '/docs/components/liquid-glass' },
       { label: 'Code Block', to: '/docs/components/code-block' },
@@ -28,9 +31,7 @@ const navGroups = [
       { label: 'Floating Dock', to: '/docs/components/floating-dock' },
       { label: 'Bar Visualizer', to: '/docs/components/bar-visualizer' },
       { label: 'Encrypted Text', to: '/docs/components/encrypted-text' },
-      { label: 'Animated Input', to: '/docs/components/animated-input' },
       { label: 'Morphing Text', to: '/docs/components/morphing-text' },
-      { label: 'Pixelated Button', to: '/docs/components/pixelated-button' },
       { label: 'Tree', to: '/docs/components/tree' },
     ]
   },

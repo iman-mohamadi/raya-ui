@@ -94,6 +94,11 @@ const COMPONENTS = [
         name: "pixelated-button",
         dependencies: ["clsx", "tailwind-merge"],
         files: ["PixelatedButton.vue"]
+    },
+    {
+        name: "raya-button",
+        dependencies: ["clsx", "tailwind-merge", "class-variance-authority"],
+        files: ["RayaButton.vue", "index.ts"]
     }
 ];
 
