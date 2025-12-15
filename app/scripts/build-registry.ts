@@ -79,6 +79,11 @@ const COMPONENTS = [
         name: "gravity-stars",
         dependencies: ["clsx", "tailwind-merge"],
         files: ["GravityStars.vue"]
+    },
+    {
+        name: "animated-input",
+        dependencies: ["@vueuse/core", "clsx", "tailwind-merge"],
+        files: ["AnimatedInput.vue"]
     }
 ];
 

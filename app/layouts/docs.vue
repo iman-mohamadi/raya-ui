@@ -28,6 +28,7 @@ const navGroups = [
       { label: 'Floating Dock', to: '/docs/components/floating-dock' },
       { label: 'Bar Visualizer', to: '/docs/components/bar-visualizer' },
       { label: 'Encrypted Text', to: '/docs/components/encrypted-text' },
+      { label: 'Animated Input', to: '/docs/components/animated-input' },
       { label: 'Tree', to: '/docs/components/tree' },
     ]
   },
