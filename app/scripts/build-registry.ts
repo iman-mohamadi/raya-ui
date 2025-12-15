@@ -9,7 +9,6 @@ const __dirname = path.dirname(__filename);
 const OUTPUT_DIR = path.join(__dirname, "../../public/registry");
 
 const COMPONENTS = [
-    // ... existing components ...
     {
         name: "wheel-picker",
         dependencies: ["@vueuse/core"],
@@ -109,7 +108,7 @@ const build = () => {
 
     COMPONENTS.forEach((component) => {
         const componentDir = path.join(__dirname, `../components/ui/${component.name}`);
-        const fileList = [];
+        const fileList: Array<{ path: string; content: string; type: string }> = [];
 
         component.files.forEach((fileName) => {
             const filePath = path.join(componentDir, fileName);
@@ -126,24 +125,28 @@ const build = () => {
             }
         });
 
-        let indexContent = '';
-        // Custom exports for specific components
-        if (component.name === "wheel-picker") {
-            indexContent = `export { default as WheelPicker } from './WheelPicker.vue'\nexport { default as WheelPickerWrapper } from './WheelPickerWrapper.vue'\nexport type { WheelPickerOption } from './WheelPicker.vue'\n`;
-        } else if (component.name === "bar-visualizer") {
-            indexContent = `export { default as BarVisualizer } from './BarVisualizer.vue'\nexport type { AgentState } from './BarVisualizer.vue'\n`;
-        } else if (component.name === "animated-tabs") {
-            indexContent = `export { default as AnimatedTabs } from './AnimatedTabs.vue'\nexport type { TabItem } from './AnimatedTabs.vue'\n`;
-        } else {
-            // Default export
-            indexContent = `export { default as ${toPascalCase(component.name)} } from './${component.files[0]}'\n`;
-        }
+        const hasIndex = fileList.some(f => f.path.endsWith('index.ts'));
 
-        fileList.push({
-            path: `${component.name}/index.ts`,
-            content: indexContent,
-            type: "registry:ui",
-        });
+        if (!hasIndex) {
+            let indexContent = '';
+
+            if (component.name === "wheel-picker") {
+                indexContent = `export { default as WheelPicker } from './WheelPicker.vue'\nexport { default as WheelPickerWrapper } from './WheelPickerWrapper.vue'\nexport type { WheelPickerOption } from './WheelPicker.vue'\n`;
+            } else if (component.name === "bar-visualizer") {
+                indexContent = `export { default as BarVisualizer } from './BarVisualizer.vue'\nexport type { AgentState } from './BarVisualizer.vue'\n`;
+            } else if (component.name === "animated-tabs") {
+                indexContent = `export { default as AnimatedTabs } from './AnimatedTabs.vue'\nexport type { TabItem } from './AnimatedTabs.vue'\n`;
+            } else {
+                // Default export for single-file components
+                indexContent = `export { default as ${toPascalCase(component.name)} } from './${component.files[0]}'\n`;
+            }
+
+            fileList.push({
+                path: `${component.name}/index.ts`,
+                content: indexContent,
+                type: "registry:ui",
+            });
+        }
 
         const registryItem = {
             name: component.name,
