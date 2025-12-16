@@ -108,19 +108,7 @@ watch(() => route.path, () => {
 
 <template>
   <div class="min-h-screen bg-black text-white selection:bg-white/20 font-sans">
-
-    <header class="sticky top-0 z-50 w-full border-b border-white/10 bg-black/80 backdrop-blur-xl supports-[backdrop-filter]:bg-black/60">
-      <div class="container mx-auto flex h-14 items-center px-6">
-        <NuxtLink to="/" class="mr-6 flex items-center space-x-2 font-bold text-xl tracking-tight">
-          <NuxtImg src="/logo.svg" class="w-20"/>
-        </NuxtLink>
-        <div class="flex flex-1 justify-end">
-          <a :href="config?.github" target="_blank">
-            <Button variant="ghost" size="icon" class="text-zinc-400 hover:text-white"><Github class="h-5 w-5" /></Button>
-          </a>
-        </div>
-      </div>
-    </header>
+    <AppNav :showDoc="false"/>
 
     <div class="container mx-auto flex-1 items-start md:grid md:grid-cols-[240px_minmax(0,1fr)] gap-10 px-6">
 

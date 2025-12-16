@@ -28,24 +28,7 @@ useSeoMeta({
 
 <template>
   <div class="min-h-screen bg-black text-white font-sans">
-
-    <header class="fixed top-0 z-50 w-full border-b border-white/5 bg-black/80 backdrop-blur-xl">
-      <div class="container mx-auto flex h-16 items-center justify-between px-6">
-        <div class="flex items-center gap-2">
-          <NuxtImg src="/logo.svg" class="w-20"/>
-        </div>
-
-        <div class="flex items-center gap-4">
-          <NuxtLink to="/docs/introduction" class="text-sm font-medium text-zinc-500 hover:text-[oklch(0.82_0.16_195)] transition-colors">
-            Docs
-          </NuxtLink>
-          <a :href="config?.github" target="_blank" class="text-zinc-500 hover:text-white transition-colors">
-            <Github class="h-5 w-5" />
-          </a>
-        </div>
-      </div>
-    </header>
-
+   <AppNav />
     <main class="relative z-10 pt-32 pb-20 container mx-auto px-6">
       <BackgroundBeams />
       <section class="flex flex-col items-center text-center space-y-10 mb-32 animate-in fade-in slide-in-from-bottom-8 duration-1000">
