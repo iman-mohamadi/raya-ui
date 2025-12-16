@@ -160,12 +160,12 @@ onMounted(async () => {
 
     <div
         ref="containerRef"
-        class="relative flex items-center gap-1 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing select-none"
+        class="relative flex items-center gap-1 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing select-none bg-transparent"
         :class="[
         orientation === 'vertical' ? 'flex-col items-stretch' : 'flex-row',
         variant === 'pill'
-          ? 'p-1 bg-muted border border-border rounded-xl'
-          : 'p-0 rounded-none bg-transparent'
+          ? 'p-1'
+          : 'p-0'
       ]"
         @mousedown="startDrag"
         @mouseleave="stopDrag"
