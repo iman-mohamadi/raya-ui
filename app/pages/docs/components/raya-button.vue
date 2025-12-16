@@ -2,7 +2,7 @@
 import { RayaButton } from '@/components/ui/raya-button'
 import { AnimatedTabs } from '@/components/ui/animated-tabs'
 import { CodeBlock } from '@/components/ui/code-block'
-import { Mail, Trash2 } from 'lucide-vue-next'
+import { Mail, Trash2, Check, AlertTriangle, Info, ArrowRight } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'docs' })
 const config = useAppConfig().raya
@@ -14,71 +14,88 @@ const previewTabs = [
 
 const installTabs = [
   { label: 'CLI', slot: 'cli' },
-  { label: 'Manual', slot: 'manual' }
+  { label: 'Manual', slot: 'manual' },
+  { label: 'CSS (Required)', slot: 'css' }
 ]
 
 const installCommands = {
-  npm: `npx shadcn-vue@latest add ${config.baseUrl}/raya-button.json`,
-  manual: `npm install class-variance-authority reka-ui`
+  npm: `npx shadcn-vue@latest add ${config?.baseUrl || 'https://raya-ui.com'}/registry/raya-button.json`,
+  manual: `npm install class-variance-authority reka-ui lucide-vue-next`,
+  css: `:root {
+    /* Feedback Colors */
+    --success: oklch(0.62 0.19 145.4);
+    --success-foreground: oklch(0.98 0 0);
+
+    --warning: oklch(0.75 0.15 70);
+    --warning-foreground: oklch(0.98 0 0);
+
+    --info: oklch(0.60 0.16 255);
+    --info-foreground: oklch(0.98 0 0);
+
+    /* Map Error to Destructive */
+    --error: var(--destructive);
+    --error-foreground: var(--destructive-foreground);
+}
+
+.dark {
+    --success: oklch(0.55 0.18 145.4);
+    --success-foreground: oklch(1 0 0);
+
+    --warning: oklch(0.70 0.15 70);
+    --warning-foreground: oklch(0.1 0 0);
+
+    --info: oklch(0.55 0.16 255);
+    --info-foreground: oklch(1 0 0);
+}
+
+@theme inline {
+    /* Semantic Color Mapping */
+    --color-success: var(--success);
+    --color-success-content: var(--success-foreground);
+
+    --color-warning: var(--warning);
+    --color-warning-content: var(--warning-foreground);
+
+    --color-info: var(--info);
+    --color-info-content: var(--info-foreground);
+
+    --color-error: var(--error);
+    --color-error-content: var(--error-foreground);
+
+    /* Utility Mappings used by Button */
+    --color-primary-content: var(--primary-foreground);
+    --color-secondary-content: var(--secondary-foreground);
+    --color-inverted: var(--foreground);
+    --color-default: var(--foreground);
+    --color-elevated: var(--muted);
+    --color-accented: var(--accent);
+}`
 }
 
 const usageCode = `<script setup lang="ts">
 import { RayaButton } from '@/components/ui/raya-button'
-import { Mail, Trash2 } from 'lucide-vue-next'
 <\/script>
 
 <template>
-  <div class="flex flex-col gap-8">
-
-    <div class="space-y-3">
-      <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Primary Color</h3>
-      <div class="flex flex-wrap gap-3 items-center">
-        <RayaButton color="primary" variant="solid">Solid</RayaButton>
-        <RayaButton color="primary" variant="soft">Soft</RayaButton>
-        <RayaButton color="primary" variant="subtle">Subtle</RayaButton>
-        <RayaButton color="primary" variant="outline">Outline</RayaButton>
-        <RayaButton color="primary" variant="ghost">Ghost</RayaButton>
-        <RayaButton color="primary" variant="link">Link</RayaButton>
-      </div>
+  <div class="flex flex-col gap-4">
+    <div class="flex gap-2">
+      <RayaButton variant="solid">Solid</RayaButton>
+      <RayaButton variant="outline">Outline</RayaButton>
+      <RayaButton variant="soft">Soft</RayaButton>
+      <RayaButton variant="subtle">Subtle</RayaButton>
+      <RayaButton variant="ghost">Ghost</RayaButton>
+      <RayaButton variant="link">Link</RayaButton>
     </div>
 
-    <div class="space-y-3">
-      <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Neutral Color</h3>
-      <div class="flex flex-wrap gap-3 items-center">
-        <RayaButton color="neutral" variant="solid">Solid</RayaButton>
-        <RayaButton color="neutral" variant="soft">Soft</RayaButton>
-        <RayaButton color="neutral" variant="subtle">Subtle</RayaButton>
-        <RayaButton color="neutral" variant="outline">Outline</RayaButton>
-        <RayaButton color="neutral" variant="ghost">Ghost</RayaButton>
-        <RayaButton color="neutral" variant="link">Link</RayaButton>
-      </div>
+    <div class="flex gap-2">
+      <RayaButton color="primary">Primary</RayaButton>
+      <RayaButton color="secondary">Secondary</RayaButton>
+      <RayaButton color="success">Success</RayaButton>
+      <RayaButton color="warning">Warning</RayaButton>
+      <RayaButton color="error">Error</RayaButton>
+      <RayaButton color="info">Info</RayaButton>
+      <RayaButton color="neutral">Neutral</RayaButton>
     </div>
-
-    <div class="space-y-3">
-      <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Destructive Color</h3>
-      <div class="flex flex-wrap gap-3 items-center">
-        <RayaButton color="destructive" variant="solid">
-          <Trash2 class="mr-2 h-4 w-4" /> Delete
-        </RayaButton>
-        <RayaButton color="destructive" variant="soft">Soft</RayaButton>
-        <RayaButton color="destructive" variant="outline">Outline</RayaButton>
-      </div>
-    </div>
-
-    <div class="space-y-3">
-      <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Sizes & States</h3>
-      <div class="flex flex-wrap items-center gap-3">
-        <RayaButton size="xs" color="neutral" variant="outline">XS</RayaButton>
-        <RayaButton size="sm" color="neutral" variant="outline">SM</RayaButton>
-        <RayaButton size="md" color="neutral" variant="outline">MD</RayaButton>
-        <RayaButton size="lg" color="neutral" variant="outline">LG</RayaButton>
-        <RayaButton size="xl" color="neutral" variant="outline">XL</RayaButton>
-        <div class="w-px h-8 bg-zinc-800 mx-2"></div>
-        <RayaButton loading color="primary" variant="soft">Loading</RayaButton>
-        <RayaButton square variant="outline"><Mail class="h-4 w-4" /></RayaButton>
-      </div>
-    </div>
-
   </div>
 </template>`
 </script>
@@ -94,65 +111,54 @@ import { Mail, Trash2 } from 'lucide-vue-next'
     </div>
 
     <AnimatedTabs :items="previewTabs" class="space-y-4">
+
       <template #preview>
         <div class="rounded-xl border border-zinc-800 bg-neutral-950 mt-4 p-8 flex flex-col gap-8">
 
           <div class="space-y-3">
-            <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Primary Color</h3>
+            <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Variants (Primary)</h3>
             <div class="flex flex-wrap gap-3 items-center">
               <RayaButton color="primary" variant="solid">Solid</RayaButton>
+              <RayaButton color="primary" variant="outline">Outline</RayaButton>
               <RayaButton color="primary" variant="soft">Soft</RayaButton>
               <RayaButton color="primary" variant="subtle">Subtle</RayaButton>
-              <RayaButton color="primary" variant="outline">Outline</RayaButton>
               <RayaButton color="primary" variant="ghost">Ghost</RayaButton>
               <RayaButton color="primary" variant="link">Link</RayaButton>
             </div>
           </div>
 
           <div class="space-y-3">
-            <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Secondary Color</h3>
+            <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Semantic Colors</h3>
             <div class="flex flex-wrap gap-3 items-center">
-              <RayaButton color="secondary" variant="solid">Solid</RayaButton>
-              <RayaButton color="secondary" variant="soft">Soft</RayaButton>
-              <RayaButton color="secondary" variant="subtle">Subtle</RayaButton>
-              <RayaButton color="secondary" variant="outline">Outline</RayaButton>
-              <RayaButton color="secondary" variant="ghost">Ghost</RayaButton>
+              <RayaButton color="success" variant="solid"><Check class="h-4 w-4 mr-1.5" />Success</RayaButton>
+              <RayaButton color="warning" variant="solid"><AlertTriangle class="h-4 w-4 mr-1.5" />Warning</RayaButton>
+              <RayaButton color="error" variant="solid"><Trash2 class="h-4 w-4 mr-1.5" />Error</RayaButton>
+              <RayaButton color="info" variant="solid"><Info class="h-4 w-4 mr-1.5" />Info</RayaButton>
+              <RayaButton color="neutral" variant="solid">Neutral</RayaButton>
             </div>
           </div>
 
           <div class="space-y-3">
-            <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Neutral Color</h3>
+            <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Soft Variants</h3>
             <div class="flex flex-wrap gap-3 items-center">
-              <RayaButton color="neutral" variant="solid">Solid</RayaButton>
-              <RayaButton color="neutral" variant="soft">Soft</RayaButton>
-              <RayaButton color="neutral" variant="subtle">Subtle</RayaButton>
-              <RayaButton color="neutral" variant="outline">Outline</RayaButton>
-              <RayaButton color="neutral" variant="ghost">Ghost</RayaButton>
-              <RayaButton color="neutral" variant="link">Link</RayaButton>
-            </div>
-          </div>
-
-          <div class="space-y-3">
-            <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Destructive Color</h3>
-            <div class="flex flex-wrap gap-3 items-center">
-              <RayaButton color="destructive" variant="solid">
-                <Trash2 class="mr-2 h-4 w-4" /> Delete
-              </RayaButton>
-              <RayaButton color="destructive" variant="soft">Soft</RayaButton>
-              <RayaButton color="destructive" variant="outline">Outline</RayaButton>
+              <RayaButton color="success" variant="soft">Success</RayaButton>
+              <RayaButton color="warning" variant="soft">Warning</RayaButton>
+              <RayaButton color="error" variant="soft">Error</RayaButton>
+              <RayaButton color="info" variant="soft">Info</RayaButton>
+              <RayaButton color="neutral" variant="soft">Neutral</RayaButton>
             </div>
           </div>
 
           <div class="space-y-3">
             <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Sizes & States</h3>
             <div class="flex flex-wrap items-center gap-3">
-              <RayaButton size="xs" color="neutral" variant="outline">XS</RayaButton>
-              <RayaButton size="sm" color="neutral" variant="outline">SM</RayaButton>
-              <RayaButton size="md" color="neutral" variant="outline">MD</RayaButton>
-              <RayaButton size="lg" color="neutral" variant="outline">LG</RayaButton>
-              <RayaButton size="xl" color="neutral" variant="outline">XL</RayaButton>
+              <RayaButton size="xs">XS</RayaButton>
+              <RayaButton size="sm">SM</RayaButton>
+              <RayaButton size="md">MD</RayaButton>
+              <RayaButton size="lg">LG</RayaButton>
+              <RayaButton size="xl">XL</RayaButton>
               <div class="w-px h-8 bg-zinc-800 mx-2"></div>
-              <RayaButton loading color="primary" variant="soft">Loading</RayaButton>
+              <RayaButton loading color="primary" variant="subtle">Loading</RayaButton>
               <RayaButton square variant="outline"><Mail class="h-4 w-4" /></RayaButton>
             </div>
           </div>
@@ -161,29 +167,57 @@ import { Mail, Trash2 } from 'lucide-vue-next'
       </template>
 
       <template #code>
-        <div class="mt-4">
+        <div class="rounded-xl border border-zinc-800 bg-neutral-950 mt-4 p-4">
           <CodeBlock :code="usageCode" lang="html" />
         </div>
       </template>
+
     </AnimatedTabs>
 
     <div class="space-y-6">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
       <AnimatedTabs :items="installTabs" class="space-y-6">
+
         <template #cli>
-          <CodeBlock :code="installCommands.npm"  />
-        </template>
-        <template #manual>
-          <div class="space-y-2">
-            <p class="text-sm text-zinc-400">Copy the component code into your project.</p>
+          <div class="space-y-4">
+            <div class="rounded-xl border border-zinc-800 bg-neutral-950 mt-4 p-4">
+              <CodeBlock :code="installCommands.npm" />
+            </div>
+            <div class="rounded-lg border border-amber-900/50 bg-amber-950/10 p-4 text-sm text-amber-200">
+              <strong class="font-semibold text-amber-100">Note:</strong> You must also update your <code>main.css</code> (see the CSS tab) for colors to work.
+            </div>
           </div>
         </template>
+
+        <template #manual>
+          <div class="rounded-xl border border-zinc-800 bg-neutral-950 mt-4 p-6 space-y-4">
+            <p class="text-sm text-zinc-400">1. Install dependencies:</p>
+            <CodeBlock :code="installCommands.manual" />
+
+            <p class="text-sm text-zinc-400">2. Copy the component code into <code>components/ui/raya-button</code>.</p>
+          </div>
+        </template>
+
+        <template #css>
+          <div class="rounded-xl border border-zinc-800 bg-neutral-950 mt-4 p-6 space-y-4">
+            <div>
+              <h3 class="font-semibold text-white">Update main.css</h3>
+              <p class="text-sm text-zinc-400 mt-1">
+                Add these variables to your <code>assets/css/main.css</code> file. This is required for the semantic colors (success, warning, info) and utility classes.
+              </p>
+            </div>
+            <div class="border border-zinc-800 rounded-md">
+              <CodeBlock :code="installCommands.css" lang="css" />
+            </div>
+          </div>
+        </template>
+
       </AnimatedTabs>
     </div>
 
     <div class="space-y-6">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
-      <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
+      <div class="overflow-hidden rounded-xl border border-zinc-800 bg-neutral-950">
         <table class="w-full text-sm text-left">
           <thead class="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400">
           <tr>
@@ -195,7 +229,7 @@ import { Mail, Trash2 } from 'lucide-vue-next'
           <tbody class="divide-y divide-zinc-800 text-zinc-300">
           <tr>
             <td class="px-4 py-3 font-mono text-purple-400">color</td>
-            <td class="px-4 py-3 font-mono text-xs">primary | secondary | neutral | destructive</td>
+            <td class="px-4 py-3 font-mono text-xs">primary | secondary | neutral | success | info | warning | error</td>
             <td class="px-4 py-3 font-mono text-xs text-zinc-500">primary</td>
           </tr>
           <tr>
@@ -209,7 +243,12 @@ import { Mail, Trash2 } from 'lucide-vue-next'
             <td class="px-4 py-3 font-mono text-xs text-zinc-500">md</td>
           </tr>
           <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">loading</td>
+            <td class="px-4 py-3 font-mono text-purple-400">as</td>
+            <td class="px-4 py-3 font-mono text-xs">string | Component</td>
+            <td class="px-4 py-3 font-mono text-xs text-zinc-500">"button"</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-3 font-mono text-purple-400">asChild</td>
             <td class="px-4 py-3 font-mono text-xs">boolean</td>
             <td class="px-4 py-3 font-mono text-xs text-zinc-500">false</td>
           </tr>
@@ -218,18 +257,5 @@ import { Mail, Trash2 } from 'lucide-vue-next'
       </div>
     </div>
 
-    <div class="border-t border-zinc-800 pt-6 text-sm text-zinc-500 flex justify-end">
-      <p>
-        Inspired by
-        <a
-            href="https://ui.nuxt.com/docs/components/button"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-zinc-300 hover:text-white underline underline-offset-4 transition-colors"
-        >
-          Nuxt UI
-        </a>
-      </p>
-    </div>
   </div>
 </template>

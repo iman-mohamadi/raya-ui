@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { type HTMLAttributes, computed } from 'vue'
 import { Primitive, type PrimitiveProps } from 'reka-ui'
-import { type RayaButtonVariants, rayaButtonVariants } from '.'
+// CHANGE THIS IMPORT:
+import { type RayaButtonVariants, rayaButtonVariants } from './variants'
 import { cn } from '@/lib/utils'
 import { Loader2 } from 'lucide-vue-next'
 
