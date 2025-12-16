@@ -7,46 +7,46 @@ import { Button } from '@/components/ui/button'
 const config = useAppConfig().raya
 const route = useRoute()
 
-// Navigation Data
 const navGroups = [
   {
-    title: 'Guide',
-    icon: Book,
+    title: 'Backgrounds',
+    icon: ImageIcon,
     items: [
-      { label: 'Introduction', to: '/docs/introduction' },
-      { label: 'Installation', to: '/docs/installation' },
+      { label: 'Ambient Grid', to: '/docs/backgrounds/ambient-grid' },
+      { label: 'Background Beams', to: '/docs/backgrounds/background-beams' },
+      { label: 'Dotted Glow', to: '/docs/backgrounds/dotted-glow-background' },
+      { label: 'Gravity Stars', to: '/docs/backgrounds/gravity-stars' },
+      { label: 'Ripple Effect', to: '/docs/backgrounds/background-ripple-effect' },
     ]
   },
   {
     title: 'Components',
     icon: Package,
     items: [
-      { label: 'Raya Button', to: '/docs/components/raya-button' },
-      { label: 'Pixelated Button', to: '/docs/components/pixelated-button' },
       { label: 'Animated Input', to: '/docs/components/animated-input' },
-      { label: 'Wheel Picker', to: '/docs/components/wheel-picker' },
-      { label: 'Liquid Glass', to: '/docs/components/liquid-glass' },
-      { label: 'Code Block', to: '/docs/components/code-block' },
       { label: 'Animated Tabs', to: '/docs/components/animated-tabs' },
-      { label: 'Floating Dock', to: '/docs/components/floating-dock' },
       { label: 'Bar Visualizer', to: '/docs/components/bar-visualizer' },
+      { label: 'Code Block', to: '/docs/components/code-block' },
       { label: 'Encrypted Text', to: '/docs/components/encrypted-text' },
+      { label: 'Floating Dock', to: '/docs/components/floating-dock' },
+      { label: 'Liquid Glass', to: '/docs/components/liquid-glass' },
       { label: 'Morphing Text', to: '/docs/components/morphing-text' },
+      { label: 'Pixelated Button', to: '/docs/components/pixelated-button' },
+      { label: 'Raya Button', to: '/docs/components/raya-button' },
       { label: 'Tree', to: '/docs/components/tree' },
+      { label: 'Wheel Picker', to: '/docs/components/wheel-picker' },
     ]
   },
   {
-    title: 'Backgrounds',
-    icon: ImageIcon,
+    title: 'Guide',
+    icon: Book,
     items: [
-      { label: 'Ambient Grid', to: '/docs/backgrounds/ambient-grid' },
-      { label: 'Dotted Glow', to: '/docs/backgrounds/dotted-glow-background' },
-      { label: 'Ripple Effect', to: '/docs/backgrounds/background-ripple-effect' },
-      { label: 'Background Beams', to: '/docs/backgrounds/background-beams' },
-      { label: 'Gravity Stars', to: '/docs/backgrounds/gravity-stars' },
+      { label: 'Installation', to: '/docs/installation' },
+      { label: 'Introduction', to: '/docs/introduction' },
     ]
   }
 ]
+
 
 // --- Tracking Logic ---
 const itemRefs = ref<Record<string, HTMLElement>>({})
