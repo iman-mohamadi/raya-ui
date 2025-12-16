@@ -9,6 +9,24 @@ const route = useRoute()
 
 const navGroups = [
   {
+    title: 'Components',
+    icon: Package,
+    items: [
+      { label: 'Encrypted Text', to: '/docs/components/encrypted-text' },
+      { label: 'Animated Input', to: '/docs/components/animated-input' },
+      { label: 'Code Block', to: '/docs/components/code-block' },
+      { label: 'Bar Visualizer', to: '/docs/components/bar-visualizer' },
+      { label: 'Animated Tabs', to: '/docs/components/animated-tabs' },
+      { label: 'Floating Dock', to: '/docs/components/floating-dock' },
+      { label: 'Morphing Text', to: '/docs/components/morphing-text' },
+      { label: 'Pixelated Button', to: '/docs/components/pixelated-button' },
+      { label: 'Raya Button', to: '/docs/components/raya-button' },
+      { label: 'Liquid Glass', to: '/docs/components/liquid-glass' },
+      { label: 'Tree', to: '/docs/components/tree' },
+      { label: 'Wheel Picker', to: '/docs/components/wheel-picker' },
+    ]
+  },
+  {
     title: 'Backgrounds',
     icon: ImageIcon,
     items: [
@@ -20,24 +38,6 @@ const navGroups = [
     ]
   },
   {
-    title: 'Components',
-    icon: Package,
-    items: [
-      { label: 'Animated Input', to: '/docs/components/animated-input' },
-      { label: 'Animated Tabs', to: '/docs/components/animated-tabs' },
-      { label: 'Bar Visualizer', to: '/docs/components/bar-visualizer' },
-      { label: 'Code Block', to: '/docs/components/code-block' },
-      { label: 'Encrypted Text', to: '/docs/components/encrypted-text' },
-      { label: 'Floating Dock', to: '/docs/components/floating-dock' },
-      { label: 'Liquid Glass', to: '/docs/components/liquid-glass' },
-      { label: 'Morphing Text', to: '/docs/components/morphing-text' },
-      { label: 'Pixelated Button', to: '/docs/components/pixelated-button' },
-      { label: 'Raya Button', to: '/docs/components/raya-button' },
-      { label: 'Tree', to: '/docs/components/tree' },
-      { label: 'Wheel Picker', to: '/docs/components/wheel-picker' },
-    ]
-  },
-  {
     title: 'Guide',
     icon: Book,
     items: [
@@ -46,6 +46,25 @@ const navGroups = [
     ]
   }
 ]
+
+
+const sortedNavGroups = computed(() => {
+  return [...navGroups]
+      .sort((a, b) => {
+        // Guide always on top
+        if (a.title === 'Guide') return -1
+        if (b.title === 'Guide') return 1
+
+        // Alphabetical for the rest
+        return a.title.localeCompare(b.title)
+      })
+      .map(group => ({
+        ...group,
+        items: [...group.items].sort((a, b) =>
+            a.label.localeCompare(b.label)
+        )
+      }))
+})
 
 
 // --- Tracking Logic ---
@@ -91,7 +110,7 @@ const handleLeave = (groupTitle: string, items: any[]) => {
 
 // Initial Setup & Route Watcher
 const updateAllIndicators = () => {
-  navGroups.forEach(group => {
+  sortedNavGroups.value.forEach(group => {
     handleLeave(group.title, group.items)
   })
 }
@@ -115,7 +134,7 @@ watch(() => route.path, () => {
       <aside class="fixed top-14 z-30 hidden h-[calc(100vh-3.5rem)] w-full shrink-0 py-8 pr-6 md:sticky md:block overflow-y-auto">
         <nav class="space-y-8">
 
-          <div v-for="group in navGroups" :key="group.title">
+          <div v-for="group in sortedNavGroups" :key="group.title">
             <div class="mb-3 flex items-center gap-2 px-1 text-sm font-semibold text-white/90">
               <component :is="group.icon" class="h-4 w-4 text-zinc-400" />
               {{ group.title }}
