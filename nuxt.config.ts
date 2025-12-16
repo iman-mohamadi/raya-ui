@@ -37,7 +37,7 @@ export default defineNuxtConfig({
                 { name: 'twitter:image', content: 'https://raya-ui.com/og-image.png' }
             ],
             link: [
-                { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }
+                { rel: 'icon', type: 'image/svg+xml', href: '/logo-min.svg' }
             ]
         }
     },
