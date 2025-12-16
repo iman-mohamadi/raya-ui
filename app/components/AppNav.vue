@@ -16,6 +16,7 @@ const props = defineProps({
         <NuxtLink to="/" >
           <NuxtImg src="/logo.svg" class="w-20"/>
         </NuxtLink>
+        <VersionBadge />
       </div>
 
       <div class="flex items-center gap-4">
