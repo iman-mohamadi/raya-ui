@@ -34,7 +34,7 @@ const installCommands = {
 
     /* Map Error to Destructive */
     --error: var(--destructive);
-    --error-foreground: var(--destructive-foreground);
+    --error-foreground: oklch(1.00 0 0);
 }
 
 .dark {
