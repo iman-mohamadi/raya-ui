@@ -31,7 +31,7 @@ const COMPONENTS = [
     },
     {
         name: "animated-tabs",
-        dependencies: ["@vueuse/core", "clsx", "tailwind-merge"],
+        dependencies: ["@vueuse/core", "clsx", "tailwind-merge", "@vueuse/motion"],
         files: ["AnimatedTabs.vue"]
     },
     {

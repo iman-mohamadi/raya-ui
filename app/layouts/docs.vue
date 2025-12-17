@@ -2,6 +2,7 @@
 import { ref, onMounted, nextTick, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { Github, Book, Package, Image as ImageIcon, Menu, ChevronDown } from 'lucide-vue-next'
+import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   Sheet,
@@ -146,17 +147,23 @@ watch(() => route.path, () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-black text-white selection:bg-white/20 font-sans relative">
+  <div class="min-h-screen bg-black text-white selection:bg-white/20 font-sans">
     <AppNav :showDoc="false"/>
 
     <div class="container mx-auto flex-1 items-start md:grid md:grid-cols-[240px_minmax(0,1fr)] gap-10 px-6">
 
-      <div class="md:hidden absolute top-4 z-200 right-13">
+      <div
+          v-motion
+          :initial="{ opacity: 0, y: -20 }"
+          :enter="{ opacity: 1, y: 0, transition: { duration: 500 } }"
+          class="md:hidden py-4 border-b border-white/10 mb-6 flex items-center justify-between"
+      >
+        <span class="text-sm font-medium text-zinc-400">Navigation</span>
         <Sheet v-model:open="isMobileMenuOpen">
           <SheetTrigger as-child>
-            <RayaButton variant="ghost" color="neutral" size="icon" class="size-8">
+            <Button variant="outline" size="icon" class="h-8 w-8">
               <Menu class="h-4 w-4" />
-            </RayaButton>
+            </Button>
           </SheetTrigger>
           <SheetContent side="left" class="bg-black border-r border-white/10 text-white w-[80%] sm:w-[350px] p-0">
             <ScrollArea class="h-full px-6 py-6">
@@ -199,7 +206,12 @@ watch(() => route.path, () => {
         </Sheet>
       </div>
 
-      <aside class="fixed top-14 z-30 hidden h-[calc(100vh-3.5rem)] w-full shrink-0 md:sticky md:block">
+      <aside
+          v-motion
+          :initial="{ opacity: 0, x: -50 }"
+          :enter="{ opacity: 1, x: 0, transition: { type: 'spring', stiffness: 100, damping: 20, delay: 100 } }"
+          class="fixed top-14 z-30 hidden h-[calc(100vh-3.5rem)] w-full shrink-0 md:sticky md:block"
+      >
         <ScrollArea class="h-full pr-6 py-8">
           <nav class="space-y-8">
 
@@ -252,9 +264,18 @@ watch(() => route.path, () => {
         </ScrollArea>
       </aside>
 
-      <main class="relative py-10 max-w-4xl min-w-0 w-full">
+      <main
+          v-motion
+          :initial="{ opacity: 0, y: 20 }"
+          :enter="{ opacity: 1, y: 0, transition: { duration: 500, delay: 200 } }"
+          class="relative py-10 max-w-4xl min-w-0 w-full"
+      >
         <slot />
       </main>
     </div>
   </div>
 </template>
+
+<style scoped>
+/* ScrollArea handles the scrollbar styling now */
+</style>

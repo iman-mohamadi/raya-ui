@@ -18,7 +18,7 @@ export default defineNuxtConfig({
         ],
     },
 
-    modules: ["shadcn-nuxt", "@vueuse/nuxt", '@nuxtjs/sitemap', '@nuxt/image'],
+    modules: ["shadcn-nuxt", "@vueuse/nuxt", '@nuxtjs/sitemap', '@nuxt/image', '@vueuse/motion/nuxt'],
 
     // --- SEO Configuration ---
     app: {
@@ -46,7 +46,8 @@ export default defineNuxtConfig({
             link: [
                 { rel: 'icon', type: 'image/svg+xml', href: '/logo-min.svg' }
             ]
-        }
+        },
+        pageTransition: { name: 'page', mode: 'out-in' },
     },
 
     site: {
