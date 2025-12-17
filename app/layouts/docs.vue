@@ -1,11 +1,32 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch } from 'vue'
+import { ref, onMounted, nextTick, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { Github, Book, Package, Image as ImageIcon } from 'lucide-vue-next'
+import { Github, Book, Package, Image as ImageIcon, Menu, ChevronDown } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
 
 const config = useAppConfig().raya
 const route = useRoute()
+
+// --- Mobile Menu State ---
+const isMobileMenuOpen = ref(false)
+
+// Close mobile menu when route changes
+watch(() => route.path, () => {
+  isMobileMenuOpen.value = false
+})
 
 const navGroups = [
   {
@@ -67,7 +88,7 @@ const sortedNavGroups = computed(() => {
 })
 
 
-// --- Tracking Logic ---
+// --- Tracking Logic (Desktop) ---
 const itemRefs = ref<Record<string, HTMLElement>>({})
 const indicatorStyle = ref<Record<string, string>>({})
 
@@ -131,64 +152,111 @@ watch(() => route.path, () => {
 
     <div class="container mx-auto flex-1 items-start md:grid md:grid-cols-[240px_minmax(0,1fr)] gap-10 px-6">
 
-      <aside class="fixed top-14 z-30 hidden h-[calc(100vh-3.5rem)] w-full shrink-0 py-8 pr-6 md:sticky md:block overflow-y-auto">
-        <nav class="space-y-8">
+      <div class="md:hidden py-4 border-b border-white/10 mb-6 flex items-center justify-between">
+        <span class="text-sm font-medium text-zinc-400">Navigation</span>
+        <Sheet v-model:open="isMobileMenuOpen">
+          <SheetTrigger as-child>
+            <Button variant="outline" size="icon" class="h-8 w-8">
+              <Menu class="h-4 w-4" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" class="bg-black border-r border-white/10 text-white w-[80%] sm:w-[350px] p-0">
+            <ScrollArea class="h-full px-6 py-6">
+              <SheetHeader class="mb-6 text-left">
+                <SheetTitle class="text-white">Documentation</SheetTitle>
+              </SheetHeader>
 
-          <div v-for="group in sortedNavGroups" :key="group.title">
-            <div class="mb-3 flex items-center gap-2 px-1 text-sm font-semibold text-white/90">
-              <component :is="group.icon" class="h-4 w-4 text-zinc-400" />
-              {{ group.title }}
-            </div>
+              <nav class="space-y-6">
+                <Collapsible
+                    v-for="group in sortedNavGroups"
+                    :key="group.title"
+                    :default-open="true"
+                    class="group/collapsible"
+                >
+                  <CollapsibleTrigger class="flex w-full items-center justify-between mb-3 px-1 text-sm font-semibold text-white/90">
+                    <div class="flex items-center gap-2">
+                      <component :is="group.icon" class="h-4 w-4 text-zinc-400" />
+                      {{ group.title }}
+                    </div>
+                    <ChevronDown class="h-4 w-4 text-zinc-400 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
+                  </CollapsibleTrigger>
 
-            <div
-                class="relative border-l border-zinc-800/50 ml-3"
-                @mouseleave="handleLeave(group.title, group.items)"
+                  <CollapsibleContent>
+                    <div class="flex flex-col space-y-1 ml-3 border-l border-zinc-800/50 pl-3">
+                      <NuxtLink
+                          v-for="item in group.items"
+                          :key="item.to"
+                          :to="item.to"
+                          class="text-sm text-zinc-400 transition hover:text-white py-1"
+                          active-class="!text-white font-medium"
+                      >
+                        {{ item.label }}
+                      </NuxtLink>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              </nav>
+            </ScrollArea>
+          </SheetContent>
+        </Sheet>
+      </div>
+
+      <aside class="fixed top-14 z-30 hidden h-[calc(100vh-3.5rem)] w-full shrink-0 md:sticky md:block">
+        <ScrollArea class="h-full pr-6 py-8">
+          <nav class="space-y-8">
+
+            <Collapsible
+                v-for="group in sortedNavGroups"
+                :key="group.title"
+                :default-open="true"
+                class="group/collapsible"
             >
-              <div
-                  class="absolute left-[-1.5px] w-[3px] rounded-full bg-white transition-all duration-300 ease-out"
-                  :style="indicatorStyle[group.title] || 'opacity: 0;'"
-              ></div>
+              <CollapsibleTrigger class="flex w-full items-center justify-between mb-3 px-1 text-sm font-semibold text-white/90 hover:text-white transition-colors">
+                <div class="flex items-center gap-2">
+                  <component :is="group.icon" class="h-4 w-4 text-zinc-400" />
+                  {{ group.title }}
+                </div>
+                <ChevronDown class="h-4 w-4 text-zinc-400 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
+              </CollapsibleTrigger>
 
-              <NuxtLink
-                  v-for="item in group.items"
-                  :key="item.to"
-                  :to="item.to"
-                  :ref="(el) => { if(el) itemRefs[`${group.title}-${item.to}`] = el.$el }"
-                  @mouseenter="handleHover(group.title, item.to)"
-                  class="
-                  group flex w-full items-center pl-4 pr-2 py-2
-                  text-sm text-zinc-400
-                  transition duration-200
-                  hover:text-zinc-50
-                    hover:translate-x-[3px]
-                "
-                  active-class="!text-white font-medium"
-              >
-                {{ item.label }}
-              </NuxtLink>
-            </div>
-          </div>
+              <CollapsibleContent>
+                <div
+                    class="relative border-l border-zinc-800/50 ml-3"
+                    @mouseleave="handleLeave(group.title, group.items)"
+                >
+                  <div
+                      class="absolute left-[-1.5px] w-[3px] rounded-full bg-white transition-all duration-300 ease-out"
+                      :style="indicatorStyle[group.title] || 'opacity: 0;'"
+                  ></div>
 
-        </nav>
+                  <NuxtLink
+                      v-for="item in group.items"
+                      :key="item.to"
+                      :to="item.to"
+                      :ref="(el) => { if(el) itemRefs[`${group.title}-${item.to}`] = el.$el }"
+                      @mouseenter="handleHover(group.title, item.to)"
+                      class="
+                        group flex w-full items-center pl-4 pr-2 py-2
+                        text-sm text-zinc-400
+                        transition duration-200
+                        hover:text-zinc-50
+                          hover:translate-x-[3px]
+                      "
+                      active-class="!text-white font-medium"
+                  >
+                    {{ item.label }}
+                  </NuxtLink>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+
+          </nav>
+        </ScrollArea>
       </aside>
 
-      <main class="relative py-10 max-w-4xl min-w-0">
+      <main class="relative py-10 max-w-4xl min-w-0 w-full">
         <slot />
       </main>
     </div>
   </div>
 </template>
-
-<style scoped>
-/* Custom Scrollbar for Sidebar */
-aside::-webkit-scrollbar {
-  width: 4px;
-}
-aside::-webkit-scrollbar-track {
-  background: transparent;
-}
-aside::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 2px;
-}
-</style>
