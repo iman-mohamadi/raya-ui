@@ -1,7 +1,3 @@
-{
-type: uploaded file
-fileName: iman-mohamadi/enzoui/EnzOUi-481682bc4f3f825c0131815bd4179e5da136063e/app/components/ui/code-block/CodeBlock.vue
-fullContent:
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { Check, Copy } from 'lucide-vue-next'
@@ -79,4 +75,3 @@ const highlightedCode = computed(() => {
     </div>
   </div>
 </template>
-}

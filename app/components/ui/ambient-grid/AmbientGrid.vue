@@ -1,7 +1,3 @@
-{
-type: uploaded file
-fileName: iman-mohamadi/enzoui/EnzOUi-481682bc4f3f825c0131815bd4179e5da136063e/app/components/ui/ambient-grid/AmbientGrid.vue
-fullContent:
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useMouseInElement } from '@vueuse/core'
@@ -91,4 +87,3 @@ const spotlightPos = computed(() => {
     </div>
   </div>
 </template>
-}

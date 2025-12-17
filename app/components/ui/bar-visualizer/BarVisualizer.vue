@@ -1,7 +1,3 @@
-{
-type: uploaded file
-fileName: iman-mohamadi/enzoui/EnzOUi-481682bc4f3f825c0131815bd4179e5da136063e/app/components/ui/bar-visualizer/BarVisualizer.vue
-fullContent:
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, type Ref } from 'vue'
 import { cn } from '@/lib/utils'
@@ -318,4 +314,3 @@ const highlightedIndices = useBarAnimator(stateRef, barCountRef, intervalRef)
     ></div>
   </div>
 </template>
-}

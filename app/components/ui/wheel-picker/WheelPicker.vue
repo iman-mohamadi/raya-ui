@@ -1,7 +1,3 @@
-{
-type: uploaded file
-fileName: iman-mohamadi/enzoui/EnzOUi-481682bc4f3f825c0131815bd4179e5da136063e/app/components/ui/wheel-picker/WheelPicker.vue
-fullContent:
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 
@@ -215,9 +211,6 @@ const updateStyles = (scroll: number) => {
         li.style.visibility = isVisible ? "visible" : "hidden";
 
         // 2. Ghosting Fix:
-        // If the item is very close to the center (distance < 0.3),
-        // we hide the 3D version so it doesn't overlap with the Highlight version.
-        // We use opacity for a smoother transition than visibility.
         if (isVisible) {
           if (distance < 0.3) {
             li.style.opacity = "0"; // Hide 3D item, show only Highlight item
@@ -624,7 +617,8 @@ li {
   justify-content: space-between;
   perspective: 2000px;
   user-select: none;
-  /* Mask Image for fade effect - keeps 3D look */
+  touch-action: none; /* KEY FIX: Prevents browser scrolling */
+  /* Mask Image for fade effect */
   mask-image: linear-gradient(
       to bottom,
       transparent 0%,
@@ -656,7 +650,6 @@ li {
   font-size: 1rem;
   font-weight: 500;
   pointer-events: none;
-  /* Use theme border color */
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
 }
@@ -690,11 +683,9 @@ li {
   -webkit-font-smoothing: subpixel-antialiased;
   will-change: visibility;
   font-size: 0.875rem;
-  /* Use theme muted foreground for unselected items */
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Transition opacity for smoother ghosting fix */
   transition: opacity 0.1s linear;
 }
 
@@ -702,8 +693,6 @@ li {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Adapts to parent color (Dark Mode friendly) */
   color: currentColor;
 }
 </style>
-}
