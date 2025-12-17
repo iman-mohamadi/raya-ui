@@ -1,5 +1,8 @@
+// app/components/ui/animated-tabs/AnimatedTabs.vue
+
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
+import { TabsRoot, TabsList, TabsTrigger, TabsContent } from 'reka-ui'
 import { cn } from '@/lib/utils'
 
 export interface TabItem {
@@ -8,6 +11,7 @@ export interface TabItem {
   slot?: string
   content?: string
   disabled?: boolean
+  value?: string | number
   [key: string]: any
 }
 
@@ -65,6 +69,14 @@ const selected = computed({
 })
 
 const currentNumericIndex = computed(() => {
+  // If modelValue is string/number, we need to find the index of that item in the items array
+  // to position the marker correctly.
+  if (props.items && props.items.length > 0) {
+    const idx = props.items.findIndex((item, i) =>
+        (item.value ?? i) === selected.value
+    )
+    return idx !== -1 ? idx : 0
+  }
   return typeof selected.value === 'number' ? selected.value : 0
 })
 
@@ -100,7 +112,12 @@ const updateMarker = () => {
 }
 
 const setTabRef = (el: any, index: number) => {
-  if (el) tabRefs.value[index] = el
+  // Reka UI components might expose the DOM element via $el
+  if (el) tabRefs.value[index] = el.$el || el
+}
+
+const setContainerRef = (el: any) => {
+  if (el) containerRef.value = el.$el || el
 }
 
 // --- Optimized Drag Logic ---
@@ -125,7 +142,6 @@ const doDrag = (e: MouseEvent) => {
   e.preventDefault() // Stop text selection
 
   const x = e.pageX
-  // FIXED: Multiplier set to 1 for 1:1 natural movement (was 2)
   const walk = (x - startX.value) * 1
 
   // Threshold to flag as a drag operation instead of a click
@@ -134,18 +150,22 @@ const doDrag = (e: MouseEvent) => {
   containerRef.value.scrollLeft = scrollLeft.value - walk
 }
 
-const handleTabClick = (index: number) => {
-  if (isDragging.value) return // Prevent switching tabs if we were just scrolling
-  selected.value = index
+const handleTriggerClick = (e: MouseEvent) => {
+  if (isDragging.value) {
+    // Prevent switching tabs if we were just scrolling
+    e.preventDefault()
+    e.stopPropagation()
+  }
 }
 
 // Watchers
 watch(
-    () => [currentNumericIndex.value, props.variant, props.orientation],
+    () => [currentNumericIndex.value, props.variant, props.orientation, props.items],
     async () => {
       await nextTick()
       updateMarker()
-    }
+    },
+    { deep: true }
 )
 
 onMounted(async () => {
@@ -156,16 +176,17 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div :class="cn('w-full flex flex-col', props.class)">
-
-    <div
-        ref="containerRef"
+  <TabsRoot
+      v-model="selected"
+      :orientation="orientation"
+      :class="cn('w-full flex flex-col', props.class)"
+  >
+    <TabsList
+        :ref="setContainerRef"
         class="relative flex items-center gap-1 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing select-none bg-transparent"
         :class="[
         orientation === 'vertical' ? 'flex-col items-stretch' : 'flex-row',
-        variant === 'pill'
-          ? 'p-1'
-          : 'p-0'
+        variant === 'pill' ? 'p-1' : 'p-0'
       ]"
         @mousedown="startDrag"
         @mouseleave="stopDrag"
@@ -173,7 +194,7 @@ onMounted(async () => {
         @mousemove="doDrag"
     >
       <div
-          class="absolute top-0 left-0 transition-all duration-300 ease-[cubic-bezier(0.25,0.8,0.25,1)]"
+          class="absolute top-0 left-0 transition-all duration-300 ease-[cubic-bezier(0.25,0.8,0.25,1)] pointer-events-none"
           :class="[
           variant === 'pill'
             ? 'bg-black/10 dark:bg-white/10 shadow-sm rounded-lg border border-border/50'
@@ -182,44 +203,38 @@ onMounted(async () => {
           :style="markerStyle"
       ></div>
 
-      <button
+      <TabsTrigger
           v-for="(item, index) in items"
           :key="index"
+          :value="item.value ?? index"
           :ref="(el) => setTabRef(el, index)"
-          type="button"
           :disabled="item.disabled"
-          @click="handleTabClick(index)"
-          class="relative z-10 flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-medium transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-ring whitespace-nowrap flex-shrink-0"
+          @click.capture="handleTriggerClick"
+          class="relative z-10 flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-medium transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-ring whitespace-nowrap flex-shrink-0 data-[state=inactive]:text-muted-foreground data-[state=active]:text-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
           :class="[
           variant === 'pill' ? 'rounded-lg' : 'rounded-none hover:bg-muted/50',
-          currentNumericIndex === index
-            ? 'text-foreground'
-            : 'text-muted-foreground hover:text-foreground',
-          item.disabled && 'opacity-50 cursor-not-allowed'
         ]"
       >
-        <slot name="default" :item="item" :index="index" :selected="currentNumericIndex === index">
+        <slot name="default" :item="item" :index="index" :selected="selected === (item.value ?? index)">
           <component :is="item.icon" v-if="item.icon" class="h-4 w-4" />
           <span>{{ item.label }}</span>
         </slot>
-      </button>
-    </div>
+      </TabsTrigger>
+    </TabsList>
 
     <div v-if="content" class="mt-4">
-      <template v-for="(item, index) in items" :key="index">
-        <div
-            v-show="currentNumericIndex === index"
-            class="focus:outline-none"
-            role="tabpanel"
-        >
-          <slot :name="item.slot || 'item'" :item="item" :index="index" :selected="currentNumericIndex === index">
-            <div v-if="item.content" v-html="item.content"></div>
-          </slot>
-        </div>
-      </template>
+      <TabsContent
+          v-for="(item, index) in items"
+          :key="index"
+          :value="item.value ?? index"
+          class="focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md"
+      >
+        <slot :name="item.slot || 'item'" :item="item" :index="index" :selected="selected === (item.value ?? index)">
+          <div v-if="item.content" v-html="item.content"></div>
+        </slot>
+      </TabsContent>
     </div>
-
-  </div>
+  </TabsRoot>
 </template>
 
 <style scoped>
