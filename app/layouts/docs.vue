@@ -2,7 +2,6 @@
 import { ref, onMounted, nextTick, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { Github, Book, Package, Image as ImageIcon, Menu, ChevronDown } from 'lucide-vue-next'
-import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   Sheet,
@@ -147,18 +146,17 @@ watch(() => route.path, () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-black text-white selection:bg-white/20 font-sans">
+  <div class="min-h-screen bg-black text-white selection:bg-white/20 font-sans relative">
     <AppNav :showDoc="false"/>
 
     <div class="container mx-auto flex-1 items-start md:grid md:grid-cols-[240px_minmax(0,1fr)] gap-10 px-6">
 
-      <div class="md:hidden py-4 border-b border-white/10 mb-6 flex items-center justify-between">
-        <span class="text-sm font-medium text-zinc-400">Navigation</span>
+      <div class="md:hidden absolute top-4 z-200 right-13">
         <Sheet v-model:open="isMobileMenuOpen">
           <SheetTrigger as-child>
-            <Button variant="outline" size="icon" class="h-8 w-8">
+            <RayaButton variant="ghost" color="neutral" size="icon" class="size-8">
               <Menu class="h-4 w-4" />
-            </Button>
+            </RayaButton>
           </SheetTrigger>
           <SheetContent side="left" class="bg-black border-r border-white/10 text-white w-[80%] sm:w-[350px] p-0">
             <ScrollArea class="h-full px-6 py-6">
