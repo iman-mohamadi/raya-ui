@@ -1,0 +1,8 @@
+{
+  "dependencies": [
+    "@vueuse/core"
+  ],
+  "files": [
+    "SnowEffect.vue"
+  ]
+}

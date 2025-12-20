@@ -8,6 +8,6 @@ export default defineAppConfig({
         description: '',
         github: 'https://github.com/iman-mohamadi/raya-ui',
         baseUrl: 'https://raya-ui.com/registry',
-        version: '0.1.0'
+        version: '0.1.2'
     }
 })

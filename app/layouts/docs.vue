@@ -56,6 +56,7 @@ const navGroups = [
       { label: 'Dotted Glow', to: '/docs/backgrounds/dotted-glow-background' },
       { label: 'Gravity Stars', to: '/docs/backgrounds/gravity-stars' },
       { label: 'Ripple Effect', to: '/docs/backgrounds/background-ripple-effect' },
+      { label: 'Snow Effect', to: '/docs/backgrounds/snow-effect' },
     ]
   },
   {

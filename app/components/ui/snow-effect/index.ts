@@ -1,0 +1,1 @@
+export { default as SnowEffect } from './SnowEffect.vue'
