@@ -2,9 +2,27 @@
 import { computed } from 'vue'
 import { cn } from '@/lib/utils'
 
-const props = defineProps<{
+interface Props {
   class?: string
-}>()
+  /** Starting color of the beam gradient */
+  colorFrom?: string
+  /** Middle color of the beam gradient */
+  colorMid?: string
+  /** Ending color of the beam gradient */
+  colorTo?: string
+  /** Base duration of the animation in seconds (randomness is added to this) */
+  duration?: number
+  /** Base delay of the animation in seconds */
+  delay?: number
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  colorFrom: '#18CCFC',
+  colorMid: '#6344F5',
+  colorTo: '#AE48FF',
+  duration: 10,
+  delay: 0
+})
 
 const paths = [
   "M-380 -189C-380 -189 -312 216 152 343C616 470 684 875 684 875",
@@ -67,13 +85,13 @@ const paths = [
   "M19 -645C19 -645 87 -240 551 -113C1015 14 1083 419 1083 419"
 ]
 
-// Generate random configurations for each path to mimic the React motion behaviors
+// Generate configurations based on props to allow interactivity
 const animatedPaths = computed(() => {
   return paths.map((path) => ({
     d: path,
-    duration: Math.random() * 10 + 10, // 10s to 20s
-    delay: Math.random() * 10,         // 0s to 10s
-    y2End: 93 + Math.random() * 8      // 93% to 101%
+    duration: Math.random() * 10 + props.duration, // use prop as base
+    delay: Math.random() * 10 + props.delay,       // use prop as base
+    y2End: 93 + Math.random() * 8
   }))
 })
 </script>
@@ -117,10 +135,10 @@ const animatedPaths = computed(() => {
             gradientUnits="userSpaceOnUse"
             x1="0%" y1="0%" x2="0%" y2="0%"
         >
-          <stop stop-color="#18CCFC" stop-opacity="0" />
-          <stop stop-color="#18CCFC" />
-          <stop offset="32.5%" stop-color="#6344F5" />
-          <stop offset="100%" stop-color="#AE48FF" stop-opacity="0" />
+          <stop :stop-color="colorFrom" stop-opacity="0" />
+          <stop :stop-color="colorFrom" />
+          <stop offset="32.5%" :stop-color="colorMid" />
+          <stop offset="100%" :stop-color="colorTo" stop-opacity="0" />
 
           <animate
               attributeName="x1"

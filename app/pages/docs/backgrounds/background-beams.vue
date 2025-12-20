@@ -29,21 +29,21 @@ import { BackgroundBeams } from '@/components/ui/background-beams'
 
 <template>
   <div class="relative h-[40rem] w-full rounded-md bg-neutral-950 relative flex flex-col items-center justify-center antialiased">
-    <div class="max-w-2xl mx-auto p-4">
-      <h1 class="relative z-10 text-lg md:text-7xl bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-600 text-center font-sans font-bold">
+    <div class="max-w-2xl mx-auto p-4 z-10">
+      <h1 class="text-7xl bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-600 text-center font-bold">
         Raya UI
       </h1>
-      <p class="text-neutral-500 max-w-lg mx-auto my-2 text-sm text-center relative z-10">
-        Raya (Persian: رایا) means Thought and Vision.
-        A collection of UI primitives crafted with precision and intelligence for modern dashboards.
+      <p class="text-neutral-500 text-center mt-2">
+        Customizable background beams with props.
       </p>
-      <div class="relative z-10 mt-4 flex justify-center">
-        <button class="bg-teal-500 hover:bg-teal-600 text-black font-bold py-2 px-6 rounded-full transition-colors">
-          Get Started
-        </button>
-      </div>
     </div>
-    <BackgroundBeams />
+
+    <BackgroundBeams
+      colorFrom="#14b8a6"
+      colorMid="#3b82f6"
+      colorTo="#a855f7"
+      :duration="15"
+    />
   </div>
 </template>`
 </script>
@@ -108,6 +108,54 @@ import { BackgroundBeams } from '@/components/ui/background-beams'
           </div>
         </template>
       </AnimatedTabs>
+    </div>
+
+    <div class="space-y-6">
+      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
+      <div class="overflow-x-auto rounded-lg border border-border bg-card">
+        <table class="w-full text-sm text-left">
+          <thead class="border-b border-border bg-muted/50 text-muted-foreground">
+          <tr>
+            <th class="px-4 py-3 font-medium">Prop</th>
+            <th class="px-4 py-3 font-medium">Type</th>
+            <th class="px-4 py-3 font-medium">Default</th>
+            <th class="px-4 py-3 font-medium">Description</th>
+          </tr>
+          </thead>
+          <tbody class="divide-y divide-border text-foreground">
+          <tr>
+            <td class="px-4 py-3 font-mono text-primary">colorFrom</td>
+            <td class="px-4 py-3 font-mono text-xs">string</td>
+            <td class="px-4 py-3 font-mono text-xs">'#18CCFC'</td>
+            <td class="px-4 py-3">The starting color of the beam gradient.</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-3 font-mono text-primary">colorMid</td>
+            <td class="px-4 py-3 font-mono text-xs">string</td>
+            <td class="px-4 py-3 font-mono text-xs">'#6344F5'</td>
+            <td class="px-4 py-3">The middle color of the beam gradient.</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-3 font-mono text-primary">colorTo</td>
+            <td class="px-4 py-3 font-mono text-xs">string</td>
+            <td class="px-4 py-3 font-mono text-xs">'#AE48FF'</td>
+            <td class="px-4 py-3">The ending color of the beam gradient.</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-3 font-mono text-primary">duration</td>
+            <td class="px-4 py-3 font-mono text-xs">number</td>
+            <td class="px-4 py-3 font-mono text-xs">10</td>
+            <td class="px-4 py-3">Base duration of the animation in seconds.</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-3 font-mono text-primary">delay</td>
+            <td class="px-4 py-3 font-mono text-xs">number</td>
+            <td class="px-4 py-3 font-mono text-xs">0</td>
+            <td class="px-4 py-3">Base delay of the animation in seconds.</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
   </div>
