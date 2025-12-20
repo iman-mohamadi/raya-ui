@@ -47,13 +47,17 @@ definePageMeta({
       </p>
 
       <div class="flex flex-col sm:flex-row items-center gap-4">
-        <Button size="lg" class="h-12 px-8 text-base shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all duration-300">
-          Browse Components
-          <ArrowRight class="ml-2 h-4 w-4" />
-        </Button>
-        <Button size="lg" variant="secondary" class="h-12 px-8 text-base bg-white/5 hover:bg-white/10 border border-white/10 text-white">
-          Documentation
-        </Button>
+        <RayaButton asChild variant="subtle" size="lg" class="h-12 px-8 text-base shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all duration-300">
+          <NuxtLink to="/docs/introduction">
+            Browse Components
+            <ArrowRight class="ml-2 h-4 w-4" />
+          </NuxtLink>
+        </RayaButton>
+        <RayaButton asChild size="lg" variant="outline" class="h-12 px-8 text-base bg-white/5 hover:bg-white/10 border border-white/10 text-white">
+          <NuxtLink to="/docs/components/animated-input">
+            Documentation
+          </NuxtLink>
+        </RayaButton>
       </div>
 
       <div class="mt-24 grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
