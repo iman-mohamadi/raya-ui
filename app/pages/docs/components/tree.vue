@@ -52,8 +52,8 @@ const items: FileNode[] = [
 ]
 
 // --- State ---
-// Important: When using multiple, initialize as an array
-const selection = ref<FileNode[]>([])
+// Single selection mode
+const selection = ref<FileNode | null>(null)
 const expanded = ref<string[]>(['app', 'components'])
 
 // --- Tabs ---
@@ -100,8 +100,8 @@ const items = [
   { label: 'package.json', icon: Archive }
 ]
 
-// Initialize as array for multiple selection
-const selection = ref([])
+// Initialize for single selection
+const selection = ref()
 const expanded = ref(['app'])
 <\/script>
 
@@ -110,139 +110,122 @@ const expanded = ref(['app'])
     v-model="selection"
     v-model:expanded="expanded"
     :items="items"
-    multiple
     selection-behavior="toggle"
   />
 </template>`
 
 const componentCode = `<script setup lang="ts" generic="T extends Record<string, any>">
 import { computed } from 'vue'
-import { TreeRoot, TreeItem, useForwardPropsEmits } from 'reka-ui'
+import { TreeRoot, TreeItem, useForwardPropsEmits, type TreeRootEmits, type TreeRootProps } from 'reka-ui'
 import { ChevronRight, ChevronDown } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
 
-const props = withDefaults(defineProps<{
+const props = withDefaults(defineProps<TreeRootProps & {
+  class?: string
   items?: T[]
-  modelValue?: any
-  expanded?: string[]
-  defaultExpanded?: string[]
-  defaultValue?: any
-  multiple?: boolean
-  selectionBehavior?: 'toggle' | 'replace'
-  disabled?: boolean
-  propagateSelect?: boolean
-  bubbleSelect?: boolean
-  dir?: 'ltr' | 'rtl'
-  getKey?: (item: T) => string
   labelKey?: string
   childrenKey?: string
-  class?: string
+  iconKey?: string
 }>(), {
   items: () => [],
   labelKey: 'label',
   childrenKey: 'children',
-  propagateSelect: true,
-  selectionBehavior: 'toggle'
+  iconKey: 'icon',
+  selectionBehavior: 'toggle',
 })
 
-const emits = defineEmits<{
-  'update:modelValue': [value: any]
-  'update:expanded': [value: string[]]
-  'select': [node: any]
-  'toggle': [node: any]
-}>()
+const emits = defineEmits<TreeRootEmits>()
 
-const itemKeyResolver = (item: any) => {
-  if (!item) return ''
-  if (props.getKey) return props.getKey(item as T)
-  return (item[props.labelKey] as string) || item.id || item.key || ''
+const delegatedProps = computed(() => {
+  const { class: _, items, labelKey, childrenKey, iconKey, ...delegated } = props
+  return delegated
+})
+
+const forwarded = useForwardPropsEmits(delegatedProps, emits)
+
+// Helper to resolve the key for an item, matching TreeRoot's logic
+const getKeyResolver = (item: T) => {
+  if (props.getKey) return props.getKey(item)
+  return item[props.labelKey] as string
 }
 
-const itemChildrenResolver = (item: any) => {
-  return item?.[props.childrenKey]
+// Manually handle expansion toggling for parents
+const handleToggle = (item: any) => {
+  if (!item.hasChildren) return
+  
+  const key = getKeyResolver(item.value)
+  const currentExpanded = props.expanded ? [...props.expanded] : []
+  const index = currentExpanded.indexOf(key)
+  
+  if (index > -1) {
+    currentExpanded.splice(index, 1)
+  } else {
+    currentExpanded.push(key)
+  }
+  
+  emits('update:expanded', currentExpanded)
 }
-
-const rootProps = computed(() => ({
-  items: props.items,
-  modelValue: props.modelValue,
-  expanded: props.expanded,
-  defaultExpanded: props.defaultExpanded,
-  defaultValue: props.defaultValue,
-  multiple: props.multiple,
-  selectionBehavior: props.selectionBehavior,
-  disabled: props.disabled,
-  propagateSelect: props.propagateSelect,
-  bubbleSelect: props.bubbleSelect,
-  dir: props.dir
-}))
-
-const forwarded = useForwardPropsEmits(rootProps, emits)
 <\/script>
 
 <template>
   <TreeRoot
     v-bind="forwarded"
-    :get-key="itemKeyResolver"
-    :get-children="itemChildrenResolver"
-    as="div"
     :class="cn('w-full select-none list-none', props.class)"
+    :items="items"
+    :get-key="getKeyResolver"
+    :get-children="(item) => item[childrenKey]"
     v-slot="{ flattenItems }"
   >
-    <TransitionGroup
-      name="tree-list"
-      tag="ul"
-      class="w-full flex flex-col"
+    <TreeItem
+      v-for="item in flattenItems"
+      :key="item._id"
+      v-bind="item.bind"
+      v-slot="{ isExpanded, isSelected, isIndeterminate }"
+      :class="cn(
+        'group relative flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium outline-none transition-colors',
+        'hover:bg-accent hover:text-accent-foreground',
+        'focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-accent',
+        'data-[selected]:bg-accent data-[selected]:text-accent-foreground',
+        'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+        'cursor-pointer'
+      )"
+      :style="{ paddingLeft: \`\${item.level * 1.5}rem\` }"
+      @select="(event) => {
+        // Prevent selection for items with children (parents)
+        if (item.hasChildren) {
+            event.preventDefault()
+        }
+      }"
+      @click="handleToggle(item)"
     >
-      <TreeItem
-        v-for="item in flattenItems"
-        :key="item._id"
-        v-bind="item.bind"
-        :class="cn(
-          'group relative flex w-full items-center gap-1.5 rounded-sm px-2 py-1.5 text-sm font-medium outline-none transition-colors',
-          'hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring',
-          'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
-          'cursor-pointer'
-        )"
-        :style="{ paddingLeft: \`\${item.level * 1.5}rem\` }"
-        v-slot="{ isExpanded, isSelected }"
+      <component
+        :is="isExpanded ? ChevronDown : ChevronRight"
+        v-if="item.hasChildren"
+        class="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-accent-foreground/80 transition-transform"
+      />
+      <span v-else class="h-4 w-4 shrink-0" />
+
+      <slot 
+        name="item" 
+        :item="item.value" 
+        :expanded="isExpanded" 
+        :selected="isSelected" 
+        :indeterminate="isIndeterminate"
       >
         <component
-          :is="isExpanded ? ChevronDown : ChevronRight"
-          v-if="item.hasChildren"
-          class="h-4 w-4 shrink-0 text-muted-foreground/70 group-hover:text-foreground transition-colors"
+          :is="item.value[iconKey]"
+          v-if="item.value[iconKey]"
+          class="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-accent-foreground"
+          :class="{ 'text-accent-foreground': isSelected }"
         />
-        <span v-else class="h-4 w-4 shrink-0" />
 
-        <slot name="item" :item="item.value" :expanded="isExpanded" :selected="isSelected">
-          <component
-            :is="item.value.icon"
-            v-if="item.value.icon"
-            class="h-4 w-4 shrink-0 mr-1 text-muted-foreground group-hover:text-foreground transition-colors"
-            :class="{ 'text-foreground': isSelected }"
-          />
-          <span class="truncate" :class="{ 'text-primary font-semibold': isSelected }">
-            {{ item.value[props.labelKey] }}
-          </span>
-        </slot>
-      </TreeItem>
-    </TransitionGroup>
+        <span class="truncate">
+          {{ item.value[labelKey] }}
+        </span>
+      </slot>
+    </TreeItem>
   </TreeRoot>
-</template>
-
-<style>
-.tree-list-move {
-  transition: transform 0.2s ease-in-out;
-}
-.tree-list-enter-active,
-.tree-list-leave-active {
-  transition: all 0.2s ease-in-out;
-}
-.tree-list-enter-from,
-.tree-list-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-</style>`
+</template>`
 </script>
 
 <template>
@@ -251,7 +234,7 @@ const forwarded = useForwardPropsEmits(rootProps, emits)
     <div class="space-y-4">
       <h1 class="scroll-m-20 text-4xl font-bold tracking-tight">Tree</h1>
       <p class="text-xl text-muted-foreground">
-        A hierarchical list component with nested items, expansion, and selection.
+        A hierarchical list component where folders expand and only files are selectable.
       </p>
     </div>
 
@@ -264,15 +247,13 @@ const forwarded = useForwardPropsEmits(rootProps, emits)
                 v-model:expanded="expanded"
                 :items="items"
                 class="w-full"
-                multiple
                 selection-behavior="toggle"
             />
           </div>
         </div>
         <div class="mt-4 text-sm text-muted-foreground bg-muted/30 p-4 rounded-md font-mono">
           <p>Expanded: {{ expanded }}</p>
-          <p class="mt-1">Selected Count: {{ selection ? selection.length : 0 }}</p>
-          <p class="mt-1 text-xs">Selected Labels: {{ selection.map(i => i.label).join(', ') }}</p>
+          <p class="mt-1">Selected Label: {{ selection ? selection.label : 'None' }}</p>
         </div>
       </template>
       <template #code>
@@ -320,46 +301,46 @@ const forwarded = useForwardPropsEmits(rootProps, emits)
           </thead>
           <tbody class="divide-y divide-border text-foreground">
           <tr>
-            <td class="px-4 py-3 font-mono text-primary">items</td>
+            <td class="px-4 py-3 font-mono text-purple-400">items</td>
             <td class="px-4 py-3 font-mono text-xs">Array</td>
             <td class="px-4 py-3 font-mono text-xs">[]</td>
             <td class="px-4 py-3">The hierarchical data to render.</td>
           </tr>
           <tr>
-            <td class="px-4 py-3 font-mono text-primary">modelValue</td>
+            <td class="px-4 py-3 font-mono text-purple-400">modelValue</td>
             <td class="px-4 py-3 font-mono text-xs">any</td>
             <td class="px-4 py-3 font-mono text-xs">undefined</td>
-            <td class="px-4 py-3">The currently selected item(s). Use <code>v-model</code>. Must be array if <code>multiple</code> is true.</td>
+            <td class="px-4 py-3">The currently selected item. Use <code>v-model</code>.</td>
           </tr>
           <tr>
-            <td class="px-4 py-3 font-mono text-primary">multiple</td>
-            <td class="px-4 py-3 font-mono text-xs">boolean</td>
-            <td class="px-4 py-3 font-mono text-xs">false</td>
-            <td class="px-4 py-3">Allow selecting multiple items.</td>
+            <td class="px-4 py-3 font-mono text-purple-400">labelKey</td>
+            <td class="px-4 py-3 font-mono text-xs">string</td>
+            <td class="px-4 py-3 font-mono text-xs">'label'</td>
+            <td class="px-4 py-3">The property key to use for the item label.</td>
           </tr>
           <tr>
-            <td class="px-4 py-3 font-mono text-primary">selectionBehavior</td>
+            <td class="px-4 py-3 font-mono text-purple-400">childrenKey</td>
+            <td class="px-4 py-3 font-mono text-xs">string</td>
+            <td class="px-4 py-3 font-mono text-xs">'children'</td>
+            <td class="px-4 py-3">The property key to use for nested children.</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-3 font-mono text-purple-400">iconKey</td>
+            <td class="px-4 py-3 font-mono text-xs">string</td>
+            <td class="px-4 py-3 font-mono text-xs">'icon'</td>
+            <td class="px-4 py-3">The property key to use for the item icon component/name.</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-3 font-mono text-purple-400">selectionBehavior</td>
             <td class="px-4 py-3 font-mono text-xs">'toggle' | 'replace'</td>
             <td class="px-4 py-3 font-mono text-xs">'toggle'</td>
             <td class="px-4 py-3">Controls selection behavior. 'replace' deselects others on click (unless modifier key). 'toggle' adds/removes.</td>
           </tr>
           <tr>
-            <td class="px-4 py-3 font-mono text-primary">expanded</td>
+            <td class="px-4 py-3 font-mono text-purple-400">expanded</td>
             <td class="px-4 py-3 font-mono text-xs">string[]</td>
             <td class="px-4 py-3 font-mono text-xs">[]</td>
             <td class="px-4 py-3">Keys of expanded items. Use <code>v-model:expanded</code>.</td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3 font-mono text-primary">propagateSelect</td>
-            <td class="px-4 py-3 font-mono text-xs">boolean</td>
-            <td class="px-4 py-3 font-mono text-xs">true</td>
-            <td class="px-4 py-3">If true, selection state propagates down to children (if multiple).</td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3 font-mono text-primary">bubbleSelect</td>
-            <td class="px-4 py-3 font-mono text-xs">boolean</td>
-            <td class="px-4 py-3 font-mono text-xs">false</td>
-            <td class="px-4 py-3">If true, selection state bubbles up to parents.</td>
           </tr>
           </tbody>
         </table>
@@ -379,19 +360,14 @@ const forwarded = useForwardPropsEmits(rootProps, emits)
           </thead>
           <tbody class="divide-y divide-border text-foreground">
           <tr>
-            <td class="px-4 py-3 font-mono text-primary">update:modelValue</td>
+            <td class="px-4 py-3 font-mono text-purple-400">update:modelValue</td>
             <td class="px-4 py-3 font-mono text-xs">any</td>
             <td class="px-4 py-3">Fired when selection changes.</td>
           </tr>
           <tr>
-            <td class="px-4 py-3 font-mono text-primary">update:expanded</td>
+            <td class="px-4 py-3 font-mono text-purple-400">update:expanded</td>
             <td class="px-4 py-3 font-mono text-xs">string[]</td>
             <td class="px-4 py-3">Fired when items are expanded or collapsed.</td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3 font-mono text-primary">select</td>
-            <td class="px-4 py-3 font-mono text-xs">node</td>
-            <td class="px-4 py-3">Fired when a node is selected.</td>
           </tr>
           </tbody>
         </table>
@@ -411,8 +387,8 @@ const forwarded = useForwardPropsEmits(rootProps, emits)
           </thead>
           <tbody class="divide-y divide-border text-foreground">
           <tr>
-            <td class="px-4 py-3 font-mono text-primary">#item</td>
-            <td class="px-4 py-3 font-mono text-xs">{ item, expanded, selected }</td>
+            <td class="px-4 py-3 font-mono text-purple-400">#item</td>
+            <td class="px-4 py-3 font-mono text-xs">{ item, expanded, selected, indeterminate }</td>
             <td class="px-4 py-3">Custom content for each tree item.</td>
           </tr>
           </tbody>

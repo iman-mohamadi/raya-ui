@@ -1,134 +1,116 @@
 <script setup lang="ts" generic="T extends Record<string, any>">
 import { computed } from 'vue'
-import { TreeRoot, TreeItem, useForwardPropsEmits } from 'reka-ui'
+import { TreeRoot, TreeItem, useForwardPropsEmits, type TreeRootEmits, type TreeRootProps } from 'reka-ui'
 import { ChevronRight, ChevronDown } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
 
-const props = withDefaults(defineProps<{
+// Use Omit to exclude the mandatory 'getKey' from TreeRootProps
+// and redefine it as optional in our component props.
+const props = withDefaults(defineProps<Omit<TreeRootProps, 'getKey'> & {
+  class?: string
   items?: T[]
-  modelValue?: any
-  expanded?: string[]
-  defaultExpanded?: string[]
-  defaultValue?: any
-  multiple?: boolean
-  selectionBehavior?: 'toggle' | 'replace'
-  disabled?: boolean
-  propagateSelect?: boolean
-  bubbleSelect?: boolean
-  dir?: 'ltr' | 'rtl'
-  getKey?: (item: T) => string
   labelKey?: string
   childrenKey?: string
-  class?: string
+  iconKey?: string
+  getKey?: (item: T) => string
 }>(), {
   items: () => [],
   labelKey: 'label',
   childrenKey: 'children',
-  propagateSelect: true,
-  selectionBehavior: 'toggle' // Default to 'toggle' for easier multiple selection
+  iconKey: 'icon',
+  selectionBehavior: 'toggle',
 })
 
-const emits = defineEmits<{
-  'update:modelValue': [value: any]
-  'update:expanded': [value: string[]]
-  'select': [node: any]
-  'toggle': [node: any]
-}>()
+const emits = defineEmits<TreeRootEmits>()
 
-const itemKeyResolver = (item: any) => {
-  if (!item) return ''
-  if (props.getKey) {
-    return props.getKey(item as T)
+const delegatedProps = computed(() => {
+  // Destructure 'getKey' out so we don't forward it (we bind it explicitly)
+  const { class: _, items, labelKey, childrenKey, iconKey, getKey, ...delegated } = props
+  return delegated
+})
+
+const forwarded = useForwardPropsEmits(delegatedProps, emits)
+
+// Helper to resolve the key for an item, matching TreeRoot's logic
+const getKeyResolver = (item: T) => {
+  if (props.getKey) return props.getKey(item)
+  return item[props.labelKey] as string
+}
+
+// Manually handle expansion toggling for parents
+const handleToggle = (item: any) => {
+  if (!item.hasChildren) return
+
+  const key = getKeyResolver(item.value)
+  const currentExpanded = props.expanded ? [...props.expanded] : []
+  const index = currentExpanded.indexOf(key)
+
+  if (index > -1) {
+    currentExpanded.splice(index, 1)
+  } else {
+    currentExpanded.push(key)
   }
-  return (item[props.labelKey] as string) || item.id || item.key || ''
+
+  emits('update:expanded', currentExpanded)
 }
-
-const itemChildrenResolver = (item: any) => {
-  return item?.[props.childrenKey]
-}
-
-const rootProps = computed(() => ({
-  items: props.items,
-  modelValue: props.modelValue,
-  expanded: props.expanded,
-  defaultExpanded: props.defaultExpanded,
-  defaultValue: props.defaultValue,
-  multiple: props.multiple,
-  selectionBehavior: props.selectionBehavior,
-  disabled: props.disabled,
-  propagateSelect: props.propagateSelect,
-  bubbleSelect: props.bubbleSelect,
-  dir: props.dir
-}))
-
-const forwarded = useForwardPropsEmits(rootProps, emits)
 </script>
 
 <template>
   <TreeRoot
       v-bind="forwarded"
-      :get-key="itemKeyResolver"
-      :get-children="itemChildrenResolver"
-      as="div"
       :class="cn('w-full select-none list-none', props.class)"
+      :items="items"
+      :get-key="getKeyResolver"
+      :get-children="(item) => item[childrenKey]"
       v-slot="{ flattenItems }"
   >
-    <TransitionGroup
-        name="tree-list"
-        tag="ul"
-        class="w-full flex flex-col"
+    <TreeItem
+        v-for="item in flattenItems"
+        :key="item._id"
+        v-bind="item.bind"
+        v-slot="{ isExpanded, isSelected, isIndeterminate }"
+        :class="cn(
+        'group relative flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium outline-none transition-colors',
+        'hover:bg-accent hover:text-accent-foreground',
+        'focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-accent',
+        'data-[selected]:bg-accent data-[selected]:text-accent-foreground',
+        'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+        'cursor-pointer'
+      )"
+        :style="{ paddingLeft: `${item.level * 1.5}rem` }"
+        @select="(event) => {
+        // Prevent selection for items with children (parents)
+        if (item.hasChildren) {
+            event.preventDefault()
+        }
+      }"
+        @click="handleToggle(item)"
     >
-      <TreeItem
-          v-for="item in flattenItems"
-          :key="item._id"
-          v-bind="item.bind"
-          :class="cn(
-          'group relative flex w-full items-center gap-1.5 rounded-sm px-2 py-1.5 text-sm font-medium outline-none transition-colors',
-          'hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring',
-          'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
-          'cursor-pointer'
-        )"
-          :style="{ paddingLeft: `${item.level * 1.5}rem` }"
-          v-slot="{ isExpanded, isSelected }"
+      <component
+          :is="isExpanded ? ChevronDown : ChevronRight"
+          v-if="item.hasChildren"
+          class="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-accent-foreground/80 transition-transform"
+      />
+      <span v-else class="h-4 w-4 shrink-0" />
+
+      <slot
+          name="item"
+          :item="item.value"
+          :expanded="isExpanded"
+          :selected="isSelected"
+          :indeterminate="isIndeterminate"
       >
         <component
-            :is="isExpanded ? ChevronDown : ChevronRight"
-            v-if="item.hasChildren"
-            class="h-4 w-4 shrink-0 text-muted-foreground/70 group-hover:text-foreground transition-colors"
+            :is="item.value[iconKey]"
+            v-if="item.value[iconKey]"
+            class="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-accent-foreground"
+            :class="{ 'text-accent-foreground': isSelected }"
         />
-        <span v-else class="h-4 w-4 shrink-0" />
 
-        <slot name="item" :item="item.value" :expanded="isExpanded" :selected="isSelected">
-          <component
-              :is="item.value.icon"
-              v-if="item.value.icon"
-              class="h-4 w-4 shrink-0 mr-1 text-muted-foreground group-hover:text-foreground transition-colors"
-              :class="{ 'text-foreground': isSelected }"
-          />
-
-          <span
-              class="truncate"
-              :class="{ 'text-primary font-semibold': isSelected }"
-          >
-            {{ item.value[props.labelKey] }}
-          </span>
-        </slot>
-      </TreeItem>
-    </TransitionGroup>
+        <span class="truncate">
+          {{ item.value[labelKey] }}
+        </span>
+      </slot>
+    </TreeItem>
   </TreeRoot>
 </template>
-
-<style>
-.tree-list-move {
-  transition: transform 0.2s ease-in-out;
-}
-.tree-list-enter-active,
-.tree-list-leave-active {
-  transition: all 0.2s ease-in-out;
-}
-.tree-list-enter-from,
-.tree-list-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-</style>
