@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { SnowEffect } from '@/components/ui/snow-effect'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Component, Code2, Paintbrush } from 'lucide-vue-next'
+import {ArrowRight, Component, Code2, Paintbrush, Sparkles} from 'lucide-vue-next'
 
 definePageMeta({
   layout: 'default'
@@ -23,6 +23,10 @@ definePageMeta({
     <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-primary/20 blur-[120px] rounded-full pointer-events-none z-0 opacity-50" />
 
     <div class="relative z-10 container mx-auto px-4 py-20 flex flex-col items-center text-center">
+      <div class="inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-4 py-1.5 text-sm font-medium text-red-200 mb-8 backdrop-blur-sm">
+        <Sparkles class="h-4 w-4 text-red-400" />
+        <span>Merry Christmas & Happy New Year</span>
+      </div>
 
       <div class="relative mb-6 group cursor-default">
         <svg
