@@ -52,7 +52,8 @@ const items: FileNode[] = [
 ]
 
 // --- State ---
-const selection = ref<FileNode | null>(null)
+// Important: When using multiple, initialize as an array
+const selection = ref<FileNode[]>([])
 const expanded = ref<string[]>(['app', 'components'])
 
 // --- Tabs ---
@@ -99,7 +100,8 @@ const items = [
   { label: 'package.json', icon: Archive }
 ]
 
-const selection = ref(null)
+// Initialize as array for multiple selection
+const selection = ref([])
 const expanded = ref(['app'])
 <\/script>
 
@@ -108,6 +110,8 @@ const expanded = ref(['app'])
     v-model="selection"
     v-model:expanded="expanded"
     :items="items"
+    multiple
+    selection-behavior="toggle"
   />
 </template>`
 
@@ -124,8 +128,11 @@ const props = withDefaults(defineProps<{
   defaultExpanded?: string[]
   defaultValue?: any
   multiple?: boolean
+  selectionBehavior?: 'toggle' | 'replace'
   disabled?: boolean
   propagateSelect?: boolean
+  bubbleSelect?: boolean
+  dir?: 'ltr' | 'rtl'
   getKey?: (item: T) => string
   labelKey?: string
   childrenKey?: string
@@ -134,7 +141,8 @@ const props = withDefaults(defineProps<{
   items: () => [],
   labelKey: 'label',
   childrenKey: 'children',
-  propagateSelect: true
+  propagateSelect: true,
+  selectionBehavior: 'toggle'
 })
 
 const emits = defineEmits<{
@@ -161,8 +169,11 @@ const rootProps = computed(() => ({
   defaultExpanded: props.defaultExpanded,
   defaultValue: props.defaultValue,
   multiple: props.multiple,
+  selectionBehavior: props.selectionBehavior,
   disabled: props.disabled,
-  propagateSelect: props.propagateSelect
+  propagateSelect: props.propagateSelect,
+  bubbleSelect: props.bubbleSelect,
+  dir: props.dir
 }))
 
 const forwarded = useForwardPropsEmits(rootProps, emits)
@@ -173,43 +184,65 @@ const forwarded = useForwardPropsEmits(rootProps, emits)
     v-bind="forwarded"
     :get-key="itemKeyResolver"
     :get-children="itemChildrenResolver"
+    as="div"
     :class="cn('w-full select-none list-none', props.class)"
     v-slot="{ flattenItems }"
   >
-    <TreeItem
-      v-for="item in flattenItems"
-      :key="item._id"
-      v-bind="item.bind"
-      :class="cn(
-        'group relative flex w-full items-center gap-1.5 rounded-sm px-2 py-1.5 text-sm font-medium outline-none transition-colors',
-        'hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring',
-        'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
-        'cursor-pointer'
-      )"
-      :style="{ paddingLeft: \`\${item.level * 1.5}rem\` }"
-      v-slot="{ isExpanded, isSelected }"
+    <TransitionGroup
+      name="tree-list"
+      tag="ul"
+      class="w-full flex flex-col"
     >
-      <component
-        :is="isExpanded ? ChevronDown : ChevronRight"
-        v-if="item.hasChildren"
-        class="h-4 w-4 shrink-0 text-muted-foreground/70 group-hover:text-foreground transition-colors"
-      />
-      <span v-else class="h-4 w-4 shrink-0" />
-
-      <slot name="item" :item="item.value" :expanded="isExpanded" :selected="isSelected">
+      <TreeItem
+        v-for="item in flattenItems"
+        :key="item._id"
+        v-bind="item.bind"
+        :class="cn(
+          'group relative flex w-full items-center gap-1.5 rounded-sm px-2 py-1.5 text-sm font-medium outline-none transition-colors',
+          'hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring',
+          'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+          'cursor-pointer'
+        )"
+        :style="{ paddingLeft: \`\${item.level * 1.5}rem\` }"
+        v-slot="{ isExpanded, isSelected }"
+      >
         <component
-          :is="item.value.icon"
-          v-if="item.value.icon"
-          class="h-4 w-4 shrink-0 mr-1 text-muted-foreground group-hover:text-foreground transition-colors"
-          :class="{ 'text-foreground': isSelected }"
+          :is="isExpanded ? ChevronDown : ChevronRight"
+          v-if="item.hasChildren"
+          class="h-4 w-4 shrink-0 text-muted-foreground/70 group-hover:text-foreground transition-colors"
         />
-        <span class="truncate" :class="{ 'text-primary font-semibold': isSelected }">
-          {{ item.value[props.labelKey] }}
-        </span>
-      </slot>
-    </TreeItem>
+        <span v-else class="h-4 w-4 shrink-0" />
+
+        <slot name="item" :item="item.value" :expanded="isExpanded" :selected="isSelected">
+          <component
+            :is="item.value.icon"
+            v-if="item.value.icon"
+            class="h-4 w-4 shrink-0 mr-1 text-muted-foreground group-hover:text-foreground transition-colors"
+            :class="{ 'text-foreground': isSelected }"
+          />
+          <span class="truncate" :class="{ 'text-primary font-semibold': isSelected }">
+            {{ item.value[props.labelKey] }}
+          </span>
+        </slot>
+      </TreeItem>
+    </TransitionGroup>
   </TreeRoot>
-</template>`
+</template>
+
+<style>
+.tree-list-move {
+  transition: transform 0.2s ease-in-out;
+}
+.tree-list-enter-active,
+.tree-list-leave-active {
+  transition: all 0.2s ease-in-out;
+}
+.tree-list-enter-from,
+.tree-list-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+</style>`
 </script>
 
 <template>
@@ -231,12 +264,15 @@ const forwarded = useForwardPropsEmits(rootProps, emits)
                 v-model:expanded="expanded"
                 :items="items"
                 class="w-full"
+                multiple
+                selection-behavior="toggle"
             />
           </div>
         </div>
         <div class="mt-4 text-sm text-muted-foreground bg-muted/30 p-4 rounded-md font-mono">
           <p>Expanded: {{ expanded }}</p>
-          <p class="mt-1">Selected: {{ selection ? selection.label : 'null' }}</p>
+          <p class="mt-1">Selected Count: {{ selection ? selection.length : 0 }}</p>
+          <p class="mt-1 text-xs">Selected Labels: {{ selection.map(i => i.label).join(', ') }}</p>
         </div>
       </template>
       <template #code>
@@ -293,25 +329,7 @@ const forwarded = useForwardPropsEmits(rootProps, emits)
             <td class="px-4 py-3 font-mono text-primary">modelValue</td>
             <td class="px-4 py-3 font-mono text-xs">any</td>
             <td class="px-4 py-3 font-mono text-xs">undefined</td>
-            <td class="px-4 py-3">The currently selected item(s). Use <code>v-model</code>.</td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3 font-mono text-primary">expanded</td>
-            <td class="px-4 py-3 font-mono text-xs">string[]</td>
-            <td class="px-4 py-3 font-mono text-xs">[]</td>
-            <td class="px-4 py-3">Keys of expanded items. Use <code>v-model:expanded</code>.</td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3 font-mono text-primary">labelKey</td>
-            <td class="px-4 py-3 font-mono text-xs">string</td>
-            <td class="px-4 py-3 font-mono text-xs">'label'</td>
-            <td class="px-4 py-3">Key to access the label in your data objects.</td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3 font-mono text-primary">childrenKey</td>
-            <td class="px-4 py-3 font-mono text-xs">string</td>
-            <td class="px-4 py-3 font-mono text-xs">'children'</td>
-            <td class="px-4 py-3">Key to access nested children in your data objects.</td>
+            <td class="px-4 py-3">The currently selected item(s). Use <code>v-model</code>. Must be array if <code>multiple</code> is true.</td>
           </tr>
           <tr>
             <td class="px-4 py-3 font-mono text-primary">multiple</td>
@@ -320,10 +338,28 @@ const forwarded = useForwardPropsEmits(rootProps, emits)
             <td class="px-4 py-3">Allow selecting multiple items.</td>
           </tr>
           <tr>
+            <td class="px-4 py-3 font-mono text-primary">selectionBehavior</td>
+            <td class="px-4 py-3 font-mono text-xs">'toggle' | 'replace'</td>
+            <td class="px-4 py-3 font-mono text-xs">'toggle'</td>
+            <td class="px-4 py-3">Controls selection behavior. 'replace' deselects others on click (unless modifier key). 'toggle' adds/removes.</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-3 font-mono text-primary">expanded</td>
+            <td class="px-4 py-3 font-mono text-xs">string[]</td>
+            <td class="px-4 py-3 font-mono text-xs">[]</td>
+            <td class="px-4 py-3">Keys of expanded items. Use <code>v-model:expanded</code>.</td>
+          </tr>
+          <tr>
             <td class="px-4 py-3 font-mono text-primary">propagateSelect</td>
             <td class="px-4 py-3 font-mono text-xs">boolean</td>
             <td class="px-4 py-3 font-mono text-xs">true</td>
             <td class="px-4 py-3">If true, selection state propagates down to children (if multiple).</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-3 font-mono text-primary">bubbleSelect</td>
+            <td class="px-4 py-3 font-mono text-xs">boolean</td>
+            <td class="px-4 py-3 font-mono text-xs">false</td>
+            <td class="px-4 py-3">If true, selection state bubbles up to parents.</td>
           </tr>
           </tbody>
         </table>
@@ -383,6 +419,5 @@ const forwarded = useForwardPropsEmits(rootProps, emits)
         </table>
       </div>
     </div>
-
   </div>
 </template>

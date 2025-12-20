@@ -1,0 +1,9 @@
+{
+  "dependencies": [
+    "@vueuse/core"
+  ],
+  "files": [
+    "WheelPicker.vue",
+    "WheelPickerWrapper.vue"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "dependencies": [
+    "lucide-vue-next",
+    "clsx",
+    "tailwind-merge"
+  ],
+  "files": [
+    "Tree.vue"
+  ]
+}

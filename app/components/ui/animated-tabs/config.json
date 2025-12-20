@@ -1,0 +1,11 @@
+{
+  "dependencies": [
+    "@vueuse/core",
+    "@vueuse/motion",
+    "clsx",
+    "tailwind-merge"
+  ],
+  "files": [
+    "AnimatedTabs.vue"
+  ]
+}

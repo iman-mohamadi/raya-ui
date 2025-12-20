@@ -1,0 +1,32 @@
+{
+  "name": "tabs",
+  "type": "registry:ui",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "tabs/index.ts",
+      "content": "export { default as Tabs } from \"./Tabs.vue\"\r\nexport { default as TabsContent } from \"./TabsContent.vue\"\r\nexport { default as TabsList } from \"./TabsList.vue\"\r\nexport { default as TabsTrigger } from \"./TabsTrigger.vue\"\r\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "tabs/Tabs.vue",
+      "content": "<script setup lang=\"ts\">\r\nimport { type HTMLAttributes, computed } from \"vue\"\r\nimport { type TabsRootEmits, type TabsRootProps, TabsRoot, useForwardPropsEmits } from \"reka-ui\"\r\nimport { cn } from \"@/lib/utils\"\r\n\r\nconst props = defineProps<TabsRootProps & { class?: HTMLAttributes[\"class\"] }>()\r\nconst emits = defineEmits<TabsRootEmits>()\r\n\r\nconst delegatedProps = computed(() => {\r\n  const { class: _, ...delegated } = props\r\n  return delegated\r\n})\r\n\r\nconst forwarded = useForwardPropsEmits(delegatedProps, emits)\r\n</script>\r\n\r\n<template>\r\n  <TabsRoot\r\n      v-bind=\"forwarded\"\r\n      :class=\"cn('flex flex-col gap-2', props.class)\"\r\n  >\r\n    <slot />\r\n  </TabsRoot>\r\n</template>",
+      "type": "registry:ui"
+    },
+    {
+      "path": "tabs/TabsContent.vue",
+      "content": "<script setup lang=\"ts\">\r\nimport { type HTMLAttributes, computed } from \"vue\"\r\nimport { type TabsContentProps, TabsContent } from \"reka-ui\"\r\nimport { cn } from \"@/lib/utils\"\r\n\r\nconst props = defineProps<TabsContentProps & { class?: HTMLAttributes[\"class\"] }>()\r\n\r\nconst delegatedProps = computed(() => {\r\n  const { class: _, ...delegated } = props\r\n  return delegated\r\n})\r\n</script>\r\n\r\n<template>\r\n  <TabsContent\r\n      v-bind=\"delegatedProps\"\r\n      :class=\"cn('mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2', props.class)\"\r\n  >\r\n    <slot />\r\n  </TabsContent>\r\n</template>",
+      "type": "registry:ui"
+    },
+    {
+      "path": "tabs/TabsList.vue",
+      "content": "<script setup lang=\"ts\">\r\nimport { type HTMLAttributes, computed, ref, onMounted, nextTick } from \"vue\"\r\nimport { type TabsListProps, TabsList } from \"reka-ui\"\r\nimport { cn } from \"@/lib/utils\"\r\nimport { useResizeObserver, useMutationObserver } from \"@vueuse/core\"\r\n\r\nconst props = defineProps<TabsListProps & { class?: HTMLAttributes[\"class\"] }>()\r\n\r\nconst tabsListRef = ref<HTMLElement | null>(null)\r\nconst indicatorStyle = ref({\r\n  left: \"0px\",\r\n  width: \"0px\",\r\n  opacity: \"0\",\r\n})\r\n\r\n// Function to update the indicator position\r\nconst updateIndicator = () => {\r\n  if (!tabsListRef.value) return\r\n\r\n  const activeTab = tabsListRef.value.querySelector('[data-state=\"active\"]') as HTMLElement\r\n  if (activeTab) {\r\n    const listRect = tabsListRef.value.getBoundingClientRect()\r\n    const tabRect = activeTab.getBoundingClientRect()\r\n\r\n    indicatorStyle.value = {\r\n      left: `${tabRect.left - listRect.left}px`,\r\n      width: `${tabRect.width}px`,\r\n      opacity: \"1\",\r\n    }\r\n  } else {\r\n    indicatorStyle.value.opacity = \"0\"\r\n  }\r\n}\r\n\r\n// Watch for size changes\r\nuseResizeObserver(tabsListRef, updateIndicator)\r\n\r\n// Watch for active state changes (attributes on children)\r\nuseMutationObserver(tabsListRef, updateIndicator, {\r\n  subtree: true,\r\n  attributes: true,\r\n  attributeFilter: [\"data-state\"],\r\n})\r\n\r\nonMounted(() => {\r\n  // Initial position check\r\n  nextTick(updateIndicator)\r\n  // Double check after a small delay for hydration/rendering stability\r\n  setTimeout(updateIndicator, 100)\r\n})\r\n</script>\r\n\r\n<template>\r\n  <TabsList\r\n      ref=\"tabsListRef\"\r\n      v-bind=\"props\"\r\n      :class=\"cn(\r\n      'relative inline-flex h-9 w-fit items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground',\r\n      props.class,\r\n    )\"\r\n  >\r\n    <div\r\n        class=\"absolute bottom-1 top-1 z-0 rounded-md border border-transparent bg-background shadow-sm transition-all duration-300 ease-in-out dark:border-input dark:bg-input/30\"\r\n        :style=\"indicatorStyle\"\r\n    ></div>\r\n\r\n    <slot />\r\n  </TabsList>\r\n</template>",
+      "type": "registry:ui"
+    },
+    {
+      "path": "tabs/TabsTrigger.vue",
+      "content": "<script setup lang=\"ts\">\r\nimport { type HTMLAttributes, computed } from \"vue\"\r\nimport { type TabsTriggerProps, TabsTrigger, useForwardProps } from \"reka-ui\"\r\nimport { cn } from \"@/lib/utils\"\r\n\r\nconst props = defineProps<TabsTriggerProps & { class?: HTMLAttributes[\"class\"] }>()\r\n\r\nconst delegatedProps = computed(() => {\r\n  const { class: _, ...delegated } = props\r\n  return delegated\r\n})\r\n\r\nconst forwardedProps = useForwardProps(delegatedProps)\r\n</script>\r\n\r\n<template>\r\n  <TabsTrigger\r\n      v-bind=\"forwardedProps\"\r\n      :class=\"cn(\r\n      'relative z-10 inline-flex h-full flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-colors duration-200 ease-in-out disabled:pointer-events-none disabled:opacity-50',\r\n      // Inactive state\r\n      'text-muted-foreground hover:text-foreground',\r\n      // Active state (Handled by the sliding highlight for BG, but we switch text color here)\r\n      'data-[state=active]:text-foreground',\r\n      // Focus styles\r\n      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',\r\n      props.class,\r\n    )\"\r\n  >\r\n    <slot />\r\n  </TabsTrigger>\r\n</template>",
+      "type": "registry:ui"
+    }
+  ]
+}

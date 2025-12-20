@@ -1,0 +1,13 @@
+{
+  "dependencies": [
+    "@vueuse/core",
+    "clsx",
+    "tailwind-merge"
+  ],
+  "files": [
+    "FloatingDock.vue",
+    "FloatingDockDesktop.vue",
+    "FloatingDockMobile.vue",
+    "FloatingDockIcon.vue"
+  ]
+}

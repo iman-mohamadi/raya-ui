@@ -1,0 +1,11 @@
+{
+  "dependencies": [
+    "highlight.js",
+    "lucide-vue-next",
+    "clsx",
+    "tailwind-merge"
+  ],
+  "files": [
+    "CodeBlock.vue"
+  ]
+}

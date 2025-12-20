@@ -1,0 +1,10 @@
+{
+  "dependencies": [
+    "@vueuse/core",
+    "clsx",
+    "tailwind-merge"
+  ],
+  "files": [
+    "BarVisualizer.vue"
+  ]
+}

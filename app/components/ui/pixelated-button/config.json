@@ -1,0 +1,9 @@
+{
+  "dependencies": [
+    "clsx",
+    "tailwind-merge"
+  ],
+  "files": [
+    "PixelatedButton.vue"
+  ]
+}
