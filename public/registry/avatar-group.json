@@ -1,0 +1,12 @@
+{
+  "name": "avatar-group",
+  "type": "registry:ui",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "avatar-group/index.ts",
+      "content": "// Warning: Could not auto-generate export for avatar-group\n",
+      "type": "registry:ui"
+    }
+  ]
+}
