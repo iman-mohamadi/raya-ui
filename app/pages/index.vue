@@ -1,97 +1,94 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import {
-  Github, Copy, Check
-} from 'lucide-vue-next'
-import { BackgroundBeams } from '@/components/ui/background-beams'
+import { SnowEffect } from '@/components/ui/snow-effect'
 import { Button } from '@/components/ui/button'
+import { ArrowRight, Component, Code2, Paintbrush } from 'lucide-vue-next'
 
-const config = useAppConfig().raya
-const copied = ref(false)
-
-// --- Install Command ---
-const installCmd = `npx shadcn-vue@latest add ${config.baseUrl}/wheel-picker.json`
-const copyInstall = () => {
-  navigator.clipboard.writeText(installCmd)
-  copied.value = true
-  setTimeout(() => copied.value = false, 2000)
-}
-
-useSeoMeta({
-  title: 'Beautiful Vue & Shadcn Components',
-  description: 'Raya UI offers a collection of high-quality, copy-paste Vue components. Built for speed, accessibility, and modern design.',
-  ogTitle: 'Raya UI - The Ultimate Vue Component Collection',
-  ogDescription: 'Stop reinventing the wheel. Copy beautiful, accessible components directly into your Nuxt app.',
-  ogImage: 'https://raya-ui.com/logo.svg',
+definePageMeta({
+  layout: 'default'
 })
 </script>
 
 <template>
-  <div class="min-h-screen bg-black text-white font-sans">
-    <AppNav />
-    <main class="relative z-10 pt-32 pb-20 container mx-auto px-6">
-      <BackgroundBeams />
+  <div class="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-black text-foreground selection:bg-primary/20 selection:text-primary">
 
-      <section class="flex flex-col items-center text-center space-y-10 mb-32">
+    <SnowEffect
+        color="#ffffff"
+        :quantity="100"
+        :speed="0.5"
+        :min-radius="1"
+        :max-radius="3"
+        class="z-0 opacity-70"
+    />
 
-        <div
-            v-motion
-            :initial="{ opacity: 0, y: 20 }"
-            :enter="{ opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100, damping: 15 } }"
-            class="inline-flex items-center gap-2 rounded-full border border-[oklch(0.82_0.16_195)]/30 bg-[oklch(0.82_0.16_195)]/5 px-3 py-1 text-xs font-medium text-[oklch(0.82_0.16_195)] relative z-20"
+    <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-primary/20 blur-[120px] rounded-full pointer-events-none z-0 opacity-50" />
+
+    <div class="relative z-10 container mx-auto px-4 py-20 flex flex-col items-center text-center">
+
+      <div class="relative mb-6 group cursor-default">
+        <svg
+            viewBox="0 0 100 100"
+            class="absolute -top-10 -left-8 w-20 h-20 z-20 drop-shadow-lg transform -rotate-12 pointer-events-none"
+            aria-hidden="true"
         >
-          <span class="relative flex h-2 w-2">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[oklch(0.82_0.16_195)] opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2 w-2 bg-[oklch(0.82_0.16_195)]"></span>
-          </span>
-          <span>Animate your UI</span>
-        </div>
+          <path d="M10 75 Q 30 10 85 55 L 75 75 Z" class="fill-red-600" />
+          <path d="M5 75 C 5 70 25 70 45 72 S 85 70 85 75 C 85 85 65 85 45 83 S 5 85 5 75 Z" class="fill-slate-100" />
+          <circle cx="85" cy="55" r="8" class="fill-slate-100" />
+        </svg>
 
-        <h1
-            v-motion
-            :initial="{ opacity: 0, y: 50, filter: 'blur(10px)' }"
-            :enter="{ opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 800, delay: 100, ease: 'easeOut' } }"
-            class="text-6xl md:text-8xl font-black tracking-tighter leading-[1] max-w-4xl relative z-20"
-        >
-          Make it
-          <span class="text-[oklch(0.82_0.16_195)]">pop.</span>
-          <br/>
-          Make it
-          <span class="text-transparent bg-clip-text bg-gradient-to-r from-[oklch(0.82_0.16_195)] to-white/50">flow.</span>
+        <h1 class="text-7xl md:text-9xl font-black tracking-tighter text-primary drop-shadow-2xl">
+          Raya UI
         </h1>
+      </div>
 
-        <p
-            v-motion
-            :initial="{ opacity: 0, y: 20 }"
-            :enter="{ opacity: 1, y: 0, transition: { duration: 800, delay: 300 } }"
-            class="text-lg text-zinc-500 max-w-xl mx-auto leading-relaxed relative z-20"
-        >
-          Raya (رایا) is a collection of high-performance, interactive Vue primitives.
-          Black, bold, and strictly typed.
-        </p>
+      <p class="max-w-xl mx-auto text-lg md:text-xl text-muted-foreground mb-10 leading-relaxed font-medium">
+        A collection of accessible, reusable, and composable Vue components.
+        <br class="hidden md:block" />
+        Styled with Tailwind CSS. Open Source.
+      </p>
 
-        <div
-            v-motion
-            :initial="{ opacity: 0, y: 20 }"
-            :enter="{ opacity: 1, y: 0, transition: { duration: 800, delay: 500 } }"
-            class="flex flex-wrap items-center justify-center gap-4 relative z-20"
-        >
-          <div class="relative group flex items-center gap-3 rounded-xl bg-white/5 border border-white/10 p-1 pl-4 pr-1 hover:border-[oklch(0.82_0.16_195)]/50 transition-colors">
-            <span class="text-[oklch(0.82_0.16_195)] font-mono">$</span>
-            <code class="font-mono text-sm text-zinc-400">npx shadcn-vue@latest add...</code>
-            <Button size="icon" variant="ghost" class="h-9 w-9 rounded-lg text-zinc-400 hover:text-white hover:bg-[oklch(0.82_0.16_195)]/10" @click="copyInstall">
-              <Check v-if="copied" class="h-4 w-4 text-[oklch(0.82_0.16_195)]" />
-              <Copy v-else class="h-4 w-4" />
-            </Button>
+      <div class="flex flex-col sm:flex-row items-center gap-4">
+        <Button size="lg" class="h-12 px-8 text-base shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all duration-300">
+          Browse Components
+          <ArrowRight class="ml-2 h-4 w-4" />
+        </Button>
+        <Button size="lg" variant="secondary" class="h-12 px-8 text-base bg-white/5 hover:bg-white/10 border border-white/10 text-white">
+          Documentation
+        </Button>
+      </div>
+
+      <div class="mt-24 grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
+
+        <div class="group relative overflow-hidden rounded-xl border border-white/10 bg-zinc-900/30 p-8 text-left transition-all hover:border-primary/50 hover:bg-zinc-900/50">
+          <div class="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform">
+            <Paintbrush class="h-5 w-5" />
           </div>
-
-          <NuxtLink to="/docs/components/liquid-glass">
-            <Button class="h-11 px-8 rounded-xl bg-[oklch(0.82_0.16_195)] text-black font-bold hover:bg-[oklch(0.82_0.16_195)]/90 transition-all hover:scale-105">
-              Browse Components
-            </Button>
-          </NuxtLink>
+          <h3 class="mb-2 text-lg font-bold text-white">Customizable</h3>
+          <p class="text-sm text-zinc-400">
+            Built with Tailwind CSS, giving you full control over styles and themes.
+          </p>
         </div>
-      </section>
-    </main>
+
+        <div class="group relative overflow-hidden rounded-xl border border-white/10 bg-zinc-900/30 p-8 text-left transition-all hover:border-primary/50 hover:bg-zinc-900/50">
+          <div class="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform">
+            <Component class="h-5 w-5" />
+          </div>
+          <h3 class="mb-2 text-lg font-bold text-white">Copy & Paste</h3>
+          <p class="text-sm text-zinc-400">
+            No massive dependencies. Just copy the component code you need into your project.
+          </p>
+        </div>
+
+        <div class="group relative overflow-hidden rounded-xl border border-white/10 bg-zinc-900/30 p-8 text-left transition-all hover:border-primary/50 hover:bg-zinc-900/50">
+          <div class="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform">
+            <Code2 class="h-5 w-5" />
+          </div>
+          <h3 class="mb-2 text-lg font-bold text-white">Type Safe</h3>
+          <p class="text-sm text-zinc-400">
+            Written in TypeScript with full type definitions for a better developer experience.
+          </p>
+        </div>
+
+      </div>
+    </div>
   </div>
 </template>
