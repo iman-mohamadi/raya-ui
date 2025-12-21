@@ -2,6 +2,7 @@
 import { SnowEffect } from '@/components/ui/snow-effect'
 import { Button } from '@/components/ui/button'
 import {ArrowRight, Component, Code2, Paintbrush, Sparkles} from 'lucide-vue-next'
+import FaqSection from "~/components/landing/FaqSection.vue";
 
 definePageMeta({
   layout: 'default'
@@ -18,7 +19,7 @@ useSeoMeta({
 </script>
 
 <template>
-  <div class="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-black text-foreground selection:bg-primary/20 selection:text-primary">
+  <div class="relative min-h-screen w-full flex flex-col items-center overflow-x-hidden bg-black text-foreground selection:bg-primary/20 selection:text-primary">
 
     <SnowEffect
         color="#ffffff"
@@ -29,25 +30,15 @@ useSeoMeta({
         class="z-0 opacity-70"
     />
 
-    <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-primary/20 blur-[120px] rounded-full pointer-events-none z-0 opacity-50" />
+    <div class="absolute top-[20%] left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-primary/20 blur-[120px] rounded-full pointer-events-none z-0 opacity-50" />
 
-    <div class="relative z-10 container mx-auto px-4 py-20 flex flex-col items-center text-center">
-      <div class="inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-4 py-1.5 text-sm font-medium text-red-200 mb-8 backdrop-blur-sm">
-        <Sparkles class="h-4 w-4 text-red-400" />
-        <span>Merry Christmas & Happy New Year</span>
-      </div>
-
+    <div class="relative z-10 container mx-auto px-4 pt-32 pb-20 flex flex-col items-center text-center">
       <div class="relative mb-6 group cursor-default">
-        <svg
-            viewBox="0 0 100 100"
-            class="absolute -top-10 -left-8 w-20 h-20 z-20 drop-shadow-lg transform -rotate-12 pointer-events-none"
-            aria-hidden="true"
-        >
+        <svg viewBox="0 0 100 100" class="absolute -top-10 -left-8 w-20 h-20 z-20 drop-shadow-lg transform -rotate-12 pointer-events-none" aria-hidden="true">
           <path d="M10 75 Q 30 10 85 55 L 75 75 Z" class="fill-red-600" />
           <path d="M5 75 C 5 70 25 70 45 72 S 85 70 85 75 C 85 85 65 85 45 83 S 5 85 5 75 Z" class="fill-slate-100" />
           <circle cx="85" cy="55" r="8" class="fill-slate-100" />
         </svg>
-
         <h1 class="text-7xl md:text-9xl font-black tracking-tighter text-primary drop-shadow-2xl">
           Raya UI
         </h1>
@@ -60,52 +51,43 @@ useSeoMeta({
       </p>
 
       <div class="flex flex-col sm:flex-row items-center gap-4">
-        <RayaButton asChild variant="subtle" size="lg" class="h-12 px-8 text-base shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all duration-300">
-          <NuxtLink to="/docs/introduction">
-            Browse Components
-            <ArrowRight class="ml-2 h-4 w-4" />
-          </NuxtLink>
-        </RayaButton>
-        <RayaButton asChild size="lg" variant="outline" class="h-12 px-8 text-base bg-white/5 hover:bg-white/10 border border-white/10 text-white">
-          <NuxtLink to="/docs/components/animated-input">
-            Documentation
-          </NuxtLink>
-        </RayaButton>
+        <Button size="lg" class="h-12 px-8 text-base shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all duration-300">
+          Browse Components
+          <ArrowRight class="ml-2 h-4 w-4" />
+        </Button>
+        <Button size="lg" variant="secondary" class="h-12 px-8 text-base bg-white/5 hover:bg-white/10 border border-white/10 text-white">
+          Documentation
+        </Button>
       </div>
 
       <div class="mt-24 grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
-
         <div class="group relative overflow-hidden rounded-xl border border-white/10 bg-zinc-900/30 p-8 text-left transition-all hover:border-primary/50 hover:bg-zinc-900/50">
           <div class="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform">
             <Paintbrush class="h-5 w-5" />
           </div>
           <h3 class="mb-2 text-lg font-bold text-white">Customizable</h3>
-          <p class="text-sm text-zinc-400">
-            Built with Tailwind CSS, giving you full control over styles and themes.
-          </p>
+          <p class="text-sm text-zinc-400">Built with Tailwind CSS, giving you full control over styles and themes.</p>
         </div>
-
         <div class="group relative overflow-hidden rounded-xl border border-white/10 bg-zinc-900/30 p-8 text-left transition-all hover:border-primary/50 hover:bg-zinc-900/50">
           <div class="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform">
             <Component class="h-5 w-5" />
           </div>
           <h3 class="mb-2 text-lg font-bold text-white">Copy & Paste</h3>
-          <p class="text-sm text-zinc-400">
-            No massive dependencies. Just copy the component code you need into your project.
-          </p>
+          <p class="text-sm text-zinc-400">No massive dependencies. Just copy the component code you need into your project.</p>
         </div>
-
         <div class="group relative overflow-hidden rounded-xl border border-white/10 bg-zinc-900/30 p-8 text-left transition-all hover:border-primary/50 hover:bg-zinc-900/50">
           <div class="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform">
             <Code2 class="h-5 w-5" />
           </div>
           <h3 class="mb-2 text-lg font-bold text-white">Type Safe</h3>
-          <p class="text-sm text-zinc-400">
-            Written in TypeScript with full type definitions for a better developer experience.
-          </p>
+          <p class="text-sm text-zinc-400">Written in TypeScript with full type definitions for a better developer experience.</p>
         </div>
-
       </div>
     </div>
+
+    <div class="relative z-10 w-full bg-zinc-950/50 border-t border-white/5">
+      <FaqSection />
+    </div>
+
   </div>
 </template>
