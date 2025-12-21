@@ -1,5 +1,3 @@
-// app/components/ui/animated-tabs/AnimatedTabs.vue
-
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { TabsRoot, TabsList, TabsTrigger, TabsContent } from 'reka-ui'
@@ -69,8 +67,6 @@ const selected = computed({
 })
 
 const currentNumericIndex = computed(() => {
-  // If modelValue is string/number, we need to find the index of that item in the items array
-  // to position the marker correctly.
   if (props.items && props.items.length > 0) {
     const idx = props.items.findIndex((item, i) =>
         (item.value ?? i) === selected.value
@@ -80,7 +76,7 @@ const currentNumericIndex = computed(() => {
   return typeof selected.value === 'number' ? selected.value : 0
 })
 
-// Update Marker Position (Scroll-safe)
+// Update Marker Position
 const updateMarker = () => {
   const el = tabRefs.value[currentNumericIndex.value]
   if (!el || !containerRef.value) {
@@ -88,7 +84,6 @@ const updateMarker = () => {
     return
   }
 
-  // Use offsetLeft/Top relative to the container scrolling context
   const left = el.offsetLeft
   const top = el.offsetTop
   const width = el.offsetWidth
@@ -112,7 +107,6 @@ const updateMarker = () => {
 }
 
 const setTabRef = (el: any, index: number) => {
-  // Reka UI components might expose the DOM element via $el
   if (el) tabRefs.value[index] = el.$el || el
 }
 
@@ -126,39 +120,36 @@ const startDrag = (e: MouseEvent) => {
   isDown.value = true
   isDragging.value = false
 
-  // Record initial positions
   startX.value = e.pageX
   scrollLeft.value = containerRef.value.scrollLeft
 }
 
 const stopDrag = () => {
   isDown.value = false
-  // Small delay so the 'click' event on the button knows to ignore if we were just dragging
-  setTimeout(() => isDragging.value = false, 50)
+  // Delay clearing dragging state to ensure click events are blocked
+  setTimeout(() => isDragging.value = false, 100)
 }
 
 const doDrag = (e: MouseEvent) => {
   if (!isDown.value || !containerRef.value) return
-  e.preventDefault() // Stop text selection
+  e.preventDefault()
 
   const x = e.pageX
   const walk = (x - startX.value) * 1
 
-  // Threshold to flag as a drag operation instead of a click
   if (Math.abs(walk) > 5) isDragging.value = true
 
   containerRef.value.scrollLeft = scrollLeft.value - walk
 }
 
 const handleTriggerClick = (e: MouseEvent) => {
+  // Backup prevention in case pointer-events trick misses something
   if (isDragging.value) {
-    // Prevent switching tabs if we were just scrolling
     e.preventDefault()
     e.stopPropagation()
   }
 }
 
-// Watchers
 watch(
     () => [currentNumericIndex.value, props.variant, props.orientation, props.items],
     async () => {
@@ -213,6 +204,7 @@ onMounted(async () => {
           class="relative z-10 flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-medium transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-ring whitespace-nowrap flex-shrink-0 data-[state=inactive]:text-muted-foreground data-[state=active]:text-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
           :class="[
           variant === 'pill' ? 'rounded-lg' : 'rounded-none hover:bg-muted/50',
+          isDragging ? 'pointer-events-none' : ''
         ]"
       >
         <slot name="default" :item="item" :index="index" :selected="selected === (item.value ?? index)">

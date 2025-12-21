@@ -41,8 +41,8 @@ export default defineNuxtConfig({
                 { name: 'twitter:image', content: 'https://raya-ui.com/og-image.png' }
             ],
             link: [
-                { rel: 'icon', type: 'image/svg+xml', href: '/logo-min.svg' }
-            ]
+                { rel: "icon", type: "image/x-icon", href: "/favicon.ico" }
+            ],
         },
         pageTransition: { name: 'page', mode: 'out-in' },
     },
