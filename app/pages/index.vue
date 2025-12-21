@@ -8,12 +8,41 @@ definePageMeta({
 })
 
 
+useHead({
+  script: [
+    {
+      type: 'application/ld+json',
+      children: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'SoftwareApplication',
+        'name': 'Raya UI',
+        'operatingSystem': 'Web',
+        'applicationCategory': 'DeveloperApplication',
+        'offers': {
+          '@type': 'Offer',
+          'price': '0',
+          'priceCurrency': 'USD'
+        },
+        'description': 'A collection of accessible, reusable, and composable Vue components built with Tailwind CSS.',
+        'author': {
+          '@type': 'Person',
+          'name': 'Iman Mohamadi'
+        },
+        'keywords': 'Vue, Nuxt, UI Library, Shadcn, Tailwind CSS, Components'
+      })
+    }
+  ]
+})
+
 useSeoMeta({
-  title: 'Beautiful Vue & Shadcn Components',
-  description: 'Raya UI offers a collection of high-quality, copy-paste Vue components. Built for speed, accessibility, and modern design.',
-  ogTitle: 'Raya UI - The Ultimate Vue Component Collection',
-  ogDescription: 'Stop reinventing the wheel. Copy beautiful, accessible components directly into your Nuxt app.',
-  ogImage: 'https://raya-ui.com/logo.svg',
+  title: 'Raya UI - Open Source Vue & Nuxt UI Library',
+
+  description: 'Raya UI is a comprehensive Vue and Nuxt UI library based on Shadcn and Tailwind CSS. accessible, copy-paste components for modern web development.',
+
+  ogTitle: 'Raya UI - The Ultimate Vue & Nuxt UI Library',
+  ogDescription: 'Stop reinventing the wheel. Copy beautiful, accessible components directly into your Nuxt app with Raya UI.',
+  ogImage: 'https://raya-ui.com/og-image.png',
+  twitterCard: 'summary_large_image',
 })
 </script>
 

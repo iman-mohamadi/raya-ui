@@ -52,6 +52,7 @@ export default defineNuxtConfig({
 
     site: {
         url: 'https://raya-ui.com',
+        name: 'Raya UI',
     },
 
     shadcn: {
