@@ -6,6 +6,15 @@ import {ArrowRight, Component, Code2, Paintbrush, Sparkles} from 'lucide-vue-nex
 definePageMeta({
   layout: 'default'
 })
+
+
+useSeoMeta({
+  title: 'Beautiful Vue & Shadcn Components',
+  description: 'Raya UI offers a collection of high-quality, copy-paste Vue components. Built for speed, accessibility, and modern design.',
+  ogTitle: 'Raya UI - The Ultimate Vue Component Collection',
+  ogDescription: 'Stop reinventing the wheel. Copy beautiful, accessible components directly into your Nuxt app.',
+  ogImage: 'https://raya-ui.com/logo.svg',
+})
 </script>
 
 <template>
