@@ -1,7 +1,6 @@
 {
   "dependencies": [
     "@vueuse/core",
-    "@vueuse/motion",
     "clsx",
     "tailwind-merge"
   ],

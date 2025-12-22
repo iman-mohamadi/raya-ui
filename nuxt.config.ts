@@ -18,7 +18,7 @@ export default defineNuxtConfig({
         ],
     },
 
-    modules: ["shadcn-nuxt", "@vueuse/nuxt", '@nuxtjs/sitemap', '@nuxt/image', '@vueuse/motion/nuxt'],
+    modules: ["shadcn-nuxt", "@vueuse/nuxt", '@nuxtjs/sitemap', '@nuxt/image', 'motion-v/nuxt',],
 
     // --- SEO Configuration ---
     app: {

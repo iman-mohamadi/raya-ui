@@ -154,9 +154,6 @@ watch(() => route.path, () => {
     <div class="container mx-auto flex-1 items-start md:grid md:grid-cols-[240px_minmax(0,1fr)] gap-10 px-6">
 
       <div
-          v-motion
-          :initial="{ opacity: 0, y: -20 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 500 } }"
           class="md:hidden py-4 border-b border-white/10 mb-6 flex items-center justify-between"
       >
         <span class="text-sm font-medium text-zinc-400">Navigation</span>
@@ -208,9 +205,6 @@ watch(() => route.path, () => {
       </div>
 
       <aside
-          v-motion
-          :initial="{ opacity: 0, x: -50 }"
-          :enter="{ opacity: 1, x: 0, transition: { type: 'spring', stiffness: 100, damping: 20, delay: 100 } }"
           class="fixed top-14 z-30 hidden h-[calc(100vh-3.5rem)] w-full shrink-0 md:sticky md:block"
       >
         <ScrollArea class="h-full pr-6 py-8">
@@ -266,9 +260,6 @@ watch(() => route.path, () => {
       </aside>
 
       <main
-          v-motion
-          :initial="{ opacity: 0, y: 20 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 500, delay: 200 } }"
           class="relative py-10 max-w-4xl min-w-0 w-full"
       >
         <slot />
