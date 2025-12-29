@@ -60,7 +60,7 @@ useSeoMeta({
 
     <div class="absolute top-[20%] left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-primary/20 blur-[120px] rounded-full pointer-events-none z-0 opacity-50" />
 
-    <div class="relative z-10 container mx-auto px-4 pt-32 pb-20 flex flex-col items-center text-center">
+    <div class="relative z-10 container border-none mx-auto px-4 pt-32 pb-20 flex flex-col items-center text-center">
       <div class="relative mb-6 group cursor-default">
         <svg viewBox="0 0 100 100" class="absolute -top-10 -left-8 w-20 h-20 z-20 drop-shadow-lg transform -rotate-12 pointer-events-none" aria-hidden="true">
           <path d="M10 75 Q 30 10 85 55 L 75 75 Z" class="fill-red-600" />

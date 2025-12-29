@@ -50,7 +50,7 @@ useHead({
 </script>
 
 <template>
-  <section class="container mx-auto px-4 py-24 max-w-3xl">
+  <section class="container border-none mx-auto px-4 py-24 max-w-3xl">
     <div class="text-center mb-12">
       <h2 class="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
         Frequently Asked Questions
