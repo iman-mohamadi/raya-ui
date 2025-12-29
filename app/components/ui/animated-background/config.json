@@ -1,0 +1,10 @@
+{
+  "dependencies": [
+    "motion-v",
+    "clsx",
+    "tailwind-merge"
+  ],
+  "files": [
+    "AnimatedBackground.vue"
+  ]
+}

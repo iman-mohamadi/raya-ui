@@ -397,3 +397,15 @@ const handleToggle = (item: any) => {
     </div>
   </div>
 </template>
+
+
+<!--<template #default="{ item, isActive }">-->
+<!--  <button-->
+<!--      type="button"-->
+<!--      :data-id="item.label"-->
+<!--      class="inline-flex h-9 w-9 items-center justify-center transition-colors duration-100 focus-visible:outline-2"-->
+<!--      :class="isActive ? 'text-zinc-950 dark:text-zinc-50' : 'text-zinc-500'"-->
+<!--  >-->
+<!--    <component :is="item.icon" class="h-5 w-5" />-->
+<!--  </button>-->
+<!--</template>-->

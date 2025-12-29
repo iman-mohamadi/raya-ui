@@ -1,70 +1,49 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch, computed } from 'vue'
-import { useRoute } from 'vue-router'
-import { Github, Book, Package, Image as ImageIcon, Menu, ChevronDown } from 'lucide-vue-next'
-import { Button } from '@/components/ui/button'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible'
+import {ref, onMounted, nextTick, watch, computed} from 'vue'
+import {useRoute} from 'vue-router'
+import {Book, Package, Image as ImageIcon} from 'lucide-vue-next'
+import Divider from "~/components/Divider.vue";
 
-const config = useAppConfig().raya
 const route = useRoute()
-
-// --- Mobile Menu State ---
-const isMobileMenuOpen = ref(false)
-
-// Close mobile menu when route changes
-watch(() => route.path, () => {
-  isMobileMenuOpen.value = false
-})
 
 const navGroups = [
   {
     title: 'Components',
     icon: Package,
     items: [
-      { label: 'Encrypted Text', to: '/docs/components/encrypted-text' },
-      { label: 'Animated Input', to: '/docs/components/animated-input' },
-      { label: 'Code Block', to: '/docs/components/code-block' },
-      { label: 'Bar Visualizer', to: '/docs/components/bar-visualizer' },
-      { label: 'Animated Tabs', to: '/docs/components/animated-tabs' },
-      { label: 'Floating Dock', to: '/docs/components/floating-dock' },
-      { label: 'Morphing Text', to: '/docs/components/morphing-text' },
-      { label: 'Pixelated Button', to: '/docs/components/pixelated-button' },
-      { label: 'Raya Button', to: '/docs/components/raya-button' },
-      { label: 'Liquid Glass', to: '/docs/components/liquid-glass' },
-      { label: 'Tree', to: '/docs/components/tree' },
-      { label: 'Wheel Picker', to: '/docs/components/wheel-picker' },
+      {label: 'Encrypted Text', to: '/docs/components/encrypted-text'},
+      {label: 'Animated Input', to: '/docs/components/animated-input'},
+      {label: 'Animated Background', to: '/docs/components/animated-background'},
+      {label: 'Code Block', to: '/docs/components/code-block'},
+      {label: 'Bar Visualizer', to: '/docs/components/bar-visualizer'},
+      {label: 'Animated Tabs', to: '/docs/components/animated-tabs'},
+      {label: 'Floating Dock', to: '/docs/components/floating-dock'},
+      {label: 'Morphing Text', to: '/docs/components/morphing-text'},
+      {label: 'Pixelated Button', to: '/docs/components/pixelated-button'},
+      {label: 'Raya Button', to: '/docs/components/raya-button'},
+      {label: 'Liquid Glass', to: '/docs/components/liquid-glass'},
+      {label: 'Tree', to: '/docs/components/tree'},
+      {label: 'Wheel Picker', to: '/docs/components/wheel-picker'},
     ]
   },
   {
     title: 'Backgrounds',
     icon: ImageIcon,
     items: [
-      { label: 'Ambient Grid', to: '/docs/backgrounds/ambient-grid' },
-      { label: 'Background Beams', to: '/docs/backgrounds/background-beams' },
-      { label: 'Dotted Glow', to: '/docs/backgrounds/dotted-glow-background' },
-      { label: 'Gravity Stars', to: '/docs/backgrounds/gravity-stars' },
-      { label: 'Ripple Effect', to: '/docs/backgrounds/background-ripple-effect' },
-      { label: 'Snow Effect', to: '/docs/backgrounds/snow-effect' },
+      {label: 'Ambient Grid', to: '/docs/backgrounds/ambient-grid'},
+      {label: 'Background Beams', to: '/docs/backgrounds/background-beams'},
+      {label: 'Dotted Glow', to: '/docs/backgrounds/dotted-glow-background'},
+      {label: 'Gravity Stars', to: '/docs/backgrounds/gravity-stars'},
+      {label: 'Ripple Effect', to: '/docs/backgrounds/background-ripple-effect'},
+      {label: 'Snow Effect', to: '/docs/backgrounds/snow-effect'},
     ]
   },
   {
     title: 'Guide',
     icon: Book,
     items: [
-      { label: 'Installation', to: '/docs/installation' },
-      { label: 'Introduction', to: '/docs/introduction' },
+      {label: 'Installation', to: '/docs/installation'},
+      {label: 'Introduction', to: '/docs/introduction'},
     ]
   }
 ]
@@ -148,126 +127,16 @@ watch(() => route.path, () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-black text-white selection:bg-white/20 font-sans">
-    <AppNav :showDoc="false"/>
-
-    <div class="container mx-auto flex-1 items-start md:grid md:grid-cols-[240px_minmax(0,1fr)] gap-10 px-6">
-
-      <div
-          class="md:hidden py-4 border-b border-white/10 mb-6 flex items-center justify-between"
-      >
-        <span class="text-sm font-medium text-zinc-400">Navigation</span>
-        <Sheet v-model:open="isMobileMenuOpen">
-          <SheetTrigger as-child>
-            <Button variant="outline" size="icon" class="h-8 w-8">
-              <Menu class="h-4 w-4" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" class="bg-black border-r border-white/10 text-white w-[80%] sm:w-[350px] p-0">
-            <ScrollArea class="h-full px-6 py-6">
-              <SheetHeader class="mb-6 text-left">
-                <SheetTitle class="text-white">Documentation</SheetTitle>
-              </SheetHeader>
-
-              <nav class="space-y-6">
-                <Collapsible
-                    v-for="group in sortedNavGroups"
-                    :key="group.title"
-                    :default-open="true"
-                    class="group/collapsible"
-                >
-                  <CollapsibleTrigger class="flex w-full items-center justify-between mb-3 px-1 text-sm font-semibold text-white/90">
-                    <div class="flex items-center gap-2">
-                      <component :is="group.icon" class="h-4 w-4 text-zinc-400" />
-                      {{ group.title }}
-                    </div>
-                    <ChevronDown class="h-4 w-4 text-zinc-400 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
-                  </CollapsibleTrigger>
-
-                  <CollapsibleContent>
-                    <div class="flex flex-col space-y-1 ml-3 border-l border-zinc-800/50 pl-3">
-                      <NuxtLink
-                          v-for="item in group.items"
-                          :key="item.to"
-                          :to="item.to"
-                          class="text-sm text-zinc-400 transition hover:text-white py-1"
-                          active-class="!text-white font-medium"
-                      >
-                        {{ item.label }}
-                      </NuxtLink>
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-              </nav>
-            </ScrollArea>
-          </SheetContent>
-        </Sheet>
-      </div>
-
-      <aside
-          class="fixed top-14 z-30 hidden h-[calc(100vh-3.5rem)] w-full shrink-0 md:sticky md:block"
-      >
-        <ScrollArea class="h-full pr-6 py-8">
-          <nav class="space-y-8">
-
-            <Collapsible
-                v-for="group in sortedNavGroups"
-                :key="group.title"
-                :default-open="true"
-                class="group/collapsible"
-            >
-              <CollapsibleTrigger class="flex w-full items-center justify-between mb-3 px-1 text-sm font-semibold text-white/90 hover:text-white transition-colors">
-                <div class="flex items-center gap-2">
-                  <component :is="group.icon" class="h-4 w-4 text-zinc-400" />
-                  {{ group.title }}
-                </div>
-                <ChevronDown class="h-4 w-4 text-zinc-400 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
-              </CollapsibleTrigger>
-
-              <CollapsibleContent>
-                <div
-                    class="relative border-l border-zinc-800/50 ml-3"
-                    @mouseleave="handleLeave(group.title, group.items)"
-                >
-                  <div
-                      class="absolute left-[-1.5px] w-[3px] rounded-full bg-white transition-all duration-300 ease-out"
-                      :style="indicatorStyle[group.title] || 'opacity: 0;'"
-                  ></div>
-
-                  <NuxtLink
-                      v-for="item in group.items"
-                      :key="item.to"
-                      :to="item.to"
-                      :ref="(el) => { if(el) itemRefs[`${group.title}-${item.to}`] = el.$el }"
-                      @mouseenter="handleHover(group.title, item.to)"
-                      class="
-                        group flex w-full items-center pl-4 pr-2 py-2
-                        text-sm text-zinc-400
-                        transition duration-200
-                        hover:text-zinc-50
-                          hover:translate-x-[3px]
-                      "
-                      active-class="!text-white font-medium"
-                  >
-                    {{ item.label }}
-                  </NuxtLink>
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-
-          </nav>
-        </ScrollArea>
-      </aside>
-
-      <main
-          class="relative py-10 max-w-4xl min-w-0 w-full"
-      >
-        <slot />
+  <div class="">
+    <AppNav :showDoc="false" :sortedNavGroups="sortedNavGroups"/>
+    <div class="container mx-auto border-x min-h-dvh pt-14">
+      <Divider/>
+      <!--  TODO    -->
+      <!--   a navigation here for all pages with a link to go back to components page in the left side and two button in the right side   -->
+      <!--   one button should go to previous component and other one goes to next component if next or perv is not avilable hide the button    -->
+      <main>
+        <slot/>
       </main>
     </div>
   </div>
 </template>
-
-<style scoped>
-/* ScrollArea handles the scrollbar styling now */
-</style>
