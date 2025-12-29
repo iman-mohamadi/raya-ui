@@ -18,12 +18,11 @@ export default defineNuxtConfig({
         ],
     },
 
-    modules: ["shadcn-nuxt", "@vueuse/nuxt", '@nuxtjs/sitemap', '@nuxt/image', 'motion-v/nuxt',],
+    modules: ["shadcn-nuxt", "@vueuse/nuxt", '@nuxtjs/sitemap', '@nuxt/image', 'motion-v/nuxt', '@pinia/nuxt'],
 
-    // --- SEO Configuration ---
     app: {
         head: {
-            titleTemplate: '%s - Raya UI', // Example: "Installation - Raya UI"
+            titleTemplate: '%s - Raya UI',
             title: 'Raya UI',
             meta: [
                 { name: 'viewport', content: 'width=device-width, initial-scale=1' },
