@@ -16,7 +16,7 @@ const groups = computed(() => {
   <PageTitle
       title="Shadcn components"
       subtitle="Build, customise, ship, repeat"
-      description="Copy and paste expertly crafted, fully customisable, responsive, components, powered by shadcn, Tailwind & React."
+      description="Copy and paste expertly crafted, fully customisable, responsive, components, powered by shadcn-vue, Tailwind & Vue."
   />
   <Divider/>
 
