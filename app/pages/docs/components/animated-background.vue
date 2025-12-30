@@ -1,20 +1,20 @@
 // app/pages/docs/components/animated-background.vue
 <script setup lang="ts">
-import { ref } from 'vue'
-import { AnimatedBackground } from '@/components/ui/animated-background'
-import { AnimatedTabs } from '@/components/ui/animated-tabs'
-import { CodeBlock } from '@/components/ui/code-block'
-import { Home, PhoneCall, Settings, User } from 'lucide-vue-next'
+import {ref} from 'vue'
+import {AnimatedBackground} from '@/components/ui/animated-background'
+import {AnimatedTabs} from '@/components/ui/animated-tabs'
+import {CodeBlock} from '@/components/ui/code-block'
+import {Home, PhoneCall, Settings, User} from 'lucide-vue-next'
 
-definePageMeta({ layout: 'docs' })
+definePageMeta({layout: 'docs'})
 const config = useAppConfig().raya
 
 // --- Data ---
 const TABS = [
-  { label: 'Home', icon: Home },
-  { label: 'About', icon: User },
-  { label: 'Services', icon: Settings },
-  { label: 'Contact', icon: PhoneCall },
+  {id: 1, label: 'Home', icon: Home},
+  {id: 2, label: 'About', icon: User},
+  {id: 3, label: 'Services', icon: Settings},
+  {id: 4, label: 'Contact', icon: PhoneCall},
 ]
 
 const CARDS = [
@@ -51,12 +51,12 @@ const CARDS = [
 ];
 
 const PREVIEW_TABS = [
-  { label: 'Preview', slot: 'preview' },
-  { label: 'Code', slot: 'code' }
+  {label: 'Preview', slot: 'preview'},
+  {label: 'Code', slot: 'code'}
 ]
 
 // --- State ---
-const activeTab = ref('Home')
+const activeTab = ref(0)
 
 // --- Code Snippets ---
 const installCommands = {
@@ -69,10 +69,10 @@ import { AnimatedBackground } from '@/components/ui/animated-background'
 import { Home, PhoneCall, Settings, User } from 'lucide-vue-next'
 
 const TABS = [
-  { label: 'Home', icon: Home },
-  { label: 'About', icon: User },
-  { label: 'Services', icon: Settings },
-  { label: 'Contact', icon: PhoneCall },
+  {id: 1 ,label: 'Home', icon: Home},
+  {id: 2 ,label: 'About', icon: User},
+  {id: 3 ,label: 'Services', icon: Settings},
+  {id: 4 ,label: 'Contact', icon: PhoneCall},
 ]
 <\/script>
 
@@ -174,53 +174,72 @@ const ITEMS = [
         description="Visually highlights selected items by sliding a background into view when hovered over or clicked."
     />
     <Divider/>
-
-    <AnimatedTabs :items="PREVIEW_TABS" class="space-y-4">
-      <template #preview>
-        <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 mt-4 p-10 flex flex-col items-center justify-center min-h-[250px]">
-          <div class="flex w-fit space-x-2 rounded-xl border border-zinc-950/10 bg-white dark:bg-zinc-950 p-2">
-            <AnimatedBackground
-                v-model="activeTab"
-                :items="TABS"
-                class="rounded-lg bg-zinc-100 dark:bg-zinc-800"
-                :transition="{
-                type: 'spring',
-                bounce: 0.2,
-                duration: 0.3,
-              }"
-            >
-              <template #default="{ item, isActive }">
-                <button
-                    type="button"
-                    :data-id="item.label"
-                    class="inline-flex h-9 w-9 items-center justify-center transition-colors duration-100 focus-visible:outline-2"
-                    :class="isActive ? 'text-zinc-950 dark:text-zinc-50' : 'text-zinc-500'"
-                >
-                  <component :is="item.icon" class="h-5 w-5" />
-                </button>
-              </template>
-            </AnimatedBackground>
+    <!--  First Example  -->
+    <div class="mt-4">
+      <Tabs default-value="preview">
+        <TabsList>
+          <TabsTrigger value="preview">
+            Preview
+          </TabsTrigger>
+          <TabsTrigger value="code">
+            Code
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="preview">
+          <div
+              class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 flex flex-col items-center justify-center min-h-[250px]">
+            <div class="flex w-fit space-x-2 rounded-xl border border-zinc-950/10 bg-white dark:bg-zinc-950 p-2">
+              <AnimatedBackground
+                  v-model="activeTab"
+                  :items="TABS"
+                  class="rounded-lg bg-zinc-100 dark:bg-zinc-800"
+                  :transition="{
+                    type: 'spring',
+                    bounce: 0.2,
+                    duration: 0.3,
+                  }"
+              >
+                <template #default="{ item, isActive }">
+                  <button
+                      type="button"
+                      :data-id="item.label"
+                      class="inline-flex h-9 w-9 items-center justify-center transition-colors duration-100 focus-visible:outline-2"
+                      :class="isActive ? 'text-zinc-950 dark:text-zinc-50' : 'text-zinc-500'"
+                  >
+                    <component :is="item.icon" class="size-5"/>
+                  </button>
+                </template>
+              </AnimatedBackground>
+            </div>
           </div>
-        </div>
-      </template>
-      <template #code>
-        <div class="mt-4">
-          <CodeBlock :code="tabsCode" lang="html" />
-        </div>
-      </template>
-    </AnimatedTabs>
+        </TabsContent>
+        <TabsContent value="code">
+          <CodeBlock :code="tabsCode" lang="html"/>
+        </TabsContent>
+      </Tabs>
+    </div>
 
-    <div class="space-y-6">
+    <div class="h-g"/>
+
+    <Divider/>
+
+    <!--  Install  -->
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
       <div class="space-y-4">
-        <CodeBlock :code="installCommands.npm" />
+        <CodeBlock :code="installCommands.npm"/>
         <p class="text-sm text-zinc-400">Or manually:</p>
-        <CodeBlock :code="installCommands.manual" />
+        <CodeBlock :code="installCommands.manual"/>
       </div>
     </div>
 
-    <div class="space-y-12">
-      <h2 class="scroll-m-20 text-3xl font-bold tracking-tight">Examples</h2>
+    <div class="h-g"/>
+
+    <Divider/>
+
+    <!--  More Examples  -->
+    <div class="space-y-12 mt-4">
+      <h2 class="scroll-m-20 text-3xl font-bold tracking-tight">More Examples</h2>
 
       <div class="space-y-4">
         <h3 class="text-xl font-semibold">Card Grid</h3>
@@ -253,7 +272,7 @@ const ITEMS = [
                     </div>
                   </template>
                   <template #background>
-                    <div class="absolute inset-0 rounded-lg bg-zinc-100 dark:bg-zinc-800" />
+                    <div class="absolute inset-0 rounded-lg bg-zinc-100 dark:bg-zinc-800"/>
                   </template>
                 </AnimatedBackground>
               </div>
@@ -261,7 +280,7 @@ const ITEMS = [
           </template>
           <template #code>
             <div class="mt-4">
-              <CodeBlock :code="cardGridCode" lang="html" />
+              <CodeBlock :code="cardGridCode" lang="html"/>
             </div>
           </template>
         </AnimatedTabs>
@@ -269,7 +288,12 @@ const ITEMS = [
 
     </div>
 
-    <div class="space-y-6 pt-10">
+    <div class="h-g"/>
+
+    <Divider/>
+
+    <!--  Table of Props, Emits , and ..  -->
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
       <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
         <table class="w-full text-sm text-left">
@@ -286,7 +310,8 @@ const ITEMS = [
             <td class="px-4 py-3 font-mono text-purple-400">items</td>
             <td class="px-4 py-3 font-mono text-xs">any[]</td>
             <td class="px-4 py-3 font-mono text-xs">[]</td>
-            <td class="px-4 py-3">Array of items to render. Each item should have a unique <code>id</code> or <code>value</code>.</td>
+            <td class="px-4 py-3">Array of items to render. Each item should have a unique <code>id</code> or <code>value</code>.
+            </td>
           </tr>
           <tr>
             <td class="px-4 py-3 font-mono text-purple-400">v-model</td>
@@ -317,8 +342,15 @@ const ITEMS = [
       </div>
     </div>
 
-    <div class="mt-10 pt-10 border-t border-zinc-800 text-zinc-500 text-sm">
-      <p>Source content adapted from <a href="https://motion-primitives.com/docs/animated-background#update-the-import-paths-to-match-your-project-setup" target="_blank" class="underline hover:text-zinc-300">Motion Primitives</a>.</p>
+    <!--  Copy Right if exist  -->
+    <div class="h-g"/>
+
+    <Divider/>
+
+    <div class="mt-4 text-sm pb-5">
+      <p>Source content adapted from <a
+          href="https://motion-primitives.com/docs/animated-background#update-the-import-paths-to-match-your-project-setup"
+          target="_blank" class="underline hover:text-zinc-300">Motion Primitives</a>.</p>
     </div>
 
   </div>
