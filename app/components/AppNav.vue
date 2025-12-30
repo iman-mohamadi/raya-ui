@@ -25,8 +25,8 @@ watch(() => route.path, () => {
 </script>
 
 <template>
-  <header class="fixed w-full left-0 top-0 z-50 max-w-screen overflow-x-hidden pt-2 data-[affix=true]:shadow-[0_0_16px_0_black]/8 dark:data-[affix=true]:shadow-[0_0_16px_0_black] not-dark:data-[affix=true]:**:data-header-container:after:bg-border transition-shadow duration-300 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-    <div class="container">
+  <header class="bg-background z-30 inset-header">
+    <div class="px-4">
       <div class="screen-line-before px-2 screen-line-after flex h-12 items-center justify-between after:z-1 after:transition-[background-color]">
         <div class="flex items-center gap-2">
           <NuxtLink to="/" >

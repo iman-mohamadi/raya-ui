@@ -72,6 +72,11 @@
     --selection: oklch(0.141 0.005 285.823);
     --selection-foreground: oklch(0.985 0 0);
 
+    --dashed-line: linear-gradient(to right,var(--color-edge)50%,var(--color-background)0%);
+    --dashed-line-y: linear-gradient(to top,var(--color-edge)50%,var(--color-background)0%);
+    --m: .75rem;
+    --g: 1.5rem;
+    --default-font-family: InterVariable,system-ui,sans-serif
 }
 
 .dark {
@@ -211,6 +216,11 @@
     --color-default: var(--foreground);
     --color-elevated: var(--muted);
     --color-accented: var(--accent);
+
+    --background-image-dashed-line: var(--dashed-line);
+    --background-image-dashed-line-y: var(--dashed-line-y);
+    --spacing-g: var(--g);
+    --spacing-m: var(--m);
 }
 
 @layer base {
@@ -225,7 +235,7 @@
     }
 }
 @utility container {
-    @apply mx-auto md:max-w-4xl border-x
+    @apply mx-auto
 }
 
 @utility no-scrollbar {
@@ -242,19 +252,23 @@
 }
 
 @utility screen-line-before {
-    @apply relative before:absolute before:top-0 before:-left-[100vw] before:-z-1 before:h-px before:w-[200vw] before:bg-edge;
+    @apply relative before:absolute before:top-0 before:-left-[100vw] before:z-10 before:h-px before:w-[200vw] before:bg-dashed-line before:bg-top before:bg-repeat-x before:bg-size-[8px_1px];
 }
 
 @utility screen-line-after {
-    @apply relative after:absolute after:bottom-0 after:-left-[100vw] after:z-1 after:h-px after:w-[200vw] after:bg-edge;
+    @apply relative after:absolute after:bottom-0 after:-left-[100vw] after:z-10 after:h-px after:w-[200vw] after:bg-dashed-line after:bg-top after:bg-repeat-x after:bg-size-[8px_1px]
 }
 
 @utility wrapper-line-before {
-    @apply relative before:absolute before:top-0 before:left-0 before:-z-1 before:h-px before:w-full before:bg-edge;
+    @apply relative before:absolute before:top-0 before:left-0 before:z-10 before:h-px before:w-full before:bg-dashed-line before:bg-top before:bg-repeat-x before:bg-size-[8px_1px];
 }
 
 @utility wrapper-line-after {
-    @apply relative after:absolute after:bottom-0 after:left-0 after:z-1 after:h-px after:w-full after:bg-edge;
+    @apply relative after:absolute after:bottom-0 after:left-0 after:z-10 after:h-px after:w-full after:bg-dashed-line after:bg-top after:bg-repeat-x after:bg-size-[8px_1px];
+}
+
+@utility bg-patterned {
+    @apply bg-size-[10px_10px] bg-fixed bg-[repeating-linear-gradient(315deg,currentColor_0,currentColor_1px,transparent_0,transparent_50%)]
 }
 
 @utility step {
@@ -470,4 +484,48 @@ button {
 
 .fade-slide:nth-child(3) {
     animation-delay: 4s;
+}
+@utility row-line {
+    @apply relative
+    before:absolute before:z-10 before:content-[''] before:h-px before:w-[200vw] before:-left-[100vw] before:bg-dashed-line before:bg-top before:bg-repeat-x before:bg-[length:8px_1px] before:top-0
+    after:absolute after:z-10 after:content-[''] after:h-px after:w-[200vw] after:-left-[100vw] after:bg-dashed-line after:bg-bottom after:bg-repeat-x after:bg-[length:8px_1px] after:bottom-0;
+}
+
+@utility col-line {
+    @apply relative
+    before:absolute before:content-[''] before:w-px before:h-full before:top-0 before:left-0 before:bg-dashed-line-y before:bg-left before:bg-repeat-y before:bg-[length:1px_8px]
+    after:absolute after:content-[''] after:w-px after:h-full after:top-0 after:right-0 after:bg-dashed-line-y after:bg-right after:bg-repeat-y after:bg-[length:1px_8px];
+}
+
+.blocks-list-grid-lines {
+    @apply pointer-events-none absolute inset-0 grid h-full w-full;
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 440px) {
+    .blocks-list-grid-lines {
+        grid-template-columns: 1fr var(--g) 1fr;
+    }
+    .blocks-list-grid-lines .line-1 { display: block; grid-column: 2; }
+}
+
+@media (min-width: 40rem) {
+    .blocks-list-grid-lines {
+        grid-template-columns: 1fr var(--g) 1fr var(--g) 1fr;
+    }
+    .blocks-list-grid-lines .line-1 { display: block; grid-column: 2; }
+    .blocks-list-grid-lines .line-2 { display: block; grid-column: 4; }
+}
+
+@media (min-width: 64rem) {
+    .blocks-list-grid-lines {
+        grid-template-columns: 1fr var(--g) 1fr var(--g) 1fr var(--g) 1fr;
+    }
+    .blocks-list-grid-lines .line-1 { display: block; grid-column: 2; }
+    .blocks-list-grid-lines .line-2 { display: block; grid-column: 4; }
+    .blocks-list-grid-lines .line-3 { display: block; grid-column: 6; }
+}
+
+.blocks-list-grid-lines > div {
+    display: none;
 }

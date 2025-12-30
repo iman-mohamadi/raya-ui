@@ -1,16 +1,17 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch, computed } from 'vue'
-import { useRoute } from 'vue-router'
-import { ArrowLeft, ArrowRight, LayoutGrid } from 'lucide-vue-next'
+import {ref, onMounted, nextTick, watch, computed} from 'vue'
+import {useRoute} from 'vue-router'
+import {ArrowLeft, ArrowRight, LayoutGrid} from 'lucide-vue-next'
 import Divider from "~/components/Divider.vue";
 import Button from "~/components/ui/button/Button.vue";
-import { useNavigationStore } from "~/stores/navigation";
+import {useNavigationStore} from "~/stores/navigation";
 
 const route = useRoute()
 const navStore = useNavigationStore()
 
 // Access the store constant directly
 const sortedNavGroups = computed(() => navStore.sortedNavGroups)
+const disableNav = ref(false)
 
 // --- Tracking Logic (Desktop) ---
 const itemRefs = ref<Record<string, HTMLElement>>({})
@@ -48,6 +49,7 @@ const updateAllIndicators = () => {
   sortedNavGroups.value.forEach(group => {
     handleLeave(group.title, group.items)
   })
+  disableNav.value = route.path === '/components';
 }
 
 onMounted(() => {
@@ -71,44 +73,59 @@ const nextItem = computed(() => currentIndex.value < flatNavItems.value.length -
 </script>
 
 <template>
-  <div class="">
-    <AppNav :showDoc="false" :sortedNavGroups="sortedNavGroups" />
-    <div class="pt-14">
-
+  <div
+      class="@container/root grid min-h-[100vh] grid-cols-[1fr_--spacing(4)_minmax(0,var(--breakpoint-2xl))_--spacing(4)_1fr] md:grid-cols-[1fr_--spacing(10)_minmax(0,var(--breakpoint-2xl))_--spacing(10)_1fr] grid-rows-[auto_1fr_auto] relative overflow-clip">
+    <div class="col-span-full sticky top-0 z-30">
+      <div class=" border-b border-primary-200 z-30">
+        <header class="">
+          <AppNav :showDoc="false"/>
+        </header>
+      </div>
     </div>
-    <div class="container min-h-dvh">
-      <Divider />
-
-      <div class="sticky top-14 z-40 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border/40">
-        <div class="flex h-14 items-center justify-between px-4">
-          <Button variant="ghost" size="sm" as-child class="gap-2 text-muted-foreground hover:text-foreground">
-            <NuxtLink to="/components">
-              <LayoutGrid class="h-4 w-4" />
-              <span class="hidden sm:inline">Components</span>
-            </NuxtLink>
-          </Button>
-
-          <div class="flex items-center gap-2">
-            <Button v-if="prevItem" variant="ghost" size="sm" as-child class="gap-2">
-              <NuxtLink :to="prevItem.to">
-                <ArrowLeft class="h-4 w-4" />
-                <span class="hidden sm:inline">{{ prevItem.label }}</span>
+    <div
+        class="col-start-2 row-span-full row-start-2 text-edge border-x border-x-current bg-patterned"></div>
+    <div class="col-start-3">
+      <div>
+        <Divider/>
+        <div
+            v-if="!disableNav"
+            class="sticky top-12 z-40 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 screen-line-after">
+          <div class="flex h-14 items-center justify-between px-4">
+            <Button variant="ghost" size="sm" as-child class="gap-2 text-muted-foreground hover:text-foreground">
+              <NuxtLink to="/components">
+                <LayoutGrid class="h-4 w-4"/>
+                <span class="hidden sm:inline">Components</span>
               </NuxtLink>
             </Button>
 
-            <Button v-if="nextItem" variant="ghost" size="sm" as-child class="gap-2">
-              <NuxtLink :to="nextItem.to">
-                <span class="hidden sm:inline">{{ nextItem.label }}</span>
-                <ArrowRight class="h-4 w-4" />
-              </NuxtLink>
-            </Button>
+            <div class="flex items-center gap-2">
+              <Button v-if="prevItem" variant="ghost" size="sm" as-child class="gap-2">
+                <NuxtLink :to="prevItem.to">
+                  <ArrowLeft class="h-4 w-4"/>
+                  <span class="hidden sm:inline">{{ prevItem.label }}</span>
+                </NuxtLink>
+              </Button>
+
+              <Button v-if="nextItem" variant="ghost" size="sm" as-child class="gap-2">
+                <NuxtLink :to="nextItem.to">
+                  <span class="hidden sm:inline">{{ nextItem.label }}</span>
+                  <ArrowRight class="h-4 w-4"/>
+                </NuxtLink>
+              </Button>
+            </div>
           </div>
         </div>
+        <div class="container mx-auto px-4 relative z-1">
+          <slot />
+        </div>
       </div>
-
-      <main>
-        <slot />
-      </main>
     </div>
+    <footer class="col-start-3">
+
+    </footer>
+    <div
+        class="col-start-4 row-span-full row-start-2 text-edge border-x border-x-current bg-patterned"></div>
   </div>
 </template>
+
+
