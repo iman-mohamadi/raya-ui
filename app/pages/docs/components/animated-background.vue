@@ -168,14 +168,12 @@ const ITEMS = [
 </script>
 
 <template>
-  <div class="max-w-4xl space-y-10 pb-20 pt-10">
-
-    <div class="space-y-4">
-      <h1 class="scroll-m-20 text-4xl font-bold tracking-tight">Animated Background</h1>
-      <p class="text-xl text-zinc-400">
-        Visually highlights selected items by sliding a background into view when hovered over or clicked.
-      </p>
-    </div>
+  <div>
+    <PageTitle
+        title="Animated Background"
+        description="Visually highlights selected items by sliding a background into view when hovered over or clicked."
+    />
+    <Divider/>
 
     <AnimatedTabs :items="PREVIEW_TABS" class="space-y-4">
       <template #preview>
