@@ -7,6 +7,13 @@ import { CodeBlock } from '@/components/ui/code-block'
 definePageMeta({ layout: 'docs' })
 const appConfig = useAppConfig().raya
 
+useSeoMeta({
+  title: 'Dotted Glow Background Component for Vue & Nuxt',
+  description: 'A canvas-based dotted background that produces an organic shimmering effect, compatible with Vue and Nuxt.',
+  ogTitle: 'Dotted Glow Background Component for Vue & Nuxt',
+  ogDescription: 'A canvas-based dotted background that produces an organic shimmering effect, compatible with Vue and Nuxt.',
+})
+
 // --- Demo State ---
 const config = ref({
   gap: 15,
@@ -51,71 +58,97 @@ const usageCode = `<template>
 </script>
 
 <template>
-  <div class="max-w-4xl space-y-10 pb-20 pt-10">
+  <div class="pb-5">
+    <PageTitle
+        title="Dotted Glow Background"
+        description="A canvas-based dotted background that produces an organic shimmering effect."
+    />
+    <Divider/>
+    <div class="mt-4">
+      <Tabs default-value="preview">
+        <TabsList>
+          <TabsTrigger value="preview">
+            Preview
+          </TabsTrigger>
+          <TabsTrigger value="code">
+            Code
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="preview">
+          <div class="relative overflow-hidden rounded-xl border border-zinc-800 bg-background flex items-center justify-center min-h-[500px]">
 
-    <div class="space-y-4">
-      <h1 class="scroll-m-20 text-4xl font-bold tracking-tight">Dotted Glow Background</h1>
-      <p class="text-xl text-zinc-400">
-        A canvas-based dotted background that produces an organic shimmering effect.
-      </p>
+            <DottedGlowBackground
+                class="absolute inset-0"
+                :gap="config.gap"
+                :radius="config.radius"
+                :opacity="config.opacity"
+                :speed-scale="config.speedScale"
+                color-light-var="foreground"
+                color-dark-var="foreground"
+                glow-color-light-var="primary"
+                glow-color-dark-var="primary"
+            />
+
+            <div class="absolute bottom-6 left-6 z-10 p-6 rounded-2xl border border-border/50 bg-card/60 backdrop-blur-md space-y-4 w-72 shadow-2xl">
+              <h3 class="font-semibold text-sm mb-2">Controls</h3>
+
+              <div class="space-y-1">
+                <label class="text-xs font-medium text-muted-foreground">Gap ({{ config.gap }}px)</label>
+                <input type="range" v-model.number="config.gap" min="10" max="50" class="w-full" />
+              </div>
+
+              <div class="space-y-1">
+                <label class="text-xs font-medium text-muted-foreground">Radius ({{ config.radius }}px)</label>
+                <input type="range" v-model.number="config.radius" min="1" max="10" step="0.5" class="w-full" />
+              </div>
+
+              <div class="space-y-1">
+                <label class="text-xs font-medium text-muted-foreground">Opacity ({{ config.opacity }})</label>
+                <input type="range" v-model.number="config.opacity" min="0.1" max="1" step="0.1" class="w-full" />
+              </div>
+
+              <div class="space-y-1">
+                <label class="text-xs font-medium text-muted-foreground">Speed ({{ config.speedScale }}x)</label>
+                <input type="range" v-model.number="config.speedScale" min="0" max="5" step="0.1" class="w-full" />
+              </div>
+            </div>
+
+            <div class="relative z-0 flex h-full items-center justify-center pointer-events-none">
+              <h1 class="text-5xl font-bold tracking-tighter bg-gradient-to-br from-foreground to-muted-foreground bg-clip-text text-transparent">
+                Glow.
+              </h1>
+            </div>
+          </div>
+        </TabsContent>
+        <TabsContent value="code">
+          <CodeBlock :code="usageCode" lang="html"/>
+        </TabsContent>
+      </Tabs>
     </div>
 
-    <AnimatedTabs :items="previewTabs" class="space-y-4">
-      <template #preview>
-        <div class="relative overflow-hidden rounded-xl border border-zinc-800 bg-background mt-4 h-[500px]">
+    <div class="h-g"/>
 
-          <DottedGlowBackground
-              class="absolute inset-0"
-              :gap="config.gap"
-              :radius="config.radius"
-              :opacity="config.opacity"
-              :speed-scale="config.speedScale"
-              color-light-var="foreground"
-              color-dark-var="foreground"
-              glow-color-light-var="primary"
-              glow-color-dark-var="primary"
-          />
+    <Divider/>
 
-          <div class="absolute bottom-6 left-6 z-10 p-6 rounded-2xl border border-border/50 bg-card/60 backdrop-blur-md space-y-4 w-72 shadow-2xl">
-            <h3 class="font-semibold text-sm mb-2">Controls</h3>
-
-            <div class="space-y-1">
-              <label class="text-xs font-medium text-muted-foreground">Gap ({{ config.gap }}px)</label>
-              <input type="range" v-model.number="config.gap" min="10" max="50" class="w-full" />
-            </div>
-
-            <div class="space-y-1">
-              <label class="text-xs font-medium text-muted-foreground">Radius ({{ config.radius }}px)</label>
-              <input type="range" v-model.number="config.radius" min="1" max="10" step="0.5" class="w-full" />
-            </div>
-
-            <div class="space-y-1">
-              <label class="text-xs font-medium text-muted-foreground">Opacity ({{ config.opacity }})</label>
-              <input type="range" v-model.number="config.opacity" min="0.1" max="1" step="0.1" class="w-full" />
-            </div>
-
-            <div class="space-y-1">
-              <label class="text-xs font-medium text-muted-foreground">Speed ({{ config.speedScale }}x)</label>
-              <input type="range" v-model.number="config.speedScale" min="0" max="5" step="0.1" class="w-full" />
-            </div>
+    <div class="space-y-6 mt-4">
+      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
+      <AnimatedTabs :items="installTabs" class="space-y-6">
+        <template #cli>
+          <CodeBlock :code="installCommands.npm"  />
+        </template>
+        <template #manual>
+          <div class="space-y-2">
+            <p class="text-sm text-zinc-400">Copy the component code into your project.</p>
           </div>
+        </template>
+      </AnimatedTabs>
+    </div>
 
-          <div class="relative z-0 flex h-full items-center justify-center pointer-events-none">
-            <h1 class="text-5xl font-bold tracking-tighter bg-gradient-to-br from-foreground to-muted-foreground bg-clip-text text-transparent">
-              Glow.
-            </h1>
-          </div>
-        </div>
-      </template>
+    <div class="h-g"/>
 
-      <template #code>
-        <div class="mt-4">
-          <CodeBlock :code="usageCode" lang="html" />
-        </div>
-      </template>
-    </AnimatedTabs>
+    <Divider/>
 
-    <div class="space-y-6">
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
       <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
         <table class="w-full text-sm text-left">
@@ -149,20 +182,6 @@ const usageCode = `<template>
           </tbody>
         </table>
       </div>
-    </div>
-
-    <div class="space-y-6">
-      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
-      <AnimatedTabs :items="installTabs" class="space-y-6">
-        <template #cli>
-          <CodeBlock :code="installCommands.npm"  />
-        </template>
-        <template #manual>
-          <div class="space-y-2">
-            <p class="text-sm text-zinc-400">Copy the component code into your project.</p>
-          </div>
-        </template>
-      </AnimatedTabs>
     </div>
 
   </div>

@@ -1,27 +1,27 @@
 <script setup lang="ts">
 import { ArrowRight, Check, AlertTriangle } from 'lucide-vue-next'
+import { Button } from '@/components/ui/button'
 
 definePageMeta({ layout: 'docs' })
 const config = useAppConfig().raya
 
 useSeoMeta({
-  title: 'Introduction',
-  description: `Learn about the philosophy behind ${config.name}. A copy-paste component library for Vue and Nuxt.`,
+  title: 'Introduction - Vue & Nuxt Component Library',
+  description: `Learn about the philosophy behind ${config.name}, a copy-paste component library built for Vue and Nuxt.`,
+  ogTitle: 'Introduction - Vue & Nuxt Component Library',
+  ogDescription: `Learn about the philosophy behind ${config.name}, a copy-paste component library built for Vue and Nuxt.`,
 })
 </script>
 
 <template>
-  <div class="max-w-4xl space-y-10 pb-20 pt-10">
+  <div class="pb-5">
+    <PageTitle
+        title="Introduction"
+        description="Beautifully designed components built with Vue & Shadcn. Copy and paste into your apps. Open Source. Accessible."
+    />
+    <Divider/>
 
-    <div class="space-y-4">
-      <h1 class="scroll-m-20 text-4xl font-bold tracking-tight text-white">Introduction</h1>
-      <p class="text-xl text-zinc-400">
-        Beautifully designed components built with Vue & Shadcn.
-        <span class="block mt-2 text-zinc-500 text-lg">Copy and paste into your apps. Open Source. Accessible.</span>
-      </p>
-    </div>
-
-    <div class="rounded-xl border border-amber-500/20 bg-amber-500/10 p-4">
+    <div class="mt-4 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4">
       <div class="flex items-start gap-3">
         <AlertTriangle class="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
         <div class="space-y-1">
@@ -35,7 +35,7 @@ useSeoMeta({
       </div>
     </div>
 
-    <div class="space-y-6">
+    <div class="space-y-6 mt-10">
       <div class="space-y-4">
         <h2 class="scroll-m-20 border-b border-zinc-800 pb-2 text-2xl font-semibold tracking-tight text-white">
           Philosophy
@@ -53,7 +53,7 @@ useSeoMeta({
       </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 mt-6">
       <div class="rounded-xl border border-zinc-800 bg-zinc-900/30 p-6 space-y-3">
         <h3 class="font-semibold text-white flex items-center gap-2">
           <Check class="h-4 w-4 text-white" />
@@ -75,7 +75,7 @@ useSeoMeta({
       </div>
     </div>
 
-    <div class="pt-6">
+    <div class="pt-6 mt-4">
       <NuxtLink to="/docs/installation">
         <Button size="lg" class="bg-white text-black hover:bg-zinc-200 font-bold">
           Start Installation

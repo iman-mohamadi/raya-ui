@@ -7,6 +7,13 @@ import { Mail, Trash2, Check, AlertTriangle, Info, ArrowRight } from 'lucide-vue
 definePageMeta({ layout: 'docs' })
 const config = useAppConfig().raya
 
+useSeoMeta({
+  title: 'Raya Button Component for Vue & Nuxt',
+  description: 'The ultimate button component inspired by Nuxt UI, built for Vue and Nuxt applications.',
+  ogTitle: 'Raya Button Component for Vue & Nuxt',
+  ogDescription: 'The ultimate button component inspired by Nuxt UI, built for Vue and Nuxt applications.',
+})
+
 const previewTabs = [
   { label: 'Preview', slot: 'preview' },
   { label: 'Code', slot: 'code' }
@@ -101,86 +108,90 @@ import { RayaButton } from '@/components/ui/raya-button'
 </script>
 
 <template>
-  <div class="max-w-4xl space-y-10 pb-20 pt-10">
+  <div class="pb-5">
+    <PageTitle
+        title="Raya Button"
+        description="The ultimate button component. Inspired by Nuxt UI, built for Vue."
+    />
+    <Divider/>
+    <div class="mt-4">
+      <Tabs default-value="preview">
+        <TabsList>
+          <TabsTrigger value="preview">
+            Preview
+          </TabsTrigger>
+          <TabsTrigger value="code">
+            Code
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="preview">
+          <div class="rounded-xl border border-zinc-800 bg-neutral-950 flex flex-col gap-8 p-8 min-h-[350px]">
+            <div class="space-y-3">
+              <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Variants (Primary)</h3>
+              <div class="flex flex-wrap gap-3 items-center">
+                <RayaButton color="primary" variant="solid">Solid</RayaButton>
+                <RayaButton color="primary" variant="outline">Outline</RayaButton>
+                <RayaButton color="primary" variant="soft">Soft</RayaButton>
+                <RayaButton color="primary" variant="subtle">Subtle</RayaButton>
+                <RayaButton color="primary" variant="ghost">Ghost</RayaButton>
+                <RayaButton color="primary" variant="link">Link</RayaButton>
+              </div>
+            </div>
 
-    <div class="space-y-4">
-      <h1 class="scroll-m-20 text-4xl font-bold tracking-tight">Raya Button</h1>
-      <p class="text-xl text-zinc-400">
-        The ultimate button component. Inspired by Nuxt UI, built for Vue.
-      </p>
+            <div class="space-y-3">
+              <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Semantic Colors</h3>
+              <div class="flex flex-wrap gap-3 items-center">
+                <RayaButton color="success" variant="solid"><Check class="h-4 w-4 mr-1.5" />Success</RayaButton>
+                <RayaButton color="warning" variant="solid"><AlertTriangle class="h-4 w-4 mr-1.5" />Warning</RayaButton>
+                <RayaButton color="error" variant="solid"><Trash2 class="h-4 w-4 mr-1.5" />Error</RayaButton>
+                <RayaButton color="info" variant="solid"><Info class="h-4 w-4 mr-1.5" />Info</RayaButton>
+                <RayaButton color="neutral" variant="solid">Neutral</RayaButton>
+              </div>
+            </div>
+
+            <div class="space-y-3">
+              <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Soft Variants</h3>
+              <div class="flex flex-wrap gap-3 items-center">
+                <RayaButton color="success" variant="soft">Success</RayaButton>
+                <RayaButton color="warning" variant="soft">Warning</RayaButton>
+                <RayaButton color="error" variant="soft">Error</RayaButton>
+                <RayaButton color="info" variant="soft">Info</RayaButton>
+                <RayaButton color="neutral" variant="soft">Neutral</RayaButton>
+              </div>
+            </div>
+
+            <div class="space-y-3">
+              <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Sizes & States</h3>
+              <div class="flex flex-wrap items-center gap-3">
+                <RayaButton size="xs">XS</RayaButton>
+                <RayaButton size="sm">SM</RayaButton>
+                <RayaButton size="md">MD</RayaButton>
+                <RayaButton size="lg">LG</RayaButton>
+                <RayaButton size="xl">XL</RayaButton>
+                <div class="w-px h-8 bg-zinc-800 mx-2"></div>
+                <RayaButton loading color="primary" variant="subtle">Loading</RayaButton>
+                <RayaButton square variant="outline"><Mail class="h-4 w-4" /></RayaButton>
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+        <TabsContent value="code">
+          <CodeBlock :code="usageCode" lang="html"/>
+        </TabsContent>
+      </Tabs>
     </div>
 
-    <AnimatedTabs :items="previewTabs" class="space-y-4">
+    <div class="h-g"/>
 
-      <template #preview>
-        <div class="rounded-xl border border-zinc-800 bg-neutral-950 mt-4 p-8 flex flex-col gap-8">
+    <Divider/>
 
-          <div class="space-y-3">
-            <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Variants (Primary)</h3>
-            <div class="flex flex-wrap gap-3 items-center">
-              <RayaButton color="primary" variant="solid">Solid</RayaButton>
-              <RayaButton color="primary" variant="outline">Outline</RayaButton>
-              <RayaButton color="primary" variant="soft">Soft</RayaButton>
-              <RayaButton color="primary" variant="subtle">Subtle</RayaButton>
-              <RayaButton color="primary" variant="ghost">Ghost</RayaButton>
-              <RayaButton color="primary" variant="link">Link</RayaButton>
-            </div>
-          </div>
-
-          <div class="space-y-3">
-            <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Semantic Colors</h3>
-            <div class="flex flex-wrap gap-3 items-center">
-              <RayaButton color="success" variant="solid"><Check class="h-4 w-4 mr-1.5" />Success</RayaButton>
-              <RayaButton color="warning" variant="solid"><AlertTriangle class="h-4 w-4 mr-1.5" />Warning</RayaButton>
-              <RayaButton color="error" variant="solid"><Trash2 class="h-4 w-4 mr-1.5" />Error</RayaButton>
-              <RayaButton color="info" variant="solid"><Info class="h-4 w-4 mr-1.5" />Info</RayaButton>
-              <RayaButton color="neutral" variant="solid">Neutral</RayaButton>
-            </div>
-          </div>
-
-          <div class="space-y-3">
-            <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Soft Variants</h3>
-            <div class="flex flex-wrap gap-3 items-center">
-              <RayaButton color="success" variant="soft">Success</RayaButton>
-              <RayaButton color="warning" variant="soft">Warning</RayaButton>
-              <RayaButton color="error" variant="soft">Error</RayaButton>
-              <RayaButton color="info" variant="soft">Info</RayaButton>
-              <RayaButton color="neutral" variant="soft">Neutral</RayaButton>
-            </div>
-          </div>
-
-          <div class="space-y-3">
-            <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Sizes & States</h3>
-            <div class="flex flex-wrap items-center gap-3">
-              <RayaButton size="xs">XS</RayaButton>
-              <RayaButton size="sm">SM</RayaButton>
-              <RayaButton size="md">MD</RayaButton>
-              <RayaButton size="lg">LG</RayaButton>
-              <RayaButton size="xl">XL</RayaButton>
-              <div class="w-px h-8 bg-zinc-800 mx-2"></div>
-              <RayaButton loading color="primary" variant="subtle">Loading</RayaButton>
-              <RayaButton square variant="outline"><Mail class="h-4 w-4" /></RayaButton>
-            </div>
-          </div>
-
-        </div>
-      </template>
-
-      <template #code>
-        <div class="rounded-xl border border-zinc-800 bg-neutral-950 mt-4 p-4">
-          <CodeBlock :code="usageCode" lang="html" />
-        </div>
-      </template>
-
-    </AnimatedTabs>
-
-    <div class="space-y-6">
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
       <AnimatedTabs :items="installTabs" class="space-y-6">
 
         <template #cli>
           <div class="space-y-4">
-            <div class="rounded-xl border border-zinc-800 bg-neutral-950 mt-4 p-4">
+            <div class="mt-4">
               <CodeBlock :code="installCommands.npm" />
             </div>
             <div class="rounded-lg border border-amber-900/50 bg-amber-950/10 p-4 text-sm text-amber-200">
@@ -190,7 +201,7 @@ import { RayaButton } from '@/components/ui/raya-button'
         </template>
 
         <template #manual>
-          <div class="rounded-xl border border-zinc-800 bg-neutral-950 mt-4 p-6 space-y-4">
+          <div class="mt-4 space-y-4">
             <p class="text-sm text-zinc-400">1. Install dependencies:</p>
             <CodeBlock :code="installCommands.manual" />
 
@@ -199,7 +210,7 @@ import { RayaButton } from '@/components/ui/raya-button'
         </template>
 
         <template #css>
-          <div class="rounded-xl border border-zinc-800 bg-neutral-950 mt-4 p-6 space-y-4">
+          <div class="mt-4 space-y-4">
             <div>
               <h3 class="font-semibold text-white">Update main.css</h3>
               <p class="text-sm text-zinc-400 mt-1">
@@ -215,9 +226,13 @@ import { RayaButton } from '@/components/ui/raya-button'
       </AnimatedTabs>
     </div>
 
-    <div class="space-y-6">
+    <div class="h-g"/>
+
+    <Divider/>
+
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
-      <div class="overflow-hidden rounded-xl border border-zinc-800 bg-neutral-950">
+      <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
         <table class="w-full text-sm text-left">
           <thead class="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400">
           <tr>

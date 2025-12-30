@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { BarVisualizer, type AgentState } from '@/components/ui/bar-visualizer'
-import { AnimatedTabs } from '@/components/ui/animated-tabs'
 import { CodeBlock } from '@/components/ui/code-block'
 import { Button } from '@/components/ui/button'
 
@@ -11,17 +10,6 @@ const config = useAppConfig().raya
 // --- Demo State ---
 const currentState = ref<AgentState>('speaking')
 const barCount = ref(20)
-
-// --- Tabs Config ---
-const previewTabs = [
-  { label: 'Preview', slot: 'preview' },
-  { label: 'Code', slot: 'code' }
-]
-
-const installTabs = [
-  { label: 'CLI', slot: 'cli' },
-  { label: 'Manual', slot: 'manual' }
-]
 
 // --- Code Snippets ---
 const installCommands = {
@@ -84,96 +72,116 @@ const state = ref('speaking')
     </div>
   </div>
 </template>`
+
+useSeoMeta({
+  title: 'Bar Visualizer Component for Vue & Nuxt',
+  description: 'A dynamic audio visualization component for voice agents and media, optimized for Vue and Nuxt projects.',
+  ogTitle: 'Bar Visualizer Component for Vue & Nuxt',
+  ogDescription: 'A dynamic audio visualization component for voice agents and media, optimized for Vue and Nuxt projects.',
+})
 </script>
 
 <template>
-  <div class="max-w-4xl space-y-10 pb-20 pt-10">
-    <div class="space-y-4">
-      <h1 class="scroll-m-20 text-4xl font-bold tracking-tight text-white">Bar Visualizer</h1>
-      <p class="text-xl text-zinc-400">
-        A dynamic audio visualization component for voice agents and media.
-      </p>
+  <div class="pb-5">
+    <PageTitle
+        title="Bar Visualizer"
+        description="A dynamic audio visualization component for voice agents and media."
+    />
+    <Divider/>
+    <div class="mt-4">
+      <Tabs default-value="preview">
+        <TabsList>
+          <TabsTrigger value="preview">
+            Preview
+          </TabsTrigger>
+          <TabsTrigger value="code">
+            Code
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="preview">
+          <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 flex flex-col items-center justify-center gap-8 min-h-[350px] p-10">
+            <BarVisualizer
+                :state="currentState"
+                :bar-count="barCount"
+                demo
+                class="w-full max-w-md h-32 bg-zinc-900/50 rounded-xl border border-white/5"
+            />
+
+            <div class="flex flex-wrap gap-2 justify-center">
+              <Button
+                  size="sm"
+                  :variant="currentState === 'speaking' ? 'default' : 'outline'"
+                  @click="currentState = 'speaking'"
+              >
+                Speaking
+              </Button>
+              <Button
+                  size="sm"
+                  :variant="currentState === 'listening' ? 'default' : 'outline'"
+                  @click="currentState = 'listening'"
+              >
+                Listening
+              </Button>
+              <Button
+                  size="sm"
+                  :variant="currentState === 'thinking' ? 'default' : 'outline'"
+                  @click="currentState = 'thinking'"
+              >
+                Thinking
+              </Button>
+              <Button
+                  size="sm"
+                  :variant="currentState === 'connecting' ? 'default' : 'outline'"
+                  @click="currentState = 'connecting'"
+              >
+                Connecting
+              </Button>
+              <Button
+                  size="sm"
+                  :variant="currentState === 'initializing' ? 'default' : 'outline'"
+                  @click="currentState = 'initializing'"
+              >
+                Initializing
+              </Button>
+            </div>
+          </div>
+        </TabsContent>
+        <TabsContent value="code">
+          <CodeBlock :code="previewCode" lang="html"/>
+        </TabsContent>
+      </Tabs>
     </div>
 
-    <AnimatedTabs :items="previewTabs" class="space-y-4">
-      <template #preview>
-        <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 mt-4 p-10 flex flex-col items-center justify-center gap-8 min-h-[350px]">
+    <div class="h-g"/>
 
-          <BarVisualizer
-              :state="currentState"
-              :bar-count="barCount"
-              demo
-              class="w-full max-w-md h-32 bg-zinc-900/50 rounded-xl border border-white/5"
-          />
+    <Divider/>
 
-          <div class="flex flex-wrap gap-2 justify-center">
-            <Button
-                size="sm"
-                :variant="currentState === 'speaking' ? 'default' : 'outline'"
-                @click="currentState = 'speaking'"
-            >
-              Speaking
-            </Button>
-            <Button
-                size="sm"
-                :variant="currentState === 'listening' ? 'default' : 'outline'"
-                @click="currentState = 'listening'"
-            >
-              Listening
-            </Button>
-            <Button
-                size="sm"
-                :variant="currentState === 'thinking' ? 'default' : 'outline'"
-                @click="currentState = 'thinking'"
-            >
-              Thinking
-            </Button>
-            <Button
-                size="sm"
-                :variant="currentState === 'connecting' ? 'default' : 'outline'"
-                @click="currentState = 'connecting'"
-            >
-              Connecting
-            </Button>
-            <Button
-                size="sm"
-                :variant="currentState === 'initializing' ? 'default' : 'outline'"
-                @click="currentState = 'initializing'"
-            >
-              Initializing
-            </Button>
-          </div>
-        </div>
-      </template>
-      <template #code>
-        <div class="mt-4">
-          <CodeBlock :code="previewCode" lang="html" />
-        </div>
-      </template>
-    </AnimatedTabs>
-
-    <div class="space-y-6">
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
-      <AnimatedTabs :items="installTabs" class="space-y-6">
-        <template #cli>
-          <CodeBlock :code="installCommands.npm"  />
-        </template>
-        <template #manual>
-          <div class="space-y-2">
-            <p class="text-sm text-zinc-400">Install dependencies:</p>
-            <CodeBlock :code="installCommands.manual"  />
-            <p class="text-sm text-zinc-400 mt-4">Copy the component code into your project.</p>
-          </div>
-        </template>
-      </AnimatedTabs>
+      <div class="space-y-4">
+        <CodeBlock :code="installCommands.npm"/>
+        <p class="text-sm text-zinc-400">Or manually:</p>
+        <CodeBlock :code="installCommands.manual"/>
+      </div>
     </div>
 
-    <div class="space-y-6">
-      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Usage</h2>
-      <CodeBlock :code="usageCode" lang="html" />
+    <div class="h-g"/>
+
+    <Divider/>
+
+    <div class="space-y-12 mt-4">
+      <h2 class="scroll-m-20 text-3xl font-bold tracking-tight">Usage</h2>
+
+      <div class="space-y-4">
+        <CodeBlock :code="usageCode" lang="html" />
+      </div>
     </div>
 
-    <div class="space-y-6">
+    <div class="h-g"/>
+
+    <Divider/>
+
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
       <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
         <table class="w-full text-sm text-left">

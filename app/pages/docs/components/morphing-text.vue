@@ -6,6 +6,13 @@ import { CodeBlock } from '@/components/ui/code-block'
 definePageMeta({ layout: 'docs' })
 const config = useAppConfig().raya
 
+useSeoMeta({
+  title: 'Morphing Text Component for Vue & Nuxt',
+  description: 'A text animation component for Vue and Nuxt that morphs between strings using SVG filters and blur effects.',
+  ogTitle: 'Morphing Text Component for Vue & Nuxt',
+  ogDescription: 'A text animation component for Vue and Nuxt that morphs between strings using SVG filters and blur effects.',
+})
+
 // --- Tabs Config ---
 const previewTabs = [
   { label: 'Preview', slot: 'preview' },
@@ -40,47 +47,58 @@ const texts = [
 </script>
 
 <template>
-  <div class="max-w-4xl space-y-10 pb-20 pt-10">
-
-    <div class="space-y-4">
-      <h1 class="scroll-m-20 text-4xl font-bold tracking-tight">Morphing Text</h1>
-      <p class="text-xl text-zinc-400">
-        A text animation that morphs between strings using SVG filters and blur effects.
-      </p>
-    </div>
-
-    <AnimatedTabs :items="previewTabs" class="space-y-4">
-      <template #preview>
-        <div class="relative rounded-xl border border-zinc-800 bg-neutral-950 mt-4 h-[350px] flex items-center justify-center overflow-hidden">
-          <MorphingText
-              :texts="['Raya', 'UI', 'Is', 'Awesome']"
-              class="text-white"
-          />
-        </div>
-      </template>
-
-      <template #code>
-        <div class="mt-4">
-          <CodeBlock :code="usageCode" lang="html" />
-        </div>
-      </template>
-    </AnimatedTabs>
-
-    <div class="space-y-6">
-      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
-      <AnimatedTabs :items="installTabs" class="space-y-6">
-        <template #cli>
-          <CodeBlock :code="installCommands.npm"  />
-        </template>
-        <template #manual>
-          <div class="space-y-2">
-            <p class="text-sm text-zinc-400">Copy the component code into your project.</p>
+  <div class="pb-5">
+    <PageTitle
+        title="Morphing Text"
+        description="A text animation that morphs between strings using SVG filters and blur effects."
+    />
+    <Divider/>
+    <div class="mt-4">
+      <Tabs default-value="preview">
+        <TabsList>
+          <TabsTrigger value="preview">
+            Preview
+          </TabsTrigger>
+          <TabsTrigger value="code">
+            Code
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="preview">
+          <div class="relative rounded-xl border border-zinc-800 bg-neutral-950 flex items-center justify-center min-h-[350px] overflow-hidden p-10">
+            <MorphingText
+                :texts="['Raya', 'UI', 'Is', 'Awesome']"
+                class="text-white"
+            />
           </div>
-        </template>
-      </AnimatedTabs>
+        </TabsContent>
+        <TabsContent value="code">
+          <CodeBlock :code="usageCode" lang="html"/>
+        </TabsContent>
+      </Tabs>
     </div>
 
-    <div class="space-y-6">
+    <div class="h-g"/>
+
+    <Divider/>
+
+    <div class="space-y-6 mt-4">
+      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
+      <div class="space-y-4">
+        <CodeBlock :code="installCommands.npm"/>
+        <p class="text-sm text-zinc-400">Or manually:</p>
+        <div class="space-y-2">
+          <p class="text-sm text-zinc-400">Install dependencies:</p>
+          <CodeBlock :code="installCommands.manual"  />
+          <p class="text-sm text-zinc-400 mt-4">Copy the component code into your project.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="h-g"/>
+
+    <Divider/>
+
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
       <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
         <table class="w-full text-sm text-left">

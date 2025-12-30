@@ -6,16 +6,12 @@ import { CodeBlock } from '@/components/ui/code-block'
 definePageMeta({ layout: 'docs' })
 const config = useAppConfig().raya
 
-// --- Tabs Config ---
-const previewTabs = [
-  { label: 'Preview', slot: 'preview' },
-  { label: 'Code', slot: 'code' }
-]
-
-const installTabs = [
-  { label: 'CLI', slot: 'cli' },
-  { label: 'Manual', slot: 'manual' }
-]
+useSeoMeta({
+  title: 'Encrypted Text Component for Vue & Nuxt',
+  description: 'A cyberpunk-style text reveal animation for Vue and Nuxt that unscrambles random characters into legible text.',
+  ogTitle: 'Encrypted Text Component for Vue & Nuxt',
+  ogDescription: 'A cyberpunk-style text reveal animation for Vue and Nuxt that unscrambles random characters into legible text.',
+})
 
 // --- Code Snippets ---
 const installCommands = {
@@ -48,71 +44,79 @@ import { EncryptedText } from '@/components/ui/encrypted-text'
 </script>
 
 <template>
-  <div class="max-w-4xl space-y-10 pb-20 pt-10">
+  <div class="pb-5">
+    <PageTitle
+        title="Encrypted Text"
+        description="A cyberpunk-style text reveal animation that unscrambles random characters into legible text."
+    />
+    <Divider/>
+    <div class="mt-4">
+      <Tabs default-value="preview">
+        <TabsList>
+          <TabsTrigger value="preview">
+            Preview
+          </TabsTrigger>
+          <TabsTrigger value="code">
+            Code
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="preview">
+          <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 flex flex-col items-center justify-center min-h-[350px] p-8 text-center">
+            <div class="space-y-6 max-w-lg">
+              <h2 class="text-3xl md:text-5xl font-black tracking-tight text-white">
+                <EncryptedText
+                    text="Raya UI Primitives"
+                    :reveal-delay-ms="100"
+                />
+              </h2>
 
-    <div class="space-y-4">
-      <h1 class="scroll-m-20 text-4xl font-bold tracking-tight">Encrypted Text</h1>
-      <p class="text-xl text-zinc-400">
-        A cyberpunk-style text reveal animation that unscrambles random characters into legible text.
-      </p>
-    </div>
+              <div class="text-lg text-zinc-400 font-mono">
+                <span class="text-teal-500 mr-2">></span>
+                <EncryptedText
+                    text="Initializing secure connection..."
+                    :reveal-delay-ms="40"
+                    class="inline"
+                />
+              </div>
 
-    <AnimatedTabs :items="previewTabs" class="space-y-4">
-      <template #preview>
-        <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 mt-4 h-[350px] flex flex-col items-center justify-center p-8 text-center">
-
-          <div class="space-y-6 max-w-lg">
-            <h2 class="text-3xl md:text-5xl font-black tracking-tight text-white">
-              <EncryptedText
-                  text="Raya UI Primitives"
-                  :reveal-delay-ms="100"
-              />
-            </h2>
-
-            <div class="text-lg text-zinc-400 font-mono">
-              <span class="text-teal-500 mr-2">></span>
-              <EncryptedText
-                  text="Initializing secure connection..."
-                  :reveal-delay-ms="40"
-                  class="inline"
-              />
-            </div>
-
-            <div class="p-4 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-zinc-500">
-              <EncryptedText
-                  text="Data encryption in progress. Decrypting payload sector 7G..."
-                  :reveal-delay-ms="20"
-                  encrypted-class="text-teal-600/50 blur-[1px]"
-              />
+              <div class="p-4 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-zinc-500">
+                <EncryptedText
+                    text="Data encryption in progress. Decrypting payload sector 7G..."
+                    :reveal-delay-ms="20"
+                    encrypted-class="text-teal-600/50 blur-[1px]"
+                />
+              </div>
             </div>
           </div>
+        </TabsContent>
+        <TabsContent value="code">
+          <CodeBlock :code="usageCode" lang="html"/>
+        </TabsContent>
+      </Tabs>
+    </div>
 
-        </div>
-      </template>
-      <template #code>
-        <div class="mt-4">
-          <CodeBlock :code="usageCode" lang="html" />
-        </div>
-      </template>
-    </AnimatedTabs>
+    <div class="h-g"/>
 
-    <div class="space-y-6">
+    <Divider/>
+
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
-      <AnimatedTabs :items="installTabs" class="space-y-6">
-        <template #cli>
-          <CodeBlock :code="installCommands.npm"  />
-        </template>
-        <template #manual>
-          <div class="space-y-2">
-            <p class="text-sm text-zinc-400">Install dependencies:</p>
-            <CodeBlock :code="installCommands.manual"  />
-            <p class="text-sm text-zinc-400 mt-4">Copy the component code into your project.</p>
-          </div>
-        </template>
-      </AnimatedTabs>
+      <div class="space-y-4">
+        <CodeBlock :code="installCommands.npm"/>
+        <p class="text-sm text-zinc-400">Or manually:</p>
+        <div class="space-y-2">
+          <p class="text-sm text-zinc-400">Install dependencies:</p>
+          <CodeBlock :code="installCommands.manual"  />
+          <p class="text-sm text-zinc-400 mt-4">Copy the component code into your project.</p>
+        </div>
+      </div>
     </div>
 
-    <div class="space-y-6">
+    <div class="h-g"/>
+
+    <Divider/>
+
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
       <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
         <table class="w-full text-sm text-left">
@@ -153,6 +157,5 @@ import { EncryptedText } from '@/components/ui/encrypted-text'
         </table>
       </div>
     </div>
-
   </div>
 </template>

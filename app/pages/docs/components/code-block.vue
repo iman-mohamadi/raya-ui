@@ -5,6 +5,13 @@ import { CodeBlock } from '@/components/ui/code-block'
 definePageMeta({ layout: 'docs' })
 const config = useAppConfig().raya
 
+useSeoMeta({
+  title: 'Code Block Component for Vue & Nuxt',
+  description: 'A content-aware code container with syntax highlighting and copy functionality for Vue and Nuxt applications.',
+  ogTitle: 'Code Block Component for Vue & Nuxt',
+  ogDescription: 'A content-aware code container with syntax highlighting and copy functionality for Vue and Nuxt applications.',
+})
+
 const simpleCode = `function greet(name: string) {
   return \`Hello, \${name}!\`;
 }
@@ -27,12 +34,6 @@ const commands = [
 // Animated Tabs Items
 const tabItems = frameworks.map(fw => ({ label: fw }))
 
-// --- New Data for Preview/Code ---
-const previewTabs = [
-  { label: 'Preview', slot: 'preview' },
-  { label: 'Code', slot: 'code' }
-]
-
 const codeBlockUsage = `<script setup lang="ts">
 import { CodeBlock } from '@/components/ui/code-block'
 
@@ -46,62 +47,138 @@ console.log(greet('${config.name}'));\`
 <template>
   <CodeBlock :code="code" lang="typescript" />
 </template>`
+
+const filenameUsage = `<CodeBlock
+  code="${installCode}"
+  file-name="Terminal"
+/>`
+
+const animatedTabsUsage = `<template>
+  <CodeBlock :code="commands[currentFramework]">
+    <template #header>
+      <AnimatedTabs
+          v-model="currentFramework"
+          :items="tabItems"
+          variant="link"
+          :content="false"
+          class="w-fit px-1"
+      />
+    </template>
+  </CodeBlock>
+</template>`
 </script>
 
 <template>
-  <div class="max-w-4xl space-y-10 pb-20 pt-10">
-
-    <div class="space-y-4">
-      <h1 class="scroll-m-20 text-4xl font-bold tracking-tight">Code Block</h1>
-      <p class="text-xl text-zinc-400">
-        A content-aware code container with syntax highlighting and copy functionality.
-      </p>
-    </div>
-
-    <AnimatedTabs :items="previewTabs" class="space-y-4">
-      <template #preview>
-        <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 mt-4 p-10 flex flex-col items-center justify-center min-h-[350px]">
-          <div class="w-full max-w-md">
-            <CodeBlock :code="simpleCode" lang="typescript" />
+  <div class="pb-5">
+    <PageTitle
+        title="Code Block"
+        description="A content-aware code container with syntax highlighting and copy functionality."
+    />
+    <Divider/>
+    <div class="mt-4">
+      <Tabs default-value="preview">
+        <TabsList>
+          <TabsTrigger value="preview">
+            Preview
+          </TabsTrigger>
+          <TabsTrigger value="code">
+            Code
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="preview">
+          <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 flex flex-col items-center justify-center min-h-[350px] p-10">
+            <div class="w-full max-w-md">
+              <CodeBlock :code="simpleCode" lang="typescript" />
+            </div>
           </div>
-        </div>
-      </template>
-      <template #code>
-        <div class="mt-4">
-          <CodeBlock :code="codeBlockUsage" lang="html" />
-        </div>
-      </template>
-    </AnimatedTabs>
-
-    <div class="space-y-4">
-      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">With Filename</h2>
-      <p class="text-zinc-400">Adding a <code>file-name</code> prop automatically creates a header bar.</p>
-      <CodeBlock :code="installCode"  file-name="Terminal" />
+        </TabsContent>
+        <TabsContent value="code">
+          <CodeBlock :code="codeBlockUsage" lang="html"/>
+        </TabsContent>
+      </Tabs>
     </div>
 
-    <div class="space-y-4">
-      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">With Animated Tabs</h2>
-      <p class="text-zinc-400">
-        You can place <code>AnimatedTabs</code> directly inside the <code>#header</code> slot.
-      </p>
+    <div class="h-g"/>
 
-      <CodeBlock
-          :code="commands[currentFramework]"
+    <Divider/>
 
-      >
-        <template #header>
-          <AnimatedTabs
-              v-model="currentFramework"
-              :items="tabItems"
-              variant="link"
-              :content="false"
-              class="w-fit px-1"
-          />
-        </template>
-      </CodeBlock>
+    <div class="space-y-6 mt-4">
+      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
+      <div class="space-y-4">
+        <CodeBlock :code="installCode" lang="bash" />
+      </div>
     </div>
 
-    <div class="space-y-6">
+    <div class="h-g"/>
+
+    <Divider/>
+
+    <div class="space-y-12 mt-4">
+      <h2 class="scroll-m-20 text-3xl font-bold tracking-tight">Examples</h2>
+
+      <div class="space-y-4">
+        <h3 class="text-xl font-semibold">With Filename</h3>
+        <p class="text-zinc-400 text-sm">Adding a <code>file-name</code> prop automatically creates a header bar.</p>
+
+        <Tabs default-value="preview">
+          <TabsList>
+            <TabsTrigger value="preview">Preview</TabsTrigger>
+            <TabsTrigger value="code">Code</TabsTrigger>
+          </TabsList>
+          <TabsContent value="preview">
+            <div class="rounded-xl border border-zinc-800 bg-zinc-950/50 p-6 flex justify-center">
+              <div class="w-full max-w-md">
+                <CodeBlock :code="installCode" file-name="Terminal" />
+              </div>
+            </div>
+          </TabsContent>
+          <TabsContent value="code">
+            <CodeBlock :code="filenameUsage" lang="html"/>
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      <div class="space-y-4">
+        <h3 class="text-xl font-semibold">With Animated Tabs</h3>
+        <p class="text-zinc-400 text-sm">
+          You can place <code>AnimatedTabs</code> directly inside the <code>#header</code> slot.
+        </p>
+
+        <Tabs default-value="preview">
+          <TabsList>
+            <TabsTrigger value="preview">Preview</TabsTrigger>
+            <TabsTrigger value="code">Code</TabsTrigger>
+          </TabsList>
+          <TabsContent value="preview">
+            <div class="rounded-xl border border-zinc-800 bg-zinc-950/50 p-6 flex justify-center">
+              <div class="w-full max-w-md">
+                <CodeBlock :code="commands[currentFramework]">
+                  <template #header>
+                    <AnimatedTabs
+                        v-model="currentFramework"
+                        :items="tabItems"
+                        variant="link"
+                        :content="false"
+                        class="w-fit px-1"
+                    />
+                  </template>
+                </CodeBlock>
+              </div>
+            </div>
+          </TabsContent>
+          <TabsContent value="code">
+            <CodeBlock :code="animatedTabsUsage" lang="html"/>
+          </TabsContent>
+        </Tabs>
+      </div>
+
+    </div>
+
+    <div class="h-g"/>
+
+    <Divider/>
+
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
       <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
         <table class="w-full text-sm text-left">
@@ -133,7 +210,7 @@ console.log(greet('${config.name}'));\`
       </div>
     </div>
 
-    <div class="space-y-6">
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Slots</h2>
       <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
         <table class="w-full text-sm text-left">

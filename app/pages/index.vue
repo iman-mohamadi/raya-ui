@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { SnowEffect } from '@/components/ui/snow-effect'
-import {ArrowRight, Component, Code2, Paintbrush, Sparkles} from 'lucide-vue-next'
-import FaqSection from "~/components/landing/FaqSection.vue";
+import { Button } from '@/components/ui/button'
+import { ArrowRight, Component, Code2, Paintbrush } from 'lucide-vue-next'
+import FaqSection from "~/components/landing/FaqSection.vue"
 
 definePageMeta({
   layout: 'default'
 })
-
 
 useHead({
   script: [
@@ -36,9 +36,7 @@ useHead({
 
 useSeoMeta({
   title: 'Raya UI - Open Source Vue & Nuxt UI Library',
-
-  description: 'Raya UI is a comprehensive Vue and Nuxt UI library based on Shadcn and Tailwind CSS. accessible, copy-paste components for modern web development.',
-
+  description: 'Raya UI is a comprehensive Vue and Nuxt UI library based on Shadcn and Tailwind CSS. Accessible, copy-paste components for modern web development.',
   ogTitle: 'Raya UI - The Ultimate Vue & Nuxt UI Library',
   ogDescription: 'Stop reinventing the wheel. Copy beautiful, accessible components directly into your Nuxt app with Raya UI.',
   ogImage: 'https://raya-ui.com/og-image.png',
@@ -72,42 +70,42 @@ useSeoMeta({
         </h1>
       </div>
 
-      <p class="max-w-xl mx-auto text-lg md:text-xl text-muted-foreground mb-10 leading-relaxed font-medium">
+      <p class="max-w-xl mx-auto text-lg md:text-xl text-zinc-400 mb-10 leading-relaxed font-medium">
         A collection of accessible, reusable, and composable Vue components.
         <br class="hidden md:block" />
         Styled with Tailwind CSS. Open Source.
       </p>
 
       <div class="flex flex-col sm:flex-row items-center gap-4">
-        <RayaButton asChild variant="subtle" size="lg" class="h-12 px-8 text-base shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all duration-300">
-          <NuxtLink to="/docs/introduction">
+        <NuxtLink to="/docs/introduction">
+          <Button size="lg" class="h-12 px-8 text-base shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all duration-300">
             Browse Components
             <ArrowRight class="ml-2 h-4 w-4" />
-          </NuxtLink>
-        </RayaButton>
-        <RayaButton asChild size="lg" variant="outline" class="h-12 px-8 text-base bg-white/5 hover:bg-white/10 border border-white/10 text-white">
-          <NuxtLink to="/docs/components/animated-input">
+          </Button>
+        </NuxtLink>
+        <NuxtLink to="/docs/components/animated-input">
+          <Button size="lg" variant="outline" class="h-12 px-8 text-base bg-white/5 hover:bg-white/10 border-white/10 text-white hover:text-white">
             Documentation
-          </NuxtLink>
-        </RayaButton>
+          </Button>
+        </NuxtLink>
       </div>
 
       <div class="mt-24 grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
-        <div class="group relative overflow-hidden rounded-xl border border-white/10 bg-zinc-900/30 p-8 text-left transition-all hover:border-primary/50 hover:bg-zinc-900/50">
+        <div class="group relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/30 p-8 text-left transition-all hover:border-zinc-700 hover:bg-zinc-900/50">
           <div class="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform">
             <Paintbrush class="h-5 w-5" />
           </div>
           <h3 class="mb-2 text-lg font-bold text-white">Customizable</h3>
           <p class="text-sm text-zinc-400">Built with Tailwind CSS, giving you full control over styles and themes.</p>
         </div>
-        <div class="group relative overflow-hidden rounded-xl border border-white/10 bg-zinc-900/30 p-8 text-left transition-all hover:border-primary/50 hover:bg-zinc-900/50">
+        <div class="group relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/30 p-8 text-left transition-all hover:border-zinc-700 hover:bg-zinc-900/50">
           <div class="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform">
             <Component class="h-5 w-5" />
           </div>
           <h3 class="mb-2 text-lg font-bold text-white">Copy & Paste</h3>
           <p class="text-sm text-zinc-400">No massive dependencies. Just copy the component code you need into your project.</p>
         </div>
-        <div class="group relative overflow-hidden rounded-xl border border-white/10 bg-zinc-900/30 p-8 text-left transition-all hover:border-primary/50 hover:bg-zinc-900/50">
+        <div class="group relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/30 p-8 text-left transition-all hover:border-zinc-700 hover:bg-zinc-900/50">
           <div class="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform">
             <Code2 class="h-5 w-5" />
           </div>
@@ -117,7 +115,7 @@ useSeoMeta({
       </div>
     </div>
 
-    <div class="relative z-10 w-full bg-zinc-950/50 border-t border-white/5">
+    <div class="relative z-10 w-full bg-zinc-950/50 border-t border-zinc-800">
       <FaqSection />
     </div>
 

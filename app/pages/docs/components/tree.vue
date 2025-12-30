@@ -8,6 +8,13 @@ import { Folder, File, FileCode, Image, Archive } from 'lucide-vue-next'
 definePageMeta({ layout: 'docs' })
 const config = useAppConfig().raya
 
+useSeoMeta({
+  title: 'Tree Component for Vue & Nuxt',
+  description: 'A hierarchical list component for Vue and Nuxt where folders expand and items are selectable.',
+  ogTitle: 'Tree Component for Vue & Nuxt',
+  ogDescription: 'A hierarchical list component for Vue and Nuxt where folders expand and items are selectable.',
+})
+
 // --- Sample Data ---
 interface FileNode {
   label: string
@@ -152,17 +159,17 @@ const getKeyResolver = (item: T) => {
 // Manually handle expansion toggling for parents
 const handleToggle = (item: any) => {
   if (!item.hasChildren) return
-  
+
   const key = getKeyResolver(item.value)
   const currentExpanded = props.expanded ? [...props.expanded] : []
   const index = currentExpanded.indexOf(key)
-  
+
   if (index > -1) {
     currentExpanded.splice(index, 1)
   } else {
     currentExpanded.push(key)
   }
-  
+
   emits('update:expanded', currentExpanded)
 }
 <\/script>
@@ -205,11 +212,11 @@ const handleToggle = (item: any) => {
       />
       <span v-else class="h-4 w-4 shrink-0" />
 
-      <slot 
-        name="item" 
-        :item="item.value" 
-        :expanded="isExpanded" 
-        :selected="isSelected" 
+      <slot
+        name="item"
+        :item="item.value"
+        :expanded="isExpanded"
+        :selected="isSelected"
         :indeterminate="isIndeterminate"
       >
         <component
@@ -229,56 +236,65 @@ const handleToggle = (item: any) => {
 </script>
 
 <template>
-  <div class="max-w-4xl space-y-10 pb-20 pt-10">
-
-    <div class="space-y-4">
-      <h1 class="scroll-m-20 text-4xl font-bold tracking-tight">Tree</h1>
-      <p class="text-xl text-muted-foreground">
-        A hierarchical list component where folders expand and only files are selectable.
-      </p>
+  <div class="pb-5">
+    <PageTitle
+        title="Tree"
+        description="A hierarchical list component where folders expand and only files are selectable."
+    />
+    <Divider/>
+    <div class="mt-4">
+      <Tabs default-value="preview">
+        <TabsList>
+          <TabsTrigger value="preview">
+            Preview
+          </TabsTrigger>
+          <TabsTrigger value="code">
+            Code
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="preview">
+          <div class="rounded-xl border border-zinc-800 bg-zinc-950 p-10 min-h-[350px] flex items-start justify-center">
+            <div class="w-full max-w-sm rounded-lg border border-zinc-800 bg-zinc-950 p-2">
+              <Tree
+                  v-model="selection"
+                  v-model:expanded="expanded"
+                  :items="items"
+                  class="w-full"
+                  selection-behavior="toggle"
+              />
+            </div>
+          </div>
+          <div class="mt-4 text-sm text-zinc-500 bg-zinc-900/30 p-4 rounded-md font-mono">
+            <p>Expanded: {{ expanded }}</p>
+            <p class="mt-1">Selected Label: {{ selection ? selection.label : 'None' }}</p>
+          </div>
+        </TabsContent>
+        <TabsContent value="code">
+          <CodeBlock :code="usageCode" lang="html"/>
+        </TabsContent>
+      </Tabs>
     </div>
 
-    <AnimatedTabs :items="previewTabs" class="space-y-4">
-      <template #preview>
-        <div class="rounded-xl border border-border bg-card p-10 min-h-[350px] flex items-start justify-center">
-          <div class="w-full max-w-sm rounded-lg border border-border bg-background p-2">
-            <Tree
-                v-model="selection"
-                v-model:expanded="expanded"
-                :items="items"
-                class="w-full"
-                selection-behavior="toggle"
-            />
-          </div>
-        </div>
-        <div class="mt-4 text-sm text-muted-foreground bg-muted/30 p-4 rounded-md font-mono">
-          <p>Expanded: {{ expanded }}</p>
-          <p class="mt-1">Selected Label: {{ selection ? selection.label : 'None' }}</p>
-        </div>
-      </template>
-      <template #code>
-        <div class="mt-4">
-          <CodeBlock :code="usageCode"/>
-        </div>
-      </template>
-    </AnimatedTabs>
+    <div class="h-g"/>
 
-    <div class="space-y-6">
+    <Divider/>
+
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
       <AnimatedTabs :items="installTabs" class="space-y-6">
         <template #cli>
           <CodeBlock :code="installationCode" file-name="Terminal" />
         </template>
         <template #manual>
-          <div class="space-y-6">
+          <div class="space-y-6 mt-4">
             <div class="space-y-2">
               <h3 class="text-base font-medium">1. Install Dependencies</h3>
               <CodeBlock code="npm install reka-ui lucide-vue-next" file-name="Terminal" />
             </div>
             <div class="space-y-2">
               <h3 class="text-base font-medium">2. Create Component</h3>
-              <p class="text-sm text-muted-foreground">
-                Copy the code below into <code class="bg-muted px-1 py-0.5 rounded">components/ui/tree/Tree.vue</code>
+              <p class="text-sm text-zinc-400">
+                Copy the code below into <code class="bg-zinc-900 px-1 py-0.5 rounded">components/ui/tree/Tree.vue</code>
               </p>
               <CodeBlock :code="componentCode" file-name="components/ui/tree/Tree.vue" />
             </div>
@@ -287,11 +303,15 @@ const handleToggle = (item: any) => {
       </AnimatedTabs>
     </div>
 
-    <div class="space-y-6">
+    <div class="h-g"/>
+
+    <Divider/>
+
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
-      <div class="overflow-x-auto rounded-lg border border-border bg-card">
+      <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
         <table class="w-full text-sm text-left">
-          <thead class="border-b border-border bg-muted/50 text-muted-foreground">
+          <thead class="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400">
           <tr>
             <th class="px-4 py-3 font-medium">Prop</th>
             <th class="px-4 py-3 font-medium">Type</th>
@@ -299,7 +319,7 @@ const handleToggle = (item: any) => {
             <th class="px-4 py-3 font-medium">Description</th>
           </tr>
           </thead>
-          <tbody class="divide-y divide-border text-foreground">
+          <tbody class="divide-y divide-zinc-800 text-zinc-300">
           <tr>
             <td class="px-4 py-3 font-mono text-purple-400">items</td>
             <td class="px-4 py-3 font-mono text-xs">Array</td>
@@ -347,18 +367,18 @@ const handleToggle = (item: any) => {
       </div>
     </div>
 
-    <div class="space-y-6">
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Emits</h2>
-      <div class="overflow-x-auto rounded-lg border border-border bg-card">
+      <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
         <table class="w-full text-sm text-left">
-          <thead class="border-b border-border bg-muted/50 text-muted-foreground">
+          <thead class="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400">
           <tr>
             <th class="px-4 py-3 font-medium">Event</th>
             <th class="px-4 py-3 font-medium">Payload</th>
             <th class="px-4 py-3 font-medium">Description</th>
           </tr>
           </thead>
-          <tbody class="divide-y divide-border text-foreground">
+          <tbody class="divide-y divide-zinc-800 text-zinc-300">
           <tr>
             <td class="px-4 py-3 font-mono text-purple-400">update:modelValue</td>
             <td class="px-4 py-3 font-mono text-xs">any</td>
@@ -374,18 +394,18 @@ const handleToggle = (item: any) => {
       </div>
     </div>
 
-    <div class="space-y-6">
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Slots</h2>
-      <div class="overflow-x-auto rounded-lg border border-border bg-card">
+      <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
         <table class="w-full text-sm text-left">
-          <thead class="border-b border-border bg-muted/50 text-muted-foreground">
+          <thead class="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400">
           <tr>
             <th class="px-4 py-3 font-medium">Slot</th>
             <th class="px-4 py-3 font-medium">Props</th>
             <th class="px-4 py-3 font-medium">Description</th>
           </tr>
           </thead>
-          <tbody class="divide-y divide-border text-foreground">
+          <tbody class="divide-y divide-zinc-800 text-zinc-300">
           <tr>
             <td class="px-4 py-3 font-mono text-purple-400">#item</td>
             <td class="px-4 py-3 font-mono text-xs">{ item, expanded, selected, indeterminate }</td>
@@ -397,15 +417,3 @@ const handleToggle = (item: any) => {
     </div>
   </div>
 </template>
-
-
-<!--<template #default="{ item, isActive }">-->
-<!--  <button-->
-<!--      type="button"-->
-<!--      :data-id="item.label"-->
-<!--      class="inline-flex h-9 w-9 items-center justify-center transition-colors duration-100 focus-visible:outline-2"-->
-<!--      :class="isActive ? 'text-zinc-950 dark:text-zinc-50' : 'text-zinc-500'"-->
-<!--  >-->
-<!--    <component :is="item.icon" class="h-5 w-5" />-->
-<!--  </button>-->
-<!--</template>-->

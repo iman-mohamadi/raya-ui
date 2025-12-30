@@ -1,21 +1,17 @@
 <script setup lang="ts">
 import { PixelatedButton } from '@/components/ui/pixelated-button'
-import { AnimatedTabs } from '@/components/ui/animated-tabs'
 import { CodeBlock } from '@/components/ui/code-block'
 import { Crown, Ghost, Sword } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'docs' })
 const config = useAppConfig().raya
 
-const previewTabs = [
-  { label: 'Preview', slot: 'preview' },
-  { label: 'Code', slot: 'code' }
-]
-
-const installTabs = [
-  { label: 'CLI', slot: 'cli' },
-  { label: 'Manual', slot: 'manual' }
-]
+useSeoMeta({
+  title: 'Pixelated Button Component for Vue & Nuxt',
+  description: 'A complex 3D pixel-art button component for Vue and Nuxt with particles, scanlines, and high customizability.',
+  ogTitle: 'Pixelated Button Component for Vue & Nuxt',
+  ogDescription: 'A complex 3D pixel-art button component for Vue and Nuxt with particles, scanlines, and high customizability.',
+})
 
 const installCommands = {
   npm: `npx shadcn-vue@latest add ${config.baseUrl}/pixelated-button.json`,
@@ -48,71 +44,82 @@ import { Crown } from 'lucide-vue-next'
 </script>
 
 <template>
-  <div class="max-w-4xl space-y-10 pb-20 pt-10">
+  <div class="pb-5">
+    <PageTitle
+        title="Pixel Game Button"
+        description="A complex 3D pixel-art button with particles, scanlines, and high customizability."
+    />
+    <Divider/>
+    <div class="mt-4">
+      <Tabs default-value="preview">
+        <TabsList>
+          <TabsTrigger value="preview">
+            Preview
+          </TabsTrigger>
+          <TabsTrigger value="code">
+            Code
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="preview">
+          <div class="relative rounded-xl border border-zinc-800 bg-[#050505] flex flex-col gap-12 items-center justify-center min-h-[600px] overflow-hidden p-10">
 
-    <div class="space-y-4">
-      <h1 class="scroll-m-20 text-4xl font-bold tracking-tight">Pixel Game Button</h1>
-      <p class="text-xl text-zinc-400">
-        A complex 3D pixel-art button with particles, scanlines, and high customizability.
-      </p>
-    </div>
+            <PixelatedButton />
 
-    <AnimatedTabs :items="previewTabs" class="space-y-4">
-      <template #preview>
-        <div class="relative rounded-xl border border-zinc-800 bg-[#050505] mt-4 h-[600px] flex flex-col gap-12 items-center justify-center overflow-hidden">
+            <PixelatedButton
+                :hue="120"
+                label="LEVEL UP"
+                sub-label="READY?"
+            >
+              <template #icon-left>
+                <Crown class="w-6 h-6 text-yellow-300" />
+              </template>
+            </PixelatedButton>
 
-          <PixelatedButton />
+            <PixelatedButton
+                :hue="260"
+                label="SETTINGS"
+                sub-label="CONFIG"
+                :scale="0.7"
+                :show-particles="false"
+            >
+              <template #icon-left>
+                <Ghost class="w-6 h-6" />
+              </template>
+              <template #icon-right>
+                <Sword class="w-5 h-5" />
+              </template>
+            </PixelatedButton>
 
-          <PixelatedButton
-              :hue="120"
-              label="LEVEL UP"
-              sub-label="READY?"
-          >
-            <template #icon-left>
-              <Crown class="w-6 h-6 text-yellow-300" />
-            </template>
-          </PixelatedButton>
-
-          <PixelatedButton
-              :hue="260"
-              label="SETTINGS"
-              sub-label="CONFIG"
-              :scale="0.7"
-              :show-particles="false"
-          >
-            <template #icon-left>
-              <Ghost class="w-6 h-6" />
-            </template>
-            <template #icon-right>
-              <Sword class="w-5 h-5" />
-            </template>
-          </PixelatedButton>
-
-        </div>
-      </template>
-
-      <template #code>
-        <div class="mt-4">
-          <CodeBlock :code="usageCode" lang="html" />
-        </div>
-      </template>
-    </AnimatedTabs>
-
-    <div class="space-y-6">
-      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
-      <AnimatedTabs :items="installTabs" class="space-y-6">
-        <template #cli>
-          <CodeBlock :code="installCommands.npm"  />
-        </template>
-        <template #manual>
-          <div class="space-y-2">
-            <p class="text-sm text-zinc-400">Copy the component code into your project.</p>
           </div>
-        </template>
-      </AnimatedTabs>
+        </TabsContent>
+        <TabsContent value="code">
+          <CodeBlock :code="usageCode" lang="html"/>
+        </TabsContent>
+      </Tabs>
     </div>
 
-    <div class="space-y-6">
+    <div class="h-g"/>
+
+    <Divider/>
+
+    <div class="space-y-6 mt-4">
+      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
+      <div class="space-y-4">
+        <CodeBlock :code="installCommands.npm"/>
+        <p class="text-sm text-zinc-400">Or manually:</p>
+        <div class="space-y-2">
+          <p class="text-sm text-zinc-400">Install dependencies:</p>
+          <CodeBlock :code="installCommands.manual"  />
+          <p class="text-sm text-zinc-400 mt-4">Copy the component code into your project.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="h-g"/>
+
+    <Divider/>
+
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
       <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
         <table class="w-full text-sm text-left">
@@ -160,7 +167,7 @@ import { Crown } from 'lucide-vue-next'
       </div>
     </div>
 
-    <div class="space-y-6">
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Slots</h2>
       <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
         <table class="w-full text-sm text-left">

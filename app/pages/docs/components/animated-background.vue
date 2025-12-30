@@ -165,10 +165,17 @@ const ITEMS = [
     </template>
   </AnimatedBackground>
 </template>`
+
+useSeoMeta({
+  title: 'Animated Background Component for Vue & Nuxt',
+  description: 'A Vue and Nuxt component that visually highlights selected items by sliding a background into view on hover or click.',
+  ogTitle: 'Animated Background Component for Vue & Nuxt',
+  ogDescription: 'A Vue and Nuxt component that visually highlights selected items by sliding a background into view on hover or click.',
+})
 </script>
 
 <template>
-  <div>
+  <div class="pb-5">
     <PageTitle
         title="Animated Background"
         description="Visually highlights selected items by sliding a background into view when hovered over or clicked."
@@ -347,7 +354,7 @@ const ITEMS = [
 
     <Divider/>
 
-    <div class="mt-4 text-sm pb-5">
+    <div class="mt-4 text-sm">
       <p>Source content adapted from <a
           href="https://motion-primitives.com/docs/animated-background#update-the-import-paths-to-match-your-project-setup"
           target="_blank" class="underline hover:text-zinc-300">Motion Primitives</a>.</p>

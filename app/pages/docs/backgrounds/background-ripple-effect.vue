@@ -7,6 +7,13 @@ import { CodeBlock } from '@/components/ui/code-block'
 definePageMeta({ layout: 'docs' })
 const appConfig = useAppConfig().raya
 
+useSeoMeta({
+  title: 'Background Ripple Effect Component for Vue & Nuxt',
+  description: 'A grid of interactive cells that ripple outwards when clicked, optimized for Vue and Nuxt projects.',
+  ogTitle: 'Background Ripple Effect Component for Vue & Nuxt',
+  ogDescription: 'A grid of interactive cells that ripple outwards when clicked, optimized for Vue and Nuxt projects.',
+})
+
 // --- Demo State ---
 const config = ref({
   rows: 7,
@@ -49,75 +56,102 @@ const usageCode = `<template>
 </script>
 
 <template>
-  <div class="max-w-4xl space-y-10 pb-20 pt-10">
+  <div class="pb-5">
+    <PageTitle
+        title="Background Ripple Effect"
+        description="A grid of interactive cells that ripple outwards when clicked."
+    />
+    <Divider/>
+    <div class="mt-4">
+      <Tabs default-value="preview">
+        <TabsList>
+          <TabsTrigger value="preview">
+            Preview
+          </TabsTrigger>
+          <TabsTrigger value="code">
+            Code
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="preview">
+          <div class="relative overflow-hidden rounded-xl border border-zinc-800 bg-background flex items-center justify-center min-h-[500px]">
 
-    <div class="space-y-4">
-      <h1 class="scroll-m-20 text-4xl font-bold tracking-tight">Background Ripple Effect</h1>
-      <p class="text-xl text-zinc-400">
-        A grid of interactive cells that ripple outwards when clicked.
-      </p>
+            <BackgroundRippleEffect
+                class="absolute inset-0"
+                :rows="config.rows"
+                :cols="config.cols"
+                :cell-size="config.cellSize"
+                :interactive="config.interactive"
+                :fill="config.fill"
+            />
+
+            <div class="absolute bottom-6 left-6 z-10 p-6 rounded-2xl border border-border/50 bg-card/60 backdrop-blur-md space-y-4 w-72 shadow-2xl">
+              <h3 class="font-semibold text-sm mb-2">Controls</h3>
+
+              <div class="flex items-center justify-between">
+                <label class="text-xs font-medium text-muted-foreground">Fill Parent</label>
+                <input type="checkbox" v-model="config.fill" class="accent-primary" />
+              </div>
+
+              <template v-if="!config.fill">
+                <div class="space-y-1">
+                  <label class="text-xs font-medium text-muted-foreground">Rows ({{ config.rows }})</label>
+                  <input type="range" v-model.number="config.rows" min="4" max="20" class="w-full" />
+                </div>
+
+                <div class="space-y-1">
+                  <label class="text-xs font-medium text-muted-foreground">Cols ({{ config.cols }})</label>
+                  <input type="range" v-model.number="config.cols" min="4" max="30" class="w-full" />
+                </div>
+              </template>
+
+              <div class="space-y-1">
+                <label class="text-xs font-medium text-muted-foreground">Cell Size ({{ config.cellSize }}px)</label>
+                <input type="range" v-model.number="config.cellSize" min="20" max="80" class="w-full" />
+              </div>
+
+              <div class="flex items-center justify-between">
+                <label class="text-xs font-medium text-muted-foreground">Interactive</label>
+                <input type="checkbox" v-model="config.interactive" class="accent-primary" />
+              </div>
+            </div>
+
+            <div class="relative z-0 pointer-events-none">
+              <h1 class="text-4xl font-bold tracking-tighter text-foreground">
+                Click the Grid
+              </h1>
+            </div>
+          </div>
+        </TabsContent>
+        <TabsContent value="code">
+          <CodeBlock :code="usageCode" lang="html"/>
+        </TabsContent>
+      </Tabs>
     </div>
 
-    <AnimatedTabs :items="previewTabs" class="space-y-4">
-      <template #preview>
-        <div class="relative overflow-hidden rounded-xl border border-zinc-800 bg-background mt-4 h-[500px] flex items-center justify-center">
+    <div class="h-g"/>
 
-          <BackgroundRippleEffect
-              class="absolute inset-0"
-              :rows="config.rows"
-              :cols="config.cols"
-              :cell-size="config.cellSize"
-              :interactive="config.interactive"
-              :fill="config.fill"
-          />
+    <Divider/>
 
-          <div class="absolute bottom-6 left-6 z-10 p-6 rounded-2xl border border-border/50 bg-card/60 backdrop-blur-md space-y-4 w-72 shadow-2xl">
-            <h3 class="font-semibold text-sm mb-2">Controls</h3>
-
-            <div class="flex items-center justify-between">
-              <label class="text-xs font-medium text-muted-foreground">Fill Parent</label>
-              <input type="checkbox" v-model="config.fill" class="accent-primary" />
-            </div>
-
-            <template v-if="!config.fill">
-              <div class="space-y-1">
-                <label class="text-xs font-medium text-muted-foreground">Rows ({{ config.rows }})</label>
-                <input type="range" v-model.number="config.rows" min="4" max="20" class="w-full" />
-              </div>
-
-              <div class="space-y-1">
-                <label class="text-xs font-medium text-muted-foreground">Cols ({{ config.cols }})</label>
-                <input type="range" v-model.number="config.cols" min="4" max="30" class="w-full" />
-              </div>
-            </template>
-
-            <div class="space-y-1">
-              <label class="text-xs font-medium text-muted-foreground">Cell Size ({{ config.cellSize }}px)</label>
-              <input type="range" v-model.number="config.cellSize" min="20" max="80" class="w-full" />
-            </div>
-
-            <div class="flex items-center justify-between">
-              <label class="text-xs font-medium text-muted-foreground">Interactive</label>
-              <input type="checkbox" v-model="config.interactive" class="accent-primary" />
-            </div>
+    <div class="space-y-6 mt-4">
+      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
+      <AnimatedTabs :items="installTabs" class="space-y-6">
+        <template #cli>
+          <CodeBlock :code="installCommands.npm"  />
+        </template>
+        <template #manual>
+          <div class="space-y-2">
+            <p class="text-sm text-zinc-400">Install dependencies:</p>
+            <CodeBlock :code="installCommands.manual"  />
           </div>
+        </template>
+      </AnimatedTabs>
+    </div>
 
-          <div class="relative z-0 pointer-events-none">
-            <h1 class="text-4xl font-bold tracking-tighter text-foreground">
-              Click the Grid
-            </h1>
-          </div>
-        </div>
-      </template>
+    <div class="h-g"/>
 
-      <template #code>
-        <div class="mt-4">
-          <CodeBlock :code="usageCode" lang="html" />
-        </div>
-      </template>
-    </AnimatedTabs>
+    <Divider/>
 
-    <div class="space-y-6">
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
       <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
         <table class="w-full text-sm text-left">

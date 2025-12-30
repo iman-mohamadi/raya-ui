@@ -5,6 +5,13 @@ import { CodeBlock } from '@/components/ui/code-block'
 definePageMeta({ layout: 'docs' })
 const config = useAppConfig().raya
 
+useSeoMeta({
+  title: 'Installation Guide - Vue & Nuxt',
+  description: 'Step-by-step guide to installing dependencies and configuring Raya UI components in your Vue or Nuxt project.',
+  ogTitle: 'Installation Guide - Vue & Nuxt',
+  ogDescription: 'Step-by-step guide to installing dependencies and configuring Raya UI components in your Vue or Nuxt project.',
+})
+
 // --- Commands for Frameworks ---
 const frameworkCommands = {
   vite: {
@@ -49,16 +56,14 @@ const frameworkTabs = [
 </script>
 
 <template>
-  <div class="max-w-4xl space-y-10 pb-20 pt-10">
+  <div class="pb-5">
+    <PageTitle
+        title="Installation"
+        description="How to install dependencies and structure your app."
+    />
+    <Divider/>
 
-    <div class="space-y-4">
-      <h1 class="scroll-m-20 text-4xl font-bold tracking-tight text-white">Installation</h1>
-      <p class="text-xl text-zinc-400">
-        How to install dependencies and structure your app.
-      </p>
-    </div>
-
-    <div class="space-y-6">
+    <div class="space-y-6 mt-4">
       <AnimatedTabs :items="frameworkTabs" class="space-y-6">
 
         <template #vite>

@@ -1,10 +1,18 @@
 <script setup lang="ts">
-import { GravityStars } from '~/components/ui/gravity-stars'
-import { AnimatedTabs } from '~/components/ui/animated-tabs'
-import { CodeBlock } from '~/components/ui/code-block'
+import { GravityStars } from '@/components/ui/gravity-stars'
+import { LiquidGlass } from '@/components/ui/liquid-glass'
+import { AnimatedTabs } from '@/components/ui/animated-tabs'
+import { CodeBlock } from '@/components/ui/code-block'
 
 definePageMeta({ layout: 'docs' })
 const config = useAppConfig().raya
+
+useSeoMeta({
+  title: 'Gravity Stars Component for Vue & Nuxt',
+  description: 'Interactive star field component for Vue and Nuxt that reacts to mouse gravity with smooth physics.',
+  ogTitle: 'Gravity Stars Component for Vue & Nuxt',
+  ogDescription: 'Interactive star field component for Vue and Nuxt that reacts to mouse gravity with smooth physics.',
+})
 
 // --- Tabs Config ---
 const previewTabs = [
@@ -42,58 +50,72 @@ const usageCode = `<template>
 </script>
 
 <template>
-  <div class="max-w-4xl space-y-10 pb-20 pt-10">
+  <div class="pb-5">
+    <PageTitle
+        title="Gravity Stars"
+        description="Interactive star field that reacts to mouse gravity with smooth physics."
+    />
+    <Divider/>
+    <div class="mt-4">
+      <Tabs default-value="preview">
+        <TabsList>
+          <TabsTrigger value="preview">
+            Preview
+          </TabsTrigger>
+          <TabsTrigger value="code">
+            Code
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="preview">
+          <div class="relative rounded-xl border border-zinc-800 bg-black overflow-hidden flex items-center justify-center min-h-[500px]">
 
-    <div class="space-y-4">
-      <h1 class="scroll-m-20 text-4xl font-bold tracking-tight">Gravity Stars</h1>
-      <p class="text-xl text-zinc-400">
-        Interactive star field that reacts to mouse gravity with smooth physics.
-      </p>
+            <GravityStars
+                class="absolute inset-0 z-0 text-white"
+                :stars-count="100"
+                :mouse-influence="200"
+                :gravity-strength="50"
+            />
+
+            <LiquidGlass>
+              <div class="relative z-10 text-center pointer-events-none p-6 bg-black/50 backdrop-blur-sm rounded-xl border border-white/10">
+                <h1 class="text-5xl font-black text-white tracking-tighter">Raya UI</h1>
+                <p class="text-zinc-300 font-medium mt-2">Gravity Effect</p>
+              </div>
+            </LiquidGlass>
+
+          </div>
+        </TabsContent>
+        <TabsContent value="code">
+          <CodeBlock :code="usageCode" lang="html"/>
+        </TabsContent>
+      </Tabs>
     </div>
 
-    <AnimatedTabs :items="previewTabs" class="space-y-4">
-      <template #preview>
-        <div class="relative h-[500px] w-full rounded-xl bg-black border border-zinc-800 overflow-hidden flex items-center justify-center">
+    <div class="h-g"/>
 
-          <GravityStars
-              class="absolute inset-0 z-0 text-white"
-              :stars-count="100"
-              :mouse-influence="200"
-              :gravity-strength="50"
-          />
-          <LiquidGlass >
-            <div class="relative z-10 text-center pointer-events-none p-6 bg-black/50 backdrop-blur-sm rounded-xl border border-white/10">
-              <h1 class="text-5xl font-black text-white tracking-tighter">Raya UI</h1>
-              <p class="text-zinc-300 font-medium mt-2">Gravity Effect</p>
-            </div>
-          </LiquidGlass>
+    <Divider/>
 
-
-        </div>
-      </template>
-
-      <template #code>
-        <div class="mt-4">
-          <CodeBlock :code="usageCode" lang="html" />
-        </div>
-      </template>
-    </AnimatedTabs>
-
-    <div class="space-y-6">
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
       <AnimatedTabs :items="installTabs" class="space-y-6">
         <template #cli>
-          <CodeBlock :code="installCommands.npm"  />
+          <CodeBlock :code="installCommands.npm"/>
         </template>
         <template #manual>
           <div class="space-y-2">
-            <p class="text-sm text-zinc-400">Copy the component code into your project.</p>
+            <p class="text-sm text-zinc-400">Install dependencies:</p>
+            <CodeBlock :code="installCommands.manual"  />
+            <p class="text-sm text-zinc-400 mt-4">Copy the component code into your project.</p>
           </div>
         </template>
       </AnimatedTabs>
     </div>
 
-    <div class="space-y-6">
+    <div class="h-g"/>
+
+    <Divider/>
+
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
       <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
         <table class="w-full text-sm text-left">

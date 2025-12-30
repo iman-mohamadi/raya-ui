@@ -8,6 +8,13 @@ import { Button } from '@/components/ui/button'
 definePageMeta({ layout: 'docs' })
 const appConfig = useAppConfig().raya
 
+useSeoMeta({
+  title: 'Ambient Grid Component for Vue & Nuxt',
+  description: 'A playful, interactive background component for Vue and Nuxt that reacts to mouse movement.',
+  ogTitle: 'Ambient Grid Component for Vue & Nuxt',
+  ogDescription: 'A playful, interactive background component for Vue and Nuxt that reacts to mouse movement.',
+})
+
 // --- Demo State ---
 const config = ref({
   gridSize: 30,
@@ -50,30 +57,35 @@ const usageCode = `<template>
 </script>
 
 <template>
-  <div class="max-w-4xl space-y-10 pb-20 pt-10">
+  <div class="pb-5">
+    <PageTitle
+        title="Ambient Grid"
+        description="A playful, interactive background that reacts to mouse movement."
+    />
+    <Divider/>
+    <div class="mt-4">
+      <Tabs default-value="preview">
+        <TabsList>
+          <TabsTrigger value="preview">
+            Preview
+          </TabsTrigger>
+          <TabsTrigger value="code">
+            Code
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="preview">
+          <div class="relative overflow-hidden rounded-xl border border-zinc-800 bg-black flex items-center justify-center min-h-[500px]">
+            <div class="absolute top-4 right-4 z-20">
+              <Button
+                  size="sm"
+                  variant="outline"
+                  class="h-7 text-xs border-zinc-800"
+                  @click="config.interactive = !config.interactive"
+              >
+                {{ config.interactive ? 'Disable' : 'Enable' }} Mouse
+              </Button>
+            </div>
 
-    <div class="space-y-4">
-      <h1 class="scroll-m-20 text-4xl font-bold tracking-tight">Ambient Grid</h1>
-      <p class="text-xl text-zinc-400">
-        A playful, interactive background that reacts to mouse movement.
-      </p>
-    </div>
-
-    <AnimatedTabs :items="previewTabs" class="space-y-4">
-      <template #preview>
-        <div class="relative overflow-hidden rounded-xl border border-zinc-800 bg-black mt-4">
-          <div class="absolute top-4 right-4 z-20">
-            <Button
-                size="sm"
-                variant="outline"
-                class="h-7 text-xs border-zinc-800"
-                @click="config.interactive = !config.interactive"
-            >
-              {{ config.interactive ? 'Disable' : 'Enable' }} Mouse
-            </Button>
-          </div>
-
-          <div class="relative flex h-[500px] w-full items-center justify-center">
             <AmbientGrid
                 class="absolute inset-0"
                 :grid-size="config.gridSize"
@@ -107,17 +119,34 @@ const usageCode = `<template>
               </div>
             </div>
           </div>
-        </div>
-      </template>
+        </TabsContent>
+        <TabsContent value="code">
+          <CodeBlock :code="usageCode" lang="html"/>
+        </TabsContent>
+      </Tabs>
+    </div>
 
-      <template #code>
-        <div class="mt-4">
-          <CodeBlock :code="usageCode" lang="html" />
-        </div>
-      </template>
-    </AnimatedTabs>
+    <div class="h-g"/>
 
-    <div class="space-y-6">
+    <Divider/>
+
+    <div class="space-y-6 mt-4">
+      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
+      <div class="space-y-4">
+        <CodeBlock :code="installCommands.npm"/>
+        <p class="text-sm text-zinc-400">Or manually:</p>
+        <div class="space-y-2">
+          <p class="text-sm text-zinc-400">Install dependencies:</p>
+          <CodeBlock :code="installCommands.manual"  />
+        </div>
+      </div>
+    </div>
+
+    <div class="h-g"/>
+
+    <Divider/>
+
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
       <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
         <table class="w-full text-sm text-left">
@@ -157,21 +186,6 @@ const usageCode = `<template>
           </tbody>
         </table>
       </div>
-    </div>
-
-    <div class="space-y-6">
-      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
-      <AnimatedTabs :items="installTabs" class="space-y-6">
-        <template #cli>
-          <CodeBlock :code="installCommands.npm"  />
-        </template>
-        <template #manual>
-          <div class="space-y-2">
-            <p class="text-sm text-zinc-400">Install dependencies:</p>
-            <CodeBlock :code="installCommands.manual"  />
-          </div>
-        </template>
-      </AnimatedTabs>
     </div>
 
   </div>

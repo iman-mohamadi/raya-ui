@@ -37,17 +37,6 @@ const controlledIndex = ref(0)
 const nextTab = () => controlledIndex.value = (controlledIndex.value + 1) % items.length
 const prevTab = () => controlledIndex.value = (controlledIndex.value - 1 + items.length) % items.length
 
-// --- Tabs Configuration ---
-const previewTabs = [
-  { label: 'Preview', slot: 'preview' },
-  { label: 'Code', slot: 'code' }
-]
-
-const installTabs = [
-  { label: 'CLI', slot: 'cli' },
-  { label: 'Manual', slot: 'manual' }
-]
-
 // --- Code Snippets ---
 const installCommands = {
   npm: `npx shadcn-vue@latest add ${config.baseUrl}/animated-tabs.json`,
@@ -96,91 +85,136 @@ const linkCode = `<template>
     variant="link"
   />
 </template>`
+
+useSeoMeta({
+  title: 'Animated Tabs Component for Vue & Nuxt',
+  description: 'A direction-aware, draggable carousel tabs component built for Vue and Nuxt applications.',
+  ogTitle: 'Animated Tabs Component for Vue & Nuxt',
+  ogDescription: 'A direction-aware, draggable carousel tabs component built for Vue and Nuxt applications.',
+})
 </script>
 
 <template>
-  <div class="max-w-4xl space-y-10 pb-20 pt-10">
-
-    <div class="space-y-4">
-      <h1 class="scroll-m-20 text-4xl font-bold tracking-tight">Animated Tabs</h1>
-      <p class="text-xl text-zinc-400">
-        A direction-aware, draggable carousel tabs component.
-      </p>
-    </div>
-
-    <AnimatedTabs :items="previewTabs" class="space-y-4">
-      <template #preview>
-        <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 mt-4 p-10 flex flex-col items-center justify-center min-h-[350px]">
-          <div class="w-full max-w-md">
-            <AnimatedTabs :items="items" />
+  <div class="pb-5">
+    <PageTitle
+        title="Animated Tabs"
+        description="A direction-aware, draggable carousel tabs component."
+    />
+    <Divider/>
+    <div class="mt-4">
+      <Tabs default-value="preview">
+        <TabsList>
+          <TabsTrigger value="preview">
+            Preview
+          </TabsTrigger>
+          <TabsTrigger value="code">
+            Code
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="preview">
+          <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 flex flex-col items-center justify-center min-h-[350px] p-10">
+            <div class="w-full max-w-md">
+              <AnimatedTabs :items="items" />
+            </div>
           </div>
-        </div>
-      </template>
-      <template #code>
-        <div class="mt-4">
-          <CodeBlock :code="usageCode" lang="html" />
-        </div>
-      </template>
-    </AnimatedTabs>
-
-    <div class="space-y-6">
-      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
-      <AnimatedTabs :items="installTabs" class="space-y-6">
-        <template #cli>
-          <CodeBlock :code="installCommands.npm"  />
-        </template>
-        <template #manual>
-          <CodeBlock :code="installCommands.manual"  />
-        </template>
-      </AnimatedTabs>
+        </TabsContent>
+        <TabsContent value="code">
+          <CodeBlock :code="usageCode" lang="html"/>
+        </TabsContent>
+      </Tabs>
     </div>
 
-    <div class="space-y-12">
+    <div class="h-g"/>
+
+    <Divider/>
+
+    <div class="space-y-6 mt-4">
+      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
+      <div class="space-y-4">
+        <CodeBlock :code="installCommands.npm"/>
+        <p class="text-sm text-zinc-400">Or manually:</p>
+        <CodeBlock :code="installCommands.manual"/>
+      </div>
+    </div>
+
+    <div class="h-g"/>
+
+    <Divider/>
+
+    <div class="space-y-12 mt-4">
       <h2 class="scroll-m-20 text-3xl font-bold tracking-tight">Examples</h2>
 
       <div class="space-y-4">
         <h3 class="text-xl font-semibold">Vertical Orientation</h3>
         <p class="text-zinc-400 text-sm">Stack tabs vertically using the <code>orientation</code> prop.</p>
 
-        <div class="grid md:grid-cols-2 gap-6 items-start">
-          <div class="rounded-xl border border-zinc-800 bg-zinc-950/50 p-6 flex justify-center">
-            <AnimatedTabs :items="items" orientation="vertical" class="w-64" />
-          </div>
-          <CodeBlock :code="verticalCode" lang="html" class="my-0 h-full" />
-        </div>
+        <Tabs default-value="preview">
+          <TabsList>
+            <TabsTrigger value="preview">Preview</TabsTrigger>
+            <TabsTrigger value="code">Code</TabsTrigger>
+          </TabsList>
+          <TabsContent value="preview">
+            <div class="rounded-xl border border-zinc-800 bg-zinc-950/50 p-6 flex justify-center min-h-[300px]">
+              <AnimatedTabs :items="items" orientation="vertical" class="w-64" />
+            </div>
+          </TabsContent>
+          <TabsContent value="code">
+            <CodeBlock :code="verticalCode" lang="html"/>
+          </TabsContent>
+        </Tabs>
       </div>
 
       <div class="space-y-4">
         <h3 class="text-xl font-semibold">Link Variant</h3>
         <p class="text-zinc-400 text-sm">A minimal underline style, perfect for sub-navigation.</p>
 
-        <div class="rounded-xl border border-zinc-800 bg-zinc-950/50 p-10 flex justify-center">
-          <div class="w-full max-w-md">
-            <AnimatedTabs :items="items" variant="link" />
-          </div>
-        </div>
-        <CodeBlock :code="linkCode" lang="html" />
+        <Tabs default-value="preview">
+          <TabsList>
+            <TabsTrigger value="preview">Preview</TabsTrigger>
+            <TabsTrigger value="code">Code</TabsTrigger>
+          </TabsList>
+          <TabsContent value="preview">
+            <div class="rounded-xl border border-zinc-800 bg-zinc-950/50 p-10 flex justify-center min-h-[150px]">
+              <div class="w-full max-w-md">
+                <AnimatedTabs :items="items" variant="link" />
+              </div>
+            </div>
+          </TabsContent>
+          <TabsContent value="code">
+            <CodeBlock :code="linkCode" lang="html"/>
+          </TabsContent>
+        </Tabs>
       </div>
 
       <div class="space-y-4">
         <h3 class="text-xl font-semibold">Controlled State</h3>
         <p class="text-zinc-400 text-sm">Use <code>v-model</code> to control the active tab programmatically.</p>
 
-        <div class="rounded-xl border border-zinc-800 bg-zinc-950/50 p-10 flex flex-col items-center gap-6">
-          <div class="flex gap-4">
-            <Button variant="outline" size="sm" @click="prevTab">
-              <ArrowLeft class="w-4 h-4 mr-2" /> Prev
-            </Button>
-            <Button variant="outline" size="sm" @click="nextTab">
-              Next <ArrowRight class="w-4 h-4 ml-2" />
-            </Button>
-          </div>
-          <div class="w-full max-w-md">
-            <AnimatedTabs v-model="controlledIndex" :items="items" />
-          </div>
-          <p class="text-xs text-zinc-500 font-mono">Active Index: {{ controlledIndex }}</p>
-        </div>
-        <CodeBlock :code="controlledCode" lang="html" />
+        <Tabs default-value="preview">
+          <TabsList>
+            <TabsTrigger value="preview">Preview</TabsTrigger>
+            <TabsTrigger value="code">Code</TabsTrigger>
+          </TabsList>
+          <TabsContent value="preview">
+            <div class="rounded-xl border border-zinc-800 bg-zinc-950/50 p-10 flex flex-col items-center gap-6 min-h-[200px]">
+              <div class="flex gap-4">
+                <Button variant="outline" size="sm" @click="prevTab">
+                  <ArrowLeft class="w-4 h-4 mr-2" /> Prev
+                </Button>
+                <Button variant="outline" size="sm" @click="nextTab">
+                  Next <ArrowRight class="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+              <div class="w-full max-w-md">
+                <AnimatedTabs v-model="controlledIndex" :items="items" />
+              </div>
+              <p class="text-xs text-zinc-500 font-mono">Active Index: {{ controlledIndex }}</p>
+            </div>
+          </TabsContent>
+          <TabsContent value="code">
+            <CodeBlock :code="controlledCode" lang="html"/>
+          </TabsContent>
+        </Tabs>
       </div>
 
       <div class="space-y-4">
@@ -198,7 +232,11 @@ const linkCode = `<template>
 
     </div>
 
-    <div class="space-y-6 pt-10">
+    <div class="h-g"/>
+
+    <Divider/>
+
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
       <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
         <table class="w-full text-sm text-left">

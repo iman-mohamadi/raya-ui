@@ -6,15 +6,9 @@ import { CodeBlock } from '@/components/ui/code-block'
 definePageMeta({ layout: 'docs' })
 const config = useAppConfig().raya
 
-// --- Tabs Config ---
-const previewTabs = [
+const PREVIEW_TABS = [
   { label: 'Preview', slot: 'preview' },
   { label: 'Code', slot: 'code' }
-]
-
-const installTabs = [
-  { label: 'CLI', slot: 'cli' },
-  { label: 'Manual', slot: 'manual' }
 ]
 
 const installCommands = {
@@ -22,7 +16,7 @@ const installCommands = {
   manual: `npm install @vueuse/core clsx tailwind-merge`
 }
 
-const usageCode = `<script setup lang="ts">
+const defaultCode = `<script setup lang="ts">
 import { AnimatedInput } from '@/components/ui/animated-input'
 <\/script>
 
@@ -39,61 +33,114 @@ import { AnimatedInput } from '@/components/ui/animated-input'
     </div>
   </div>
 </template>`
+
+const customColorCode = `<script setup lang="ts">
+import { AnimatedInput } from '@/components/ui/animated-input'
+<\/script>
+
+<template>
+  <div class="w-full max-w-sm flex flex-col gap-2">
+    <label class="text-sm font-medium">Custom Glow (Purple)</label>
+    <AnimatedInput placeholder="Purple glow..." glow-color="#a855f7" />
+  </div>
+</template>`
+
+useSeoMeta({
+  title: 'Animated Input Component for Vue & Nuxt',
+  description: 'A Vue and Nuxt compatible text input component featuring a mouse-following gradient border effect.',
+  ogTitle: 'Animated Input Component for Vue & Nuxt',
+  ogDescription: 'A Vue and Nuxt compatible text input component featuring a mouse-following gradient border effect.',
+})
 </script>
 
 <template>
-  <div class="max-w-4xl space-y-10 pb-20 pt-10">
+  <div class="pb-5">
+    <PageTitle
+        title="Animated Input"
+        description="A text input with a mouse-following gradient border effect."
+    />
+    <Divider/>
+    <div class="mt-4">
+      <Tabs default-value="preview">
+        <TabsList>
+          <TabsTrigger value="preview">
+            Preview
+          </TabsTrigger>
+          <TabsTrigger value="code">
+            Code
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="preview">
+          <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 flex flex-col items-center justify-center min-h-[350px] p-10">
+            <div class="w-full max-w-sm space-y-4">
+              <div class="flex flex-col gap-2">
+                <label class="text-sm font-medium text-zinc-300">Username</label>
+                <AnimatedInput placeholder="johndoe" />
+              </div>
 
-    <div class="space-y-4">
-      <h1 class="scroll-m-20 text-4xl font-bold tracking-tight">Animated Input</h1>
-      <p class="text-xl text-zinc-400">
-        A text input with a mouse-following gradient border effect.
-      </p>
-    </div>
-
-    <AnimatedTabs :items="previewTabs" class="space-y-4">
-      <template #preview>
-        <div class="relative rounded-xl border border-zinc-800 bg-neutral-950 mt-4 h-[350px] flex items-center justify-center p-10">
-
-          <div class="w-full max-w-sm space-y-6">
-            <div class="flex flex-col gap-2">
-              <label class="text-sm font-medium text-zinc-300">Username</label>
-              <AnimatedInput placeholder="Enter your username" />
-            </div>
-
-            <div class="flex flex-col gap-2">
-              <label class="text-sm font-medium text-zinc-300">Custom Glow (Purple)</label>
-              <AnimatedInput placeholder="Purple glow..." glow-color="#a855f7" />
+              <div class="flex flex-col gap-2">
+                <label class="text-sm font-medium text-zinc-300">Email</label>
+                <AnimatedInput placeholder="john@example.com" type="email" />
+              </div>
             </div>
           </div>
+        </TabsContent>
+        <TabsContent value="code">
+          <CodeBlock :code="defaultCode" lang="html"/>
+        </TabsContent>
+      </Tabs>
+    </div>
 
-        </div>
-      </template>
+    <div class="h-g"/>
 
-      <template #code>
-        <div class="mt-4">
-          <CodeBlock :code="usageCode" lang="html" />
-        </div>
-      </template>
-    </AnimatedTabs>
+    <Divider/>
 
-    <div class="space-y-6">
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
-      <AnimatedTabs :items="installTabs" class="space-y-6">
-        <template #cli>
-          <CodeBlock :code="installCommands.npm"  />
-        </template>
-        <template #manual>
-          <div class="space-y-2">
-            <p class="text-sm text-zinc-400">Install dependencies:</p>
-            <CodeBlock :code="installCommands.manual"  />
-            <p class="text-sm text-zinc-400 mt-4">Copy the component code into your project.</p>
-          </div>
-        </template>
-      </AnimatedTabs>
+      <div class="space-y-4">
+        <CodeBlock :code="installCommands.npm"/>
+        <p class="text-sm text-zinc-400">Or manually:</p>
+        <CodeBlock :code="installCommands.manual"/>
+      </div>
     </div>
 
-    <div class="space-y-6">
+    <div class="h-g"/>
+
+    <Divider/>
+
+    <div class="space-y-12 mt-4">
+      <h2 class="scroll-m-20 text-3xl font-bold tracking-tight">More Examples</h2>
+
+      <div class="space-y-4">
+        <h3 class="text-xl font-semibold">Custom Glow Color</h3>
+        <p class="text-zinc-400 text-sm">
+          Customize the color of the glowing border effect.
+        </p>
+
+        <AnimatedTabs :items="PREVIEW_TABS" class="space-y-4">
+          <template #preview>
+            <div class="rounded-xl border border-zinc-800 bg-zinc-950/50 flex flex-col items-center justify-center min-h-[250px] p-10">
+              <div class="w-full max-w-sm flex flex-col gap-2">
+                <label class="text-sm font-medium text-zinc-300">Custom Glow (Purple)</label>
+                <AnimatedInput placeholder="Purple glow..." glow-color="#a855f7" />
+              </div>
+            </div>
+          </template>
+          <template #code>
+            <div class="mt-4">
+              <CodeBlock :code="customColorCode" lang="html"/>
+            </div>
+          </template>
+        </AnimatedTabs>
+      </div>
+
+    </div>
+
+    <div class="h-g"/>
+
+    <Divider/>
+
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
       <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
         <table class="w-full text-sm text-left">

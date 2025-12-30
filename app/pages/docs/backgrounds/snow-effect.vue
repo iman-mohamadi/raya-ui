@@ -6,6 +6,13 @@ import { AnimatedTabs } from '@/components/ui/animated-tabs'
 definePageMeta({ layout: 'docs' })
 const config = useAppConfig().raya
 
+useSeoMeta({
+  title: 'Snow Effect Component for Vue & Nuxt',
+  description: 'A peaceful, falling snow effect component for Vue and Nuxt rendered on an HTML5 Canvas.',
+  ogTitle: 'Snow Effect Component for Vue & Nuxt',
+  ogDescription: 'A peaceful, falling snow effect component for Vue and Nuxt rendered on an HTML5 Canvas.',
+})
+
 // --- Tabs ---
 const previewTabs = [
   { label: 'Preview', slot: 'preview' },
@@ -172,54 +179,64 @@ function animate() {
 </script>
 
 <template>
-  <div class="max-w-4xl space-y-10 pb-20 pt-10">
-    <div class="space-y-4">
-      <h1 class="scroll-m-20 text-4xl font-bold tracking-tight">Snow Effect</h1>
-      <p class="text-xl text-muted-foreground">
-        A peaceful, falling snow effect rendered on an HTML5 Canvas.
-      </p>
+  <div class="pb-5">
+    <PageTitle
+        title="Snow Effect"
+        description="A peaceful, falling snow effect rendered on an HTML5 Canvas."
+    />
+    <Divider/>
+    <div class="mt-4">
+      <Tabs default-value="preview">
+        <TabsList>
+          <TabsTrigger value="preview">
+            Preview
+          </TabsTrigger>
+          <TabsTrigger value="code">
+            Code
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="preview">
+          <div class="relative rounded-xl border border-zinc-800 bg-slate-950 p-10 h-[400px] flex items-center justify-center overflow-hidden">
+            <SnowEffect
+                color="#ffffff"
+                :quantity="150"
+                :speed="1"
+                class="z-10"
+            />
+            <div class="z-20 text-center relative pointer-events-none">
+              <h1 class="text-4xl font-bold text-white tracking-tighter">
+                Winter Mode
+              </h1>
+              <p class="text-slate-400 mt-2">Adjust quantity and speed via props</p>
+            </div>
+          </div>
+        </TabsContent>
+        <TabsContent value="code">
+          <CodeBlock :code="usageCode"/>
+        </TabsContent>
+      </Tabs>
     </div>
 
-    <AnimatedTabs :items="previewTabs" class="space-y-4">
-      <template #preview>
-        <div class="relative rounded-xl border border-border bg-slate-950 p-10 h-[400px] flex items-center justify-center overflow-hidden">
-          <SnowEffect
-              color="#ffffff"
-              :quantity="150"
-              :speed="1"
-              class="z-10"
-          />
-          <div class="z-20 text-center relative pointer-events-none">
-            <h1 class="text-4xl font-bold text-white tracking-tighter">
-              Winter Mode
-            </h1>
-            <p class="text-slate-400 mt-2">Adjust quantity and speed via props</p>
-          </div>
-        </div>
-      </template>
-      <template #code>
-        <div class="mt-4">
-          <CodeBlock :code="usageCode"/>
-        </div>
-      </template>
-    </AnimatedTabs>
+    <div class="h-g"/>
 
-    <div class="space-y-6">
+    <Divider/>
+
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
       <AnimatedTabs :items="installTabs" class="space-y-6">
         <template #cli>
           <CodeBlock :code="installationCode" file-name="Terminal" />
         </template>
         <template #manual>
-          <div class="space-y-6">
+          <div class="space-y-6 mt-4">
             <div class="space-y-2">
               <h3 class="text-base font-medium">1. Install Dependencies</h3>
               <CodeBlock code="npm install @vueuse/core" file-name="Terminal" />
             </div>
             <div class="space-y-2">
               <h3 class="text-base font-medium">2. Create Component</h3>
-              <p class="text-sm text-muted-foreground">
-                Copy the code below into <code class="bg-muted px-1 py-0.5 rounded">components/ui/snow-effect/SnowEffect.vue</code>
+              <p class="text-sm text-zinc-400">
+                Copy the code below into <code class="bg-zinc-900 px-1 py-0.5 rounded">components/ui/snow-effect/SnowEffect.vue</code>
               </p>
               <CodeBlock :code="componentCode" file-name="components/ui/snow-effect/SnowEffect.vue" />
             </div>
@@ -228,11 +245,15 @@ function animate() {
       </AnimatedTabs>
     </div>
 
-    <div class="space-y-6">
+    <div class="h-g"/>
+
+    <Divider/>
+
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
-      <div class="overflow-x-auto rounded-lg border border-border bg-card">
+      <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
         <table class="w-full text-sm text-left">
-          <thead class="border-b border-border bg-muted/50 text-muted-foreground">
+          <thead class="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400">
           <tr>
             <th class="px-4 py-3 font-medium">Prop</th>
             <th class="px-4 py-3 font-medium">Type</th>
@@ -240,33 +261,33 @@ function animate() {
             <th class="px-4 py-3 font-medium">Description</th>
           </tr>
           </thead>
-          <tbody class="divide-y divide-border text-foreground">
+          <tbody class="divide-y divide-zinc-800 text-zinc-300">
           <tr>
-            <td class="px-4 py-3 font-mono text-primary">color</td>
+            <td class="px-4 py-3 font-mono text-purple-400">color</td>
             <td class="px-4 py-3 font-mono text-xs">string</td>
             <td class="px-4 py-3 font-mono text-xs">"#FFF"</td>
             <td class="px-4 py-3">The color of the snowflakes (Hex code).</td>
           </tr>
           <tr>
-            <td class="px-4 py-3 font-mono text-primary">quantity</td>
+            <td class="px-4 py-3 font-mono text-purple-400">quantity</td>
             <td class="px-4 py-3 font-mono text-xs">number</td>
             <td class="px-4 py-3 font-mono text-xs">100</td>
             <td class="px-4 py-3">The number of snowflakes to render.</td>
           </tr>
           <tr>
-            <td class="px-4 py-3 font-mono text-primary">speed</td>
+            <td class="px-4 py-3 font-mono text-purple-400">speed</td>
             <td class="px-4 py-3 font-mono text-xs">number</td>
             <td class="px-4 py-3 font-mono text-xs">1</td>
             <td class="px-4 py-3">The vertical falling speed multiplier.</td>
           </tr>
           <tr>
-            <td class="px-4 py-3 font-mono text-primary">minRadius</td>
+            <td class="px-4 py-3 font-mono text-purple-400">minRadius</td>
             <td class="px-4 py-3 font-mono text-xs">number</td>
             <td class="px-4 py-3 font-mono text-xs">1</td>
             <td class="px-4 py-3">Minimum radius of a snowflake.</td>
           </tr>
           <tr>
-            <td class="px-4 py-3 font-mono text-primary">maxRadius</td>
+            <td class="px-4 py-3 font-mono text-purple-400">maxRadius</td>
             <td class="px-4 py-3 font-mono text-xs">number</td>
             <td class="px-4 py-3 font-mono text-xs">3</td>
             <td class="px-4 py-3">Maximum radius of a snowflake.</td>

@@ -4,11 +4,17 @@ import {
   LayoutGrid, FolderGit2, Ghost
 } from 'lucide-vue-next'
 import { FloatingDock } from '@/components/ui/floating-dock'
-import { AnimatedTabs } from '@/components/ui/animated-tabs'
 import { CodeBlock } from '@/components/ui/code-block'
 
 definePageMeta({ layout: 'docs' })
 const config = useAppConfig().raya
+
+useSeoMeta({
+  title: 'Floating Dock Component for Vue & Nuxt',
+  description: 'A Mac-OS style dock component for Vue and Nuxt that floats and scales items based on mouse proximity.',
+  ogTitle: 'Floating Dock Component for Vue & Nuxt',
+  ogDescription: 'A Mac-OS style dock component for Vue and Nuxt that floats and scales items based on mouse proximity.',
+})
 
 // --- Demo Data ---
 const dockItems = [
@@ -16,20 +22,9 @@ const dockItems = [
   { title: 'Products', icon: Terminal, href: '#' },
   { title: 'Components', icon: LayoutGrid, href: '#' },
   { title: 'Changelog', icon: FolderGit2, href: '#' },
-  { title: 'Aceternity UI', icon: Ghost, href: '#' }, // Just an easter egg :)
+  { title: 'Raya UI', icon: Ghost, href: '#' }, // Just an easter egg :)
   { title: 'Profile', icon: CircleUser, href: '#' },
   { title: 'Settings', icon: Settings, href: '#' },
-]
-
-// --- Tabs Config ---
-const previewTabs = [
-  { label: 'Preview', slot: 'preview' },
-  { label: 'Code', slot: 'code' }
-]
-
-const installTabs = [
-  { label: 'CLI', slot: 'cli' },
-  { label: 'Manual', slot: 'manual' }
 ]
 
 // --- Code Snippets ---
@@ -60,50 +55,53 @@ const items = [
 </script>
 
 <template>
-  <div class="max-w-4xl space-y-10 pb-20 pt-10">
-
-    <div class="space-y-4">
-      <h1 class="scroll-m-20 text-4xl font-bold tracking-tight">Floating Dock</h1>
-      <p class="text-xl text-zinc-400">
-        A Mac-OS style dock that floats and scales items based on mouse proximity.
-      </p>
+  <div class="pb-5">
+    <PageTitle
+        title="Floating Dock"
+        description="A Mac-OS style dock that floats and scales items based on mouse proximity."
+    />
+    <Divider/>
+    <div class="mt-4">
+      <Tabs default-value="preview">
+        <TabsList>
+          <TabsTrigger value="preview">
+            Preview
+          </TabsTrigger>
+          <TabsTrigger value="code">
+            Code
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="preview">
+          <div class="relative rounded-xl border border-zinc-800 bg-neutral-950 flex items-center justify-center min-h-[400px] p-10">
+            <div class="absolute inset-0 bg-neutral-900/50 [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
+            <FloatingDock
+                :items="dockItems"
+                desktop-class="absolute bottom-10"
+                mobile-class="absolute bottom-10 right-10"
+            />
+          </div>
+        </TabsContent>
+        <TabsContent value="code">
+          <CodeBlock :code="usageCode" lang="html"/>
+        </TabsContent>
+      </Tabs>
     </div>
 
-    <AnimatedTabs :items="previewTabs" class="space-y-4">
-      <template #preview>
-        <div class="relative rounded-xl border border-zinc-800 bg-neutral-950 mt-4 h-[400px] flex items-center justify-center">
+    <div class="h-g"/>
 
-          <div class="absolute inset-0 bg-neutral-900/50 [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
+    <Divider/>
 
-          <FloatingDock
-              :items="dockItems"
-              desktop-class="absolute bottom-10"
-              mobile-class="absolute bottom-10 right-10"
-          />
-
-        </div>
-      </template>
-      <template #code>
-        <div class="mt-4">
-          <CodeBlock :code="usageCode" lang="html" />
-        </div>
-      </template>
-    </AnimatedTabs>
-
-    <div class="space-y-6">
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
-      <AnimatedTabs :items="installTabs" class="space-y-6">
-        <template #cli>
-          <CodeBlock :code="installCommands.npm"  />
-        </template>
-        <template #manual>
-          <div class="space-y-2">
-            <p class="text-sm text-zinc-400">Install dependencies:</p>
-            <CodeBlock :code="installCommands.manual"  />
-            <p class="text-sm text-zinc-400 mt-4">Copy the component code into your project.</p>
-          </div>
-        </template>
-      </AnimatedTabs>
+      <div class="space-y-4">
+        <CodeBlock :code="installCommands.npm"/>
+        <p class="text-sm text-zinc-400">Or manually:</p>
+        <div class="space-y-2">
+          <p class="text-sm text-zinc-400">Install dependencies:</p>
+          <CodeBlock :code="installCommands.manual"  />
+          <p class="text-sm text-zinc-400 mt-4">Copy the component code into your project.</p>
+        </div>
+      </div>
     </div>
 
   </div>

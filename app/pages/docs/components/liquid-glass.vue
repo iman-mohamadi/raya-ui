@@ -1,13 +1,20 @@
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { GripVertical } from 'lucide-vue-next'
 import { useElementBounding, useDraggable } from '@vueuse/core'
 import { LiquidGlass } from '@/components/ui/liquid-glass'
 import { AmbientGrid } from '@/components/ui/ambient-grid'
-import { AnimatedTabs } from '@/components/ui/animated-tabs'
 import { CodeBlock } from '@/components/ui/code-block'
 
 definePageMeta({ layout: 'docs' })
 const config = useAppConfig().raya
+
+useSeoMeta({
+  title: 'Liquid Glass Component for Vue & Nuxt',
+  description: 'An Apple-style chromatic aberration and displacement effect component for Vue and Nuxt applications.',
+  ogTitle: 'Liquid Glass Component for Vue & Nuxt',
+  ogDescription: 'An Apple-style chromatic aberration and displacement effect component for Vue and Nuxt applications.',
+})
 
 // --- Draggable Setup ---
 const dragEl = ref<HTMLElement | null>(null)
@@ -53,30 +60,9 @@ onMounted(() => {
   }, 100)
 })
 
-// --- Tabs Configuration ---
-const previewTabs = [
-  { label: 'Preview', slot: 'preview' },
-  { label: 'Code', slot: 'code' }
-]
-
-const installTabs = [
-  { label: 'CLI', slot: 'cli' },
-  { label: 'Manual', slot: 'manual' }
-]
-
-const packageManagerTabs = [
-  { label: 'npm', slot: 'npm' },
-  { label: 'pnpm', slot: 'pnpm' },
-  { label: 'yarn', slot: 'yarn' },
-  { label: 'bun', slot: 'bun' }
-]
-
 // --- Code Snippets ---
 const installCommands = {
   npm: `npx shadcn-vue@latest add ${config.baseUrl}/liquid-glass.json`,
-  pnpm: `pnpm dlx shadcn-vue@latest add ${config.baseUrl}/liquid-glass.json`,
-  yarn: `npx shadcn-vue@latest add ${config.baseUrl}/liquid-glass.json`,
-  bun: `bunx shadcn-vue@latest add ${config.baseUrl}/liquid-glass.json`,
   manual: `Copy the component code manually.`
 }
 
@@ -104,109 +90,104 @@ const usageCode = `<template>
 </script>
 
 <template>
-  <div class="max-w-4xl space-y-10 pb-20 pt-10">
+  <div class="pb-5">
+    <PageTitle
+        title="Liquid Glass"
+        description="An Apple-style chromatic aberration and displacement effect for Vue."
+    />
+    <Divider/>
+    <div class="mt-4">
+      <Tabs default-value="preview">
+        <TabsList>
+          <TabsTrigger value="preview">
+            Preview
+          </TabsTrigger>
+          <TabsTrigger value="code">
+            Code
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="preview">
+          <div class="relative rounded-xl border border-zinc-800 bg-zinc-950 overflow-hidden min-h-[500px]">
 
-    <div class="space-y-4">
-      <h1 class="scroll-m-20 text-4xl font-bold tracking-tight">Liquid Glass</h1>
-      <p class="text-xl text-zinc-400">
-        An Apple-style chromatic aberration and displacement effect for Vue.
-      </p>
-    </div>
+            <div ref="containerEl" class="absolute inset-0 overflow-hidden select-none">
+              <AmbientGrid :grid-size="40" color1="var(--primary)" color2="#3b82f6" />
 
-    <AnimatedTabs :items="previewTabs" class="space-y-4">
-      <template #preview>
-        <div class="relative rounded-xl border border-zinc-800 bg-zinc-950 mt-4 overflow-hidden h-[500px]">
+              <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-0">
+                <h1 class="text-[12rem] font-black text-white/5 leading-none tracking-tighter">GLASS</h1>
+                <h1 class="text-[12rem] font-black text-white/5 leading-none tracking-tighter">EFFECT</h1>
+              </div>
 
-          <div ref="containerEl" class="absolute inset-0 overflow-hidden select-none">
-            <AmbientGrid :grid-size="40" color1="var(--primary)" color2="#3b82f6" />
-
-            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-0">
-              <h1 class="text-[12rem] font-black text-white/5 leading-none tracking-tighter">GLASS</h1>
-              <h1 class="text-[12rem] font-black text-white/5 leading-none tracking-tighter">EFFECT</h1>
-            </div>
-
-            <div
-                ref="dragEl"
-                :style="{
-                transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                touchAction: 'none'
-              }"
-                class="absolute z-20 cursor-grab active:cursor-grabbing will-change-transform"
-            >
-              <LiquidGlass class="w-72 h-48" :radius="24" :blur="15" :scale="-40" :lightness="30" :gOffset="10" :bOffset="10">
-                <div class="h-full w-full flex flex-col justify-between p-6 bg-white/5">
-                  <div class="flex justify-between items-start">
-                    <div class="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
-                      <div class="h-4 w-4 bg-white rounded-full"></div>
+              <div
+                  ref="dragEl"
+                  :style="{
+                  transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  touchAction: 'none'
+                }"
+                  class="absolute z-20 cursor-grab active:cursor-grabbing will-change-transform"
+              >
+                <LiquidGlass class="w-72 h-48" :radius="24" :blur="15" :scale="-40" :lightness="30" :gOffset="10" :bOffset="10">
+                  <div class="h-full w-full flex flex-col justify-between p-6 bg-white/5">
+                    <div class="flex justify-between items-start">
+                      <div class="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
+                        <div class="h-4 w-4 bg-white rounded-full"></div>
+                      </div>
+                      <GripVertical class="text-white/50" />
                     </div>
-                    <GripVertical class="text-white/50" />
+                    <div>
+                      <p class="text-white/60 text-sm font-medium uppercase tracking-wider">Balance</p>
+                      <p class="text-white text-3xl font-bold tracking-tight">$12,450.00</p>
+                    </div>
                   </div>
-                  <div>
-                    <p class="text-white/60 text-sm font-medium uppercase tracking-wider">Balance</p>
-                    <p class="text-white text-3xl font-bold tracking-tight">$12,450.00</p>
-                  </div>
-                </div>
-              </LiquidGlass>
-            </div>
+                </LiquidGlass>
+              </div>
 
-            <div class="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
-            <span class="text-xs text-zinc-500 bg-black/50 px-3 py-1 rounded-full border border-white/10">
-              Try dragging the card to see the refraction
-            </span>
+              <div class="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
+              <span class="text-xs text-zinc-500 bg-black/50 px-3 py-1 rounded-full border border-white/10">
+                Try dragging the card to see the refraction
+              </span>
+              </div>
             </div>
           </div>
-        </div>
-      </template>
-      <template #code>
-        <div class="mt-4">
+        </TabsContent>
+        <TabsContent value="code">
           <CodeBlock :code="previewCode" lang="html" file-name="Demo.vue" />
-        </div>
-      </template>
-    </AnimatedTabs>
-
-    <div class="space-y-6">
-      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">
-        Installation
-      </h2>
-
-      <AnimatedTabs :items="installTabs" class="space-y-6">
-        <template #cli>
-          <AnimatedTabs :items="packageManagerTabs" variant="link" class="w-full">
-            <template #npm>
-              <CodeBlock :code="installCommands.npm"  class="mt-4" />
-            </template>
-            <template #pnpm>
-              <CodeBlock :code="installCommands.pnpm"  class="mt-4" />
-            </template>
-            <template #yarn>
-              <CodeBlock :code="installCommands.yarn"  class="mt-4" />
-            </template>
-            <template #bun>
-              <CodeBlock :code="installCommands.bun"  class="mt-4" />
-            </template>
-          </AnimatedTabs>
-        </template>
-
-        <template #manual>
-          <div class="mt-4 space-y-4">
-            <p class="text-sm text-zinc-400">Copy the component code into your project.</p>
-            <CodeBlock :code="installCommands.manual"  />
-          </div>
-        </template>
-      </AnimatedTabs>
+        </TabsContent>
+      </Tabs>
     </div>
 
-    <div class="space-y-6">
-      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">
-        Usage
-      </h2>
+    <div class="h-g"/>
+
+    <Divider/>
+
+    <div class="space-y-6 mt-4">
+      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
+      <div class="space-y-4">
+        <CodeBlock :code="installCommands.npm"/>
+        <p class="text-sm text-zinc-400">Or manually:</p>
+        <div class="space-y-2">
+          <p class="text-sm text-zinc-400">Copy the component code into your project.</p>
+          <CodeBlock :code="installCommands.manual"  />
+        </div>
+      </div>
+    </div>
+
+    <div class="h-g"/>
+
+    <Divider/>
+
+    <div class="space-y-6 mt-4">
+      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Usage</h2>
       <CodeBlock :code="usageCode" lang="html" />
     </div>
 
-    <div class="space-y-6">
+    <div class="h-g"/>
+
+    <Divider/>
+
+    <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
       <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
         <table class="w-full text-sm text-left">
@@ -242,5 +223,6 @@ const usageCode = `<template>
         </table>
       </div>
     </div>
+
   </div>
 </template>
