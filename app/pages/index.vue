@@ -77,13 +77,13 @@ useSeoMeta({
       </p>
 
       <div class="flex flex-col sm:flex-row items-center gap-4">
-        <NuxtLink to="/docs/introduction">
+        <NuxtLink to="/components">
           <Button size="lg" class="h-12 px-8 text-base shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all duration-300">
             Browse Components
             <ArrowRight class="ml-2 h-4 w-4" />
           </Button>
         </NuxtLink>
-        <NuxtLink to="/docs/components/animated-input">
+        <NuxtLink to="/docs/installation">
           <Button size="lg" variant="outline" class="h-12 px-8 text-base bg-white/5 hover:bg-white/10 border-white/10 text-white hover:text-white">
             Documentation
           </Button>
