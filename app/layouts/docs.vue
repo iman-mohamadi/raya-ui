@@ -76,7 +76,7 @@ const nextItem = computed(() => currentIndex.value < flatNavItems.value.length -
   <div
       class="@container/root grid min-h-[100vh] grid-cols-[1fr_--spacing(4)_minmax(0,var(--breakpoint-2xl))_--spacing(4)_1fr] md:grid-cols-[1fr_--spacing(10)_minmax(0,var(--breakpoint-2xl))_--spacing(10)_1fr] grid-rows-[auto_1fr_auto] relative overflow-clip">
     <div class="col-span-full sticky top-0 z-30">
-      <div class=" border-b border-primary-200 z-30">
+      <div class="z-30">
         <header class="">
           <AppNav :showDoc="false"/>
         </header>
