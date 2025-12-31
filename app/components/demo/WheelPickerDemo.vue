@@ -9,9 +9,9 @@ const dateState = ref({ month: 5, day: 15, year: 2025 })
 </script>
 
 <template>
-  <div class="relative rounded-xl flex items-center justify-center ">
+  <div class="relative rounded-xl flex items-center justify-center w-full px-2">
     <ClientOnly>
-      <div class="w-80 rounded-xl p-1">
+      <div class="w-full max-w-xs sm:w-80 rounded-xl p-1">
         <WheelPickerWrapper>
           <WheelPicker v-model="dateState.month" :options="months" infinite class="flex-[2]" />
           <WheelPicker v-model="dateState.day" :options="days" infinite class="flex-1" />

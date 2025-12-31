@@ -4,6 +4,6 @@ import { EncryptedText } from '@/components/ui/encrypted-text'
 
 <template>
   <div class="flex items-center justify-center w-full h-full">
-    <EncryptedText text="DECRYPT" class="font-mono font-bold tracking-widest" />
+    <EncryptedText text="DECRYPT" class="font-mono font-bold tracking-widest text-2xl sm:text-4xl" />
   </div>
 </template>

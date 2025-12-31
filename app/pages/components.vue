@@ -18,7 +18,7 @@ import RayaButtonDemo from '@/components/demo/RayaButtonDemo.vue'
 import TreeDemo from '@/components/demo/TreeDemo.vue'
 import WheelPickerDemo from '@/components/demo/WheelPickerDemo.vue'
 
-// --- Background Imports (These work fine as full-size) ---
+// --- Background Imports ---
 import { AnimatedBackground } from '@/components/ui/animated-background'
 import { AmbientGrid } from '@/components/ui/ambient-grid'
 import { BackgroundBeams } from '@/components/ui/background-beams'
@@ -31,14 +31,11 @@ definePageMeta({layout: 'docs'})
 
 const navStore = useNavigationStore()
 
-// Filter out 'Guide' to show only Components and Backgrounds
 const groups = computed(() => {
   return navStore.navGroups.filter(g => g.title !== 'Guide')
 })
 
-// --- Mapping Logic ---
 const componentMap: Record<string, any> = {
-  // Core Components (Mapped to Demos)
   'Animated Background': AnimatedBackgroundDemo,
   'Animated Input': AnimatedInputDemo,
   'Animated Tabs': AnimatedTabsDemo,
@@ -53,8 +50,6 @@ const componentMap: Record<string, any> = {
   'Raya Button': RayaButtonDemo,
   'Tree': TreeDemo,
   'Wheel Picker': WheelPickerDemo,
-
-  // Backgrounds (Mapped to Real Components)
   'Ambient Grid': AmbientGrid,
   'Background Beams': BackgroundBeams,
   'Dotted Glow': DottedGlowBackground,
@@ -84,11 +79,10 @@ const getComponent = (label: string) => componentMap[label]
         <div class="col-line line-3"></div>
       </div>
 
-      <div class="grid relative xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-g">
+      <div class="grid relative grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-g">
         <div
             v-for="item in group.items"
             :key="item.to"
-
             class="group"
         >
           <div class="row-line bg-primary-50/40 aspect-390/200 overflow-hidden relative">
@@ -113,11 +107,11 @@ const getComponent = (label: string) => componentMap[label]
 
           </div>
 
-          <NuxtLink :to="item.to" class="pl-m py-2 row-line before:hidden pb-8">
-            <p class="text-sm text-foreground first-letter:uppercase">
+          <NuxtLink :to="item.to" class="pl-m py-2 row-line before:hidden pb-8 block">
+            <p class="text-sm text-foreground first-letter:uppercase font-medium">
               {{ item.label }}
             </p>
-            <p class="text-xs text-muted-foreground font-mono">
+            <p class="text-xs text-muted-foreground font-mono truncate pr-2">
               {{ item.description }}
             </p>
           </NuxtLink>

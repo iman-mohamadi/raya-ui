@@ -23,9 +23,7 @@ const props = withDefaults(defineProps<Props>(), {
       <h1 class="tracking-tighter text-foreground text-balance max-w-[30ch] text-6xl md:text-8xl -mb-2">
         {{ title }}
       </h1>
-      <p class="text-foreground max-w-[60ch] -mt-2 text-base leading-7 md:text-lg md:leading-8">
-        {{ description }}
-      </p>
+      <p class="text-foreground max-w-[60ch] -mt-2 text-base leading-7 md:text-lg md:leading-8" v-html="description" />
     </div>
   </div>
 </template>

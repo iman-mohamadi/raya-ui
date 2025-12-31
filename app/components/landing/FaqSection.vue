@@ -4,7 +4,7 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/
 const faqs = [
   {
     question: "What is Raya UI?",
-    answer: "Raya UI is a collection of re-usable components built using Vue 3 and Tailwind CSS. It is not a component library you install via npm, but rather a set of components you can copy and paste into your own projects."
+    answer: "Raya UI is a collection of re-usable components built on top of Shadcn Vue, using Vue 3 and Tailwind CSS. It is not a component library you install via npm, but rather a set of components you can copy and paste into your own projects."
   },
   {
     question: "Is it free to use?",
@@ -12,11 +12,11 @@ const faqs = [
   },
   {
     question: "Do I need to install it as a dependency?",
-    answer: "No. The philosophy is 'copy and paste'. This gives you full control over the code. You simply copy the component file into your project and customize it as needed."
+    answer: "Raya UI itself is not installed as a dependency. However, since it is built on top of the Shadcn Vue ecosystem, you must have a working Shadcn Vue project (Tailwind, utils, primitives) set up for these components to work."
   },
   {
     question: "Which framework does it support?",
-    answer: "It is designed for Vue 3. It works perfectly with Nuxt 3 as well."
+    answer: "It is designed for Vue 3 and Nuxt 3 projects that are initialized with Shadcn Vue."
   },
   {
     question: "Does it support Dark Mode?",

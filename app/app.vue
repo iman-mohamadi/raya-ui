@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Analytics } from '@vercel/analytics/nuxt'
+import { SpeedInsights } from '@vercel/speed-insights/vue'
 
 const appConfig = useAppConfig()
 
@@ -26,6 +27,7 @@ useSeoMeta({
   <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>
+  <SpeedInsights />
   <Analytics />
 </template>
 

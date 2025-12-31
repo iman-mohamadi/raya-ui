@@ -11,7 +11,6 @@ const navStore = useNavigationStore()
 
 // Access the store constant directly
 const sortedNavGroups = computed(() => navStore.sortedNavGroups)
-const disableNav = ref(false)
 
 // --- Tracking Logic (Desktop) ---
 const itemRefs = ref<Record<string, HTMLElement>>({})
@@ -49,7 +48,6 @@ const updateAllIndicators = () => {
   sortedNavGroups.value.forEach(group => {
     handleLeave(group.title, group.items)
   })
-  disableNav.value = route.path === '/components';
 }
 
 onMounted(() => {
@@ -88,7 +86,6 @@ const nextItem = computed(() => currentIndex.value < flatNavItems.value.length -
       <div>
         <Divider/>
         <div
-            v-if="!disableNav"
             class="sticky top-12 z-40 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 screen-line-after">
           <div class="flex h-14 items-center justify-between px-4">
             <Button variant="ghost" size="sm" as-child class="gap-2 text-muted-foreground hover:text-foreground">

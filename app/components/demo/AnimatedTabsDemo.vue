@@ -17,9 +17,11 @@ const manyItems = [
 </script>
 
 <template>
-  <div class="flex flex-col justify-center items-center px-5 overflow-hidden">
-    <div class="w-full h-fit">
-      <AnimatedTabs :items="manyItems" :content="false" />
+  <div class="flex flex-col justify-center items-center px-2 sm:px-5 w-full h-full overflow-hidden">
+    <div class="w-full max-w-full overflow-x-auto no-scrollbar">
+      <div class="min-w-max">
+        <AnimatedTabs :items="manyItems" :content="false" />
+      </div>
     </div>
   </div>
 </template>
