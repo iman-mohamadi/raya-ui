@@ -2,6 +2,7 @@
 import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-vue-next'
 import FaqSection from "~/components/landing/FaqSection.vue"
+import {BackgroundBeams} from "~/components/ui/background-beams";
 
 definePageMeta({
   layout: 'default'
@@ -47,8 +48,9 @@ useSeoMeta({
 
 <template>
   <div>
-    <div class="relative h-screen w-full overflow-x-hidden">
-      <div class="grid gap-2 py-2">
+    <div class="h-screen w-full overflow-x-hidden">
+      <BackgroundBeams />
+      <div class="grid gap-2 py-2 relative z-10">
         <div class="grid gap-6 md:gap-8">
           <h1 class="text-7xl md:text-9xl font-black tracking-tighter text-primary drop-shadow-2xl">
             Raya UI
@@ -59,32 +61,34 @@ useSeoMeta({
             Styled with Tailwind CSS. Open Source.
           </p>
         </div>
-        <div class="flex flex-col sm:flex-row items-center gap-4">
-          <NuxtLink to="/components">
-            <Button
-              size="lg"
-              class="h-12 px-8 text-base shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all duration-300"
-            >
-              Browse Components
-              <ArrowRight class="ml-2 h-4 w-4" />
-            </Button>
-          </NuxtLink>
-          <NuxtLink to="/docs/installation">
-            <Button
-              size="lg"
-              variant="outline"
-              class="h-12 px-8 text-base bg-white/5 hover:bg-white/10 border-white/10 text-white hover:text-white"
-            >
-              Documentation
-            </Button>
-          </NuxtLink>
+        <div class="h-g" />
+        <Divider />
+        <div class="flex items-center justify-center h-30">
+          <div class="flex flex-col sm:flex-row items-center gap-4">
+            <NuxtLink to="/components">
+              <Button
+                  size="lg"
+                  class="h-12 px-8 text-base shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all duration-300"
+              >
+                Browse Components
+                <ArrowRight class="ml-2 h-4 w-4" />
+              </Button>
+            </NuxtLink>
+            <NuxtLink to="/docs/installation">
+              <Button
+                  size="lg"
+                  variant="outline"
+                  class="h-12 px-8 text-base bg-white/5 hover:bg-white/10 border-white/10 text-white hover:text-white"
+              >
+                Documentation
+              </Button>
+            </NuxtLink>
+          </div>
         </div>
       </div>
     </div>
     <div>
-      <div class="relative z-10 w-full">
         <FaqSection />
-      </div>
     </div>
   </div>
 </template>
