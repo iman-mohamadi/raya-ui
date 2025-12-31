@@ -1,0 +1,9 @@
+{
+  "dependencies": [
+    "motion-v",
+    "@vueuse/core"
+  ],
+  "files": [
+    "Magnetic.vue"
+  ]
+}

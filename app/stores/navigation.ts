@@ -14,10 +14,11 @@ export const useNavigationStore = defineStore('navigation', () => {
                 { label: 'Code Block', to: '/docs/components/code-block', description: 'Syntax highlighting with copy functionality and theme support.' },
                 { label: 'Encrypted Text', to: '/docs/components/encrypted-text', description: 'Text that reveals itself with a matrix-like scrambling effect.' },
                 { label: 'Floating Dock', to: '/docs/components/floating-dock', description: 'MacOS-style floating dock for navigation links.' },
+                { label: 'Liquid Glass', to: '/docs/components/liquid-glass', description: 'Glassmorphism effects with liquid distortions.' },
+                { label: 'Magnetic', to: '/docs/components/magnetic', description: 'A magnetic effect for elements that allows them to be attracted to the mouse cursor.' },
                 { label: 'Morphing Text', to: '/docs/components/morphing-text', description: 'Text that morphs smoothly between different states.' },
                 { label: 'Pixelated Button', to: '/docs/components/pixelated-button', description: 'Retro-style buttons with pixelated interactions.' },
                 { label: 'Raya Button', to: '/docs/components/raya-button', description: 'The signature button component of the design system.' },
-                { label: 'Liquid Glass', to: '/docs/components/liquid-glass', description: 'Glassmorphism effects with liquid distortions.' },
                 { label: 'Tree', to: '/docs/components/tree', description: 'Hierarchical tree view for file structures or nested data.' },
                 { label: 'Wheel Picker', to: '/docs/components/wheel-picker', description: 'iOS-style scrollable wheel picker for selecting values.' },
             ]

@@ -1,0 +1,21 @@
+{
+  "name": "animated-background",
+  "type": "registry:ui",
+  "dependencies": [
+    "motion-v",
+    "clsx",
+    "tailwind-merge"
+  ],
+  "files": [
+    {
+      "path": "animated-background/AnimatedBackground.vue",
+      "content": "<script setup lang=\"ts\">\r\nimport { ref, watch, computed, onMounted } from 'vue'\r\nimport { Motion, AnimatePresence } from 'motion-v'\r\nimport { cn } from '@/lib/utils'\r\n\r\ninterface Props {\r\n  modelValue?: string | number | null\r\n  defaultValue?: string | number | null\r\n  items: any[]\r\n  enableHover?: boolean\r\n  class?: string\r\n  transition?: any\r\n  layoutId?: string\r\n}\r\n\r\nconst props = withDefaults(defineProps<Props>(), {\r\n  enableHover: false,\r\n  items: () => [],\r\n  layoutId: 'animated-background'\r\n})\r\n\r\nconst emit = defineEmits(['update:modelValue'])\r\n\r\nconst uniqueId = props.layoutId || `background-${Math.random().toString(36).substr(2, 9)}`\r\n\r\n// Internal state for hover mode or uncontrolled mode\r\nconst internalValue = ref(props.defaultValue ?? null)\r\n\r\nconst activeId = computed({\r\n  get: () => props.modelValue !== undefined ? props.modelValue : internalValue.value,\r\n  set: (val) => {\r\n    internalValue.value = val\r\n    emit('update:modelValue', val)\r\n  }\r\n})\r\n\r\nconst handleInteraction = (id: string | number | null) => {\r\n  if (props.enableHover) {\r\n    activeId.value = id\r\n  } else {\r\n    // For click mode, we only set if not null (clicks usually select)\r\n    // If you want toggle behavior, logic would be different.\r\n    // Assuming selection behavior here.\r\n    if (id !== null) activeId.value = id\r\n  }\r\n}\r\n\r\n// Default transition from motion-primitives\r\nconst defaultTransition = {\r\n  type: 'spring',\r\n  bounce: 0.2,\r\n  duration: 0.3\r\n}\r\n</script>\r\n\r\n<template>\r\n  <div :class=\"cn('flex', props.class)\">\r\n    <div\r\n        v-for=\"(item, index) in items\"\r\n        :key=\"index\"\r\n        :data-id=\"item.id || item.value || index\"\r\n        class=\"relative inline-flex\"\r\n        @click=\"!enableHover ? handleInteraction(item.id ?? item.value ?? index) : undefined\"\r\n        @mouseenter=\"enableHover ? handleInteraction(item.id ?? item.value ?? index) : undefined\"\r\n        @mouseleave=\"enableHover ? handleInteraction(null) : undefined\"\r\n    >\r\n      <AnimatePresence>\r\n        <Motion\r\n            v-if=\"activeId === (item.id ?? item.value ?? index)\"\r\n            :layout-id=\"uniqueId\"\r\n            :class=\"cn('absolute inset-0 z-0', $attrs.itemClass)\"\r\n            :initial=\"{ opacity: 0 }\"\r\n            :animate=\"{ opacity: 1 }\"\r\n            :exit=\"{ opacity: 0 }\"\r\n            :transition=\"transition || defaultTransition\"\r\n        >\r\n          <slot name=\"background\">\r\n            <div class=\"absolute inset-0 bg-accent rounded-md w-full h-full\" />\r\n          </slot>\r\n        </Motion>\r\n      </AnimatePresence>\r\n\r\n      <div class=\"z-10 relative\">\r\n        <slot :item=\"item\" :index=\"index\" :is-active=\"activeId === (item.id ?? item.value ?? index)\" />\r\n      </div>\r\n    </div>\r\n  </div>\r\n</template>",
+      "type": "registry:ui"
+    },
+    {
+      "path": "animated-background/index.ts",
+      "content": "export { default as AnimatedBackground } from './AnimatedBackground.vue'\n",
+      "type": "registry:ui"
+    }
+  ]
+}

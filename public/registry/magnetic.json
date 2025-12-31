@@ -1,0 +1,20 @@
+{
+  "name": "magnetic",
+  "type": "registry:ui",
+  "dependencies": [
+    "motion-v",
+    "@vueuse/core"
+  ],
+  "files": [
+    {
+      "path": "magnetic/Magnetic.vue",
+      "content": "<script setup lang=\"ts\">\r\nimport { ref, onMounted, onBeforeUnmount, computed, watch } from \"vue\";\r\nimport { Motion } from \"motion-v\";\r\nimport { useEventListener, useMouseInElement } from \"@vueuse/core\";\r\n\r\ntype SpringOptions = {\r\n  stiffness?: number;\r\n  damping?: number;\r\n  mass?: number;\r\n};\r\n\r\ntype MagneticProps = {\r\n  intensity?: number;\r\n  range?: number;\r\n  actionArea?: \"self\" | \"parent\" | \"global\";\r\n  springOptions?: SpringOptions;\r\n};\r\n\r\nconst props = withDefaults(defineProps<MagneticProps>(), {\r\n  intensity: 0.6,\r\n  range: 100,\r\n  actionArea: \"self\",\r\n  springOptions: () => ({ stiffness: 26.7, damping: 4.1, mass: 0.2 }),\r\n});\r\n\r\nconst elementRef = ref<InstanceType<typeof Motion> | null>(null);\r\nconst isHovered = ref(false);\r\n\r\n// Physics State\r\nconst targetX = ref(0);\r\nconst targetY = ref(0);\r\nconst currentX = ref(0);\r\nconst currentY = ref(0);\r\n\r\nlet velocityX = 0;\r\nlet velocityY = 0;\r\nlet animationFrameId: number;\r\n\r\nconst updatePhysics = () => {\r\n  // Use a fixed time step for stability (approx 60fps)\r\n  const dt = 1 / 60;\r\n\r\n  const { stiffness, damping, mass } = props.springOptions;\r\n\r\n  // Spring force calculation: F = -kx - cv\r\n  // Acceleration: a = F / m\r\n\r\n  const forceX = -stiffness * (currentX.value - targetX.value) - damping * velocityX;\r\n  const accelX = forceX / mass;\r\n\r\n  const forceY = -stiffness * (currentY.value - targetY.value) - damping * velocityY;\r\n  const accelY = forceY / mass;\r\n\r\n  // Euler integration\r\n  velocityX += accelX * dt;\r\n  velocityY += accelY * dt;\r\n\r\n  currentX.value += velocityX * dt;\r\n  currentY.value += velocityY * dt;\r\n\r\n  animationFrameId = requestAnimationFrame(updatePhysics);\r\n};\r\n\r\nconst handleMouseMove = (e: MouseEvent) => {\r\n  const el = elementRef.value?.$el as HTMLElement;\r\n  if (!el) return;\r\n\r\n  const rect = el.getBoundingClientRect();\r\n  const centerX = rect.left + rect.width / 2;\r\n  const centerY = rect.top + rect.height / 2;\r\n\r\n  const distanceX = e.clientX - centerX;\r\n  const distanceY = e.clientY - centerY;\r\n\r\n  const absoluteDistance = Math.sqrt(distanceX ** 2 + distanceY ** 2);\r\n\r\n  if (isHovered.value && absoluteDistance <= props.range) {\r\n    const scale = 1 - absoluteDistance / props.range;\r\n    targetX.value = distanceX * props.intensity * scale;\r\n    targetY.value = distanceY * props.intensity * scale;\r\n  } else {\r\n    targetX.value = 0;\r\n    targetY.value = 0;\r\n  }\r\n};\r\n\r\n// Handle Hover Logic\r\nonMounted(() => {\r\n  const el = elementRef.value?.$el as HTMLElement;\r\n  if (!el) return;\r\n\r\n  // Start Physics Loop\r\n  updatePhysics();\r\n\r\n  // Attach Mouse Listener Global\r\n  window.addEventListener('mousemove', handleMouseMove);\r\n\r\n  // Determine Action Area\r\n  if (props.actionArea === 'global') {\r\n    isHovered.value = true;\r\n  } else {\r\n    const triggerEl = props.actionArea === 'parent' ? el.parentElement : el;\r\n    if (triggerEl) {\r\n      triggerEl.addEventListener('mouseenter', () => isHovered.value = true);\r\n      triggerEl.addEventListener('mouseleave', () => {\r\n        isHovered.value = false;\r\n        targetX.value = 0;\r\n        targetY.value = 0;\r\n      });\r\n    }\r\n  }\r\n});\r\n\r\nonBeforeUnmount(() => {\r\n  cancelAnimationFrame(animationFrameId);\r\n  window.removeEventListener('mousemove', handleMouseMove);\r\n});\r\n</script>\r\n\r\n<template>\r\n  <Motion\r\n      ref=\"elementRef\"\r\n      :style=\"{ x: currentX, y: currentY }\"\r\n  >\r\n    <slot />\r\n  </Motion>\r\n</template>",
+      "type": "registry:ui"
+    },
+    {
+      "path": "magnetic/index.ts",
+      "content": "export { default as Magnetic } from './Magnetic.vue'\n",
+      "type": "registry:ui"
+    }
+  ]
+}
