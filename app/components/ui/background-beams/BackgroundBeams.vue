@@ -114,7 +114,7 @@ const animatedPaths = computed(() => {
       <path
           :d="paths.join(' ')"
           stroke="url(#paint0_radial_242_278)"
-          stroke-opacity="0.05"
+          stroke-opacity="0.2"
           stroke-width="0.5"
       />
 
@@ -123,7 +123,7 @@ const animatedPaths = computed(() => {
           :key="`path-${index}`"
           :d="path.d"
           :stroke="`url(#linearGradient-${index})`"
-          stroke-opacity="0.4"
+          stroke-opacity="1"
           stroke-width="0.5"
       />
 

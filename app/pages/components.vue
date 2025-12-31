@@ -1,6 +1,31 @@
 <script setup lang="ts">
-import {computed} from 'vue'
-import {useNavigationStore} from "~/stores/navigation";
+import { computed } from 'vue'
+import { useNavigationStore } from "~/stores/navigation";
+
+// --- Demo Imports ---
+import AnimatedBackgroundDemo from "~/components/demo/AnimatedBackgroundDemo.vue";
+import AnimatedInputDemo from '@/components/demo/AnimatedInputDemo.vue'
+import AnimatedTabsDemo from '@/components/demo/AnimatedTabsDemo.vue'
+import BarVisualizerDemo from '@/components/demo/BarVisualizerDemo.vue'
+import CodeBlockDemo from '@/components/demo/CodeBlockDemo.vue'
+import EncryptedTextDemo from '@/components/demo/EncryptedTextDemo.vue'
+import FloatingDockDemo from '@/components/demo/FloatingDockDemo.vue'
+import LiquidGlassDemo from '@/components/demo/LiquidGlassDemo.vue'
+import MagneticDemo from '@/components/demo/MagneticDemo.vue'
+import MorphingTextDemo from '@/components/demo/MorphingTextDemo.vue'
+import PixelatedButtonDemo from '@/components/demo/PixelatedButtonDemo.vue'
+import RayaButtonDemo from '@/components/demo/RayaButtonDemo.vue'
+import TreeDemo from '@/components/demo/TreeDemo.vue'
+import WheelPickerDemo from '@/components/demo/WheelPickerDemo.vue'
+
+// --- Background Imports (These work fine as full-size) ---
+import { AnimatedBackground } from '@/components/ui/animated-background'
+import { AmbientGrid } from '@/components/ui/ambient-grid'
+import { BackgroundBeams } from '@/components/ui/background-beams'
+import { DottedGlowBackground } from '@/components/ui/dotted-glow-background'
+import { GravityStars } from '@/components/ui/gravity-stars'
+import { BackgroundRippleEffect } from '@/components/ui/background-ripple-effect'
+import { SnowEffect } from '@/components/ui/snow-effect'
 
 definePageMeta({layout: 'docs'})
 
@@ -10,6 +35,35 @@ const navStore = useNavigationStore()
 const groups = computed(() => {
   return navStore.navGroups.filter(g => g.title !== 'Guide')
 })
+
+// --- Mapping Logic ---
+const componentMap: Record<string, any> = {
+  // Core Components (Mapped to Demos)
+  'Animated Background': AnimatedBackgroundDemo,
+  'Animated Input': AnimatedInputDemo,
+  'Animated Tabs': AnimatedTabsDemo,
+  'Bar Visualizer': BarVisualizerDemo,
+  'Code Block': CodeBlockDemo,
+  'Encrypted Text': EncryptedTextDemo,
+  'Floating Dock': FloatingDockDemo,
+  'Liquid Glass': LiquidGlassDemo,
+  'Magnetic': MagneticDemo,
+  'Morphing Text': MorphingTextDemo,
+  'Pixelated Button': PixelatedButtonDemo,
+  'Raya Button': RayaButtonDemo,
+  'Tree': TreeDemo,
+  'Wheel Picker': WheelPickerDemo,
+
+  // Backgrounds (Mapped to Real Components)
+  'Ambient Grid': AmbientGrid,
+  'Background Beams': BackgroundBeams,
+  'Dotted Glow': DottedGlowBackground,
+  'Gravity Stars': GravityStars,
+  'Ripple Effect': BackgroundRippleEffect,
+  'Snow Effect': SnowEffect,
+}
+
+const getComponent = (label: string) => componentMap[label]
 </script>
 
 <template>
@@ -31,29 +85,43 @@ const groups = computed(() => {
       </div>
 
       <div class="grid relative xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-g">
-        <NuxtLink
+        <div
             v-for="item in group.items"
             :key="item.to"
-            :to="item.to"
+
+            class="group"
         >
-          <div class="row-line grid items-center bg-primary-50/40 aspect-390/200">
-            <div class="relative rounded-sm aspect-390/200">
+          <div class="row-line bg-primary-50/40 aspect-390/200 overflow-hidden relative">
+
+            <component
+                v-if="getComponent(item.label)"
+                :is="getComponent(item.label)"
+                class="w-full h-full"
+            />
+
+            <div
+                v-else
+                class="w-full h-full flex items-center justify-center text-muted-foreground text-xs font-mono"
+            >
               <div
                   v-if="item?.img"
                   class="absolute inset-0 bg-contain bg-center bg-no-repeat"
                   :style="`background-image: url('${item?.img}');`"
               ></div>
+              <span v-else>Preview</span>
             </div>
+
           </div>
-          <div class="pl-m py-2 row-line before:hidden pb-8">
+
+          <NuxtLink :to="item.to" class="pl-m py-2 row-line before:hidden pb-8">
             <p class="text-sm text-foreground first-letter:uppercase">
               {{ item.label }}
             </p>
             <p class="text-xs text-muted-foreground font-mono">
               {{ item.description }}
             </p>
-          </div>
-        </NuxtLink>
+          </NuxtLink>
+        </div>
       </div>
       <div class="h-g"></div>
     </div>
