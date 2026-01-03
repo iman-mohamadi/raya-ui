@@ -18,6 +18,7 @@ import RayaButtonDemo from '@/components/demo/RayaButtonDemo.vue'
 import TreeDemo from '@/components/demo/TreeDemo.vue'
 import WheelPickerDemo from '@/components/demo/WheelPickerDemo.vue'
 import FlipClockDemo from '@/components/demo/FlipClockDemo.vue'
+import PartitionBarDemo from '@/components/demo/PartitionBarDemo.vue'
 
 // --- Background Imports ---
 import { AmbientGrid } from '@/components/ui/ambient-grid'
@@ -56,7 +57,8 @@ const componentMap: Record<string, any> = {
   'Gravity Stars': GravityStars,
   'Ripple Effect': BackgroundRippleEffect,
   'Snow Effect': SnowEffect,
-  'Flip Clock': FlipClockDemo
+  'Flip Clock': FlipClockDemo,
+  'Partition Bar': PartitionBarDemo
 }
 
 const getComponent = (label: string) => componentMap[label]

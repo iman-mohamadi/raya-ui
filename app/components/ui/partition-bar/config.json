@@ -1,0 +1,13 @@
+{
+  "dependencies": [
+    "clsx",
+    "tailwind-merge",
+    "class-variance-authority"
+  ],
+  "files": [
+    "PartitionBar.vue",
+    "PartitionBarSegment.vue",
+    "PartitionBarSegmentTitle.vue",
+    "PartitionBarSegmentValue.vue"
+  ]
+}

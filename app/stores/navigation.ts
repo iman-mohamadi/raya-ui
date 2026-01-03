@@ -63,6 +63,11 @@ export const useNavigationStore = defineStore('navigation', () => {
                     description: 'Text that morphs smoothly between different states.'
                 },
                 {
+                    label: 'Partition Bar',
+                    to: '/docs/components/partition-bar',
+                    description: 'A proportional bar chart component for visualizing distributed data values.'
+                },
+                {
                     label: 'Pixelated Button',
                     to: '/docs/components/pixelated-button',
                     description: 'Retro-style buttons with pixelated interactions.'

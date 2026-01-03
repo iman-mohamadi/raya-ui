@@ -1,0 +1,36 @@
+{
+  "name": "partition-bar",
+  "type": "registry:ui",
+  "dependencies": [
+    "clsx",
+    "tailwind-merge",
+    "class-variance-authority"
+  ],
+  "files": [
+    {
+      "path": "partition-bar/PartitionBar.vue",
+      "content": "<script setup lang=\"ts\">\r\nimport { ref, computed, provide, type HTMLAttributes } from 'vue'\r\nimport { cn } from '@/lib/utils'\r\nimport { cva, type VariantProps } from 'class-variance-authority'\r\n\r\nconst partitionBarVariants = cva(\"flex flex-row bg-background\", {\r\n  variants: {\r\n    size: {\r\n      sm: \"text-xs\",\r\n      md: \"text-sm\",\r\n      lg: \"text-base\" // 'text-md' isn't standard tailwind, using text-base\r\n    }\r\n  },\r\n  defaultVariants: {\r\n    size: \"md\"\r\n  }\r\n})\r\n\r\ninterface Props {\r\n  gap?: number\r\n  size?: VariantProps<typeof partitionBarVariants>['size']\r\n  class?: HTMLAttributes['class']\r\n}\r\n\r\nconst props = withDefaults(defineProps<Props>(), {\r\n  gap: 1,\r\n  size: \"md\"\r\n})\r\n\r\n// State to track children values\r\nconst items = ref(new Map<string, number>())\r\n\r\nconst register = (id: string, value: number) => {\r\n  items.value.set(id, value)\r\n}\r\n\r\nconst unregister = (id: string) => {\r\n  items.value.delete(id)\r\n}\r\n\r\nconst total = computed(() => {\r\n  let sum = 0\r\n  for (const val of items.value.values()) {\r\n    sum += val\r\n  }\r\n  return sum\r\n})\r\n\r\n// Provide context to children\r\nprovide('partition-bar-context', {\r\n  total,\r\n  size: computed(() => props.size),\r\n  register,\r\n  unregister\r\n})\r\n</script>\r\n\r\n<template>\r\n  <ul\r\n      :class=\"cn('w-full', partitionBarVariants({ size }), props.class)\"\r\n      :style=\"{ gap: `${gap * 4}px` }\"\r\n  >\r\n    <slot />\r\n  </ul>\r\n</template>",
+      "type": "registry:ui"
+    },
+    {
+      "path": "partition-bar/PartitionBarSegment.vue",
+      "content": "<script setup lang=\"ts\">\r\nimport { inject, computed, onMounted, onUnmounted, watch, type HTMLAttributes } from 'vue'\r\nimport { cn } from '@/lib/utils'\r\nimport { cva, type VariantProps } from 'class-variance-authority'\r\nimport { useId } from '#imports' // Nuxt/Vue auto-import\r\n\r\nconst partitionBarLineVariants = cva(\"\", {\r\n  variants: {\r\n    variant: {\r\n      default: \"bg-primary\",\r\n      secondary: \"bg-primary/60\",\r\n      destructive: \"bg-destructive\",\r\n      outline: \"border border-input bg-background\",\r\n      muted: \"bg-primary/40\"\r\n    }\r\n  },\r\n  defaultVariants: {\r\n    variant: \"default\"\r\n  }\r\n})\r\n\r\nconst partitionBarTitleVariants = cva(\"\", {\r\n  variants: {\r\n    variant: {\r\n      default: \"text-primary\",\r\n      secondary: \"text-primary/60\",\r\n      destructive: \"text-destructive\",\r\n      outline: \"text-foreground\",\r\n      muted: \"text-primary/40\"\r\n    }\r\n  },\r\n  defaultVariants: {\r\n    variant: \"default\"\r\n  }\r\n})\r\n\r\ninterface Props {\r\n  num?: number\r\n  variant?: VariantProps<typeof partitionBarLineVariants>['variant']\r\n  alignment?: \"left\" | \"center\" | \"right\"\r\n  class?: HTMLAttributes['class']\r\n}\r\n\r\nconst props = withDefaults(defineProps<Props>(), {\r\n  num: 0,\r\n  variant: \"default\",\r\n  alignment: \"center\"\r\n})\r\n\r\n// Context Injection\r\nconst context = inject<{\r\n  total: { value: number }\r\n  size: { value: VariantProps<typeof partitionBarVariants>['size'] }\r\n  register: (id: string, val: number) => void\r\n  unregister: (id: string) => void\r\n}>('partition-bar-context')\r\n\r\nif (!context) {\r\n  throw new Error(\"PartitionBarSegment must be used within a PartitionBar\")\r\n}\r\n\r\nconst { total, size, register, unregister } = context\r\nconst id = useId()\r\n\r\n// Register value on mount and updates\r\nwatch(() => props.num, (newVal) => {\r\n  register(id, newVal)\r\n}, { immediate: true })\r\n\r\nonUnmounted(() => {\r\n  unregister(id)\r\n})\r\n\r\nconst widthPercent = computed(() => {\r\n  return total.value > 0 ? (props.num / total.value) * 100 : 0\r\n})\r\n\r\nconst heightClass = computed(() => {\r\n  if (size.value === 'sm') return 'h-2'\r\n  if (size.value === 'lg') return 'h-4'\r\n  return 'h-3'\r\n})\r\n\r\nconst marginClass = computed(() => {\r\n  if (size.value === 'sm') return 'mt-2'\r\n  if (size.value === 'lg') return 'mt-4'\r\n  return 'mt-3'\r\n})\r\n</script>\r\n\r\n<template>\r\n  <li\r\n      class=\"flex flex-col min-w-0\"\r\n      :style=\"{\r\n      flexBasis: `${widthPercent}%`,\r\n      flexGrow: 0,\r\n      flexShrink: 0\r\n    }\"\r\n  >\r\n    <div\r\n        :class=\"cn(\r\n        partitionBarLineVariants({ variant }),\r\n        'rounded-full w-full shrink-0',\r\n        heightClass,\r\n        props.class\r\n      )\"\r\n    />\r\n\r\n    <div\r\n        :class=\"cn(\r\n        partitionBarTitleVariants({ variant }),\r\n        'w-full whitespace-normal flex flex-col',\r\n        marginClass,\r\n        alignment === 'left' && 'items-start',\r\n        alignment === 'center' && 'items-center',\r\n        alignment === 'right' && 'items-end'\r\n      )\"\r\n    >\r\n      <slot />\r\n    </div>\r\n  </li>\r\n</template>",
+      "type": "registry:ui"
+    },
+    {
+      "path": "partition-bar/PartitionBarSegmentTitle.vue",
+      "content": "<script setup lang=\"ts\">\r\nimport { cn } from '@/lib/utils'\r\nimport type { HTMLAttributes } from 'vue'\r\n\r\nconst props = defineProps<{\r\n  class?: HTMLAttributes['class']\r\n}>()\r\n</script>\r\n\r\n<template>\r\n  <div :class=\"cn('w-fit font-semibold', props.class)\">\r\n    <slot />\r\n  </div>\r\n</template>",
+      "type": "registry:ui"
+    },
+    {
+      "path": "partition-bar/PartitionBarSegmentValue.vue",
+      "content": "<script setup lang=\"ts\">\r\nimport { cn } from '@/lib/utils'\r\nimport type { HTMLAttributes } from 'vue'\r\n\r\nconst props = defineProps<{\r\n  class?: HTMLAttributes['class']\r\n}>()\r\n</script>\r\n\r\n<template>\r\n  <div :class=\"cn('w-fit text-slate-500 text-[80%]', props.class)\">\r\n    <slot />\r\n  </div>\r\n</template>",
+      "type": "registry:ui"
+    },
+    {
+      "path": "partition-bar/index.ts",
+      "content": "export { default as PartitionBar } from './PartitionBar.vue'\n",
+      "type": "registry:ui"
+    }
+  ]
+}
