@@ -1,0 +1,11 @@
+{
+  "dependencies": [
+    "clsx",
+    "tailwind-merge",
+    "class-variance-authority"
+  ],
+  "files": [
+    "FlipClock.vue",
+    "FlipUnit.vue"
+  ]
+}

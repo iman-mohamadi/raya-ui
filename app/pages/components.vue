@@ -17,9 +17,9 @@ import PixelatedButtonDemo from '@/components/demo/PixelatedButtonDemo.vue'
 import RayaButtonDemo from '@/components/demo/RayaButtonDemo.vue'
 import TreeDemo from '@/components/demo/TreeDemo.vue'
 import WheelPickerDemo from '@/components/demo/WheelPickerDemo.vue'
+import FlipClockDemo from '@/components/demo/FlipClockDemo.vue'
 
 // --- Background Imports ---
-import { AnimatedBackground } from '@/components/ui/animated-background'
 import { AmbientGrid } from '@/components/ui/ambient-grid'
 import { BackgroundBeams } from '@/components/ui/background-beams'
 import { DottedGlowBackground } from '@/components/ui/dotted-glow-background'
@@ -56,6 +56,7 @@ const componentMap: Record<string, any> = {
   'Gravity Stars': GravityStars,
   'Ripple Effect': BackgroundRippleEffect,
   'Snow Effect': SnowEffect,
+  'Flip Clock': FlipClockDemo
 }
 
 const getComponent = (label: string) => componentMap[label]
