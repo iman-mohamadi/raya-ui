@@ -1,0 +1,21 @@
+{
+  "name": "animated-theme-toggler",
+  "type": "registry:ui",
+  "dependencies": [
+    "lucide-vue-next",
+    "clsx",
+    "tailwind-merge"
+  ],
+  "files": [
+    {
+      "path": "animated-theme-toggler/AnimatedThemeToggler.vue",
+      "content": "<script setup lang=\"ts\">\r\nimport { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'\r\nimport { Moon, Sun } from 'lucide-vue-next'\r\nimport { cn } from '@/lib/utils'\r\n\r\ninterface Props {\r\n  duration?: number\r\n  class?: string\r\n}\r\n\r\nconst props = withDefaults(defineProps<Props>(), {\r\n  duration: 400,\r\n  class: ''\r\n})\r\n\r\nconst isDark = ref(false)\r\nconst buttonRef = ref<HTMLButtonElement | null>(null)\r\nlet observer: MutationObserver | null = null\r\n\r\n// Helper to actually change the DOM and Storage\r\nconst updateDOM = (dark: boolean) => {\r\n  if (dark) {\r\n    document.documentElement.classList.add(\"dark\")\r\n    localStorage.setItem(\"theme\", \"dark\")\r\n  } else {\r\n    document.documentElement.classList.remove(\"dark\")\r\n    localStorage.setItem(\"theme\", \"light\")\r\n  }\r\n}\r\n\r\nconst updateThemeState = () => {\r\n  isDark.value = document.documentElement.classList.contains(\"dark\")\r\n}\r\n\r\nonMounted(() => {\r\n  updateThemeState()\r\n\r\n  observer = new MutationObserver(updateThemeState)\r\n  observer.observe(document.documentElement, {\r\n    attributes: true,\r\n    attributeFilter: [\"class\"],\r\n  })\r\n})\r\n\r\nonBeforeUnmount(() => {\r\n  observer?.disconnect()\r\n})\r\n\r\nconst toggleTheme = async (event: MouseEvent) => {\r\n  const newThemeIsDark = !isDark.value\r\n\r\n  // @ts-ignore - View Transition API is strictly typed in some environments\r\n  if (!document.startViewTransition) {\r\n    isDark.value = newThemeIsDark\r\n    updateDOM(newThemeIsDark)\r\n    return\r\n  }\r\n\r\n  const button = buttonRef.value\r\n  if (!button) return\r\n\r\n  // Start the transition\r\n  // @ts-ignore\r\n  const transition = document.startViewTransition(async () => {\r\n    isDark.value = newThemeIsDark\r\n    updateDOM(newThemeIsDark)\r\n    // Wait for Vue to update the DOM inside the transition callback\r\n    await nextTick()\r\n  })\r\n\r\n  await transition.ready\r\n\r\n  const { top, left, width, height } = button.getBoundingClientRect()\r\n  const x = left + width / 2\r\n  const y = top + height / 2\r\n  const right = window.innerWidth - left\r\n  const bottom = window.innerHeight - top\r\n  const maxRadius = Math.hypot(\r\n      Math.max(left, right),\r\n      Math.max(top, bottom)\r\n  )\r\n\r\n  document.documentElement.animate(\r\n      {\r\n        clipPath: [\r\n          `circle(0px at ${x}px ${y}px)`,\r\n          `circle(${maxRadius}px at ${x}px ${y}px)`,\r\n        ],\r\n      },\r\n      {\r\n        duration: props.duration,\r\n        easing: \"ease-in-out\",\r\n        pseudoElement: \"::view-transition-new(root)\",\r\n      }\r\n  )\r\n}\r\n</script>\r\n\r\n<template>\r\n  <button\r\n      ref=\"buttonRef\"\r\n      type=\"button\"\r\n      @click=\"toggleTheme\"\r\n      :class=\"cn('relative inline-flex items-center justify-center rounded-md p-2 hover:bg-accent hover:text-accent-foreground transition-colors', props.class)\"\r\n  >\r\n    <Sun v-if=\"!isDark\" class=\"h-5 w-5\" />\r\n    <Moon v-else class=\"h-5 w-5\" />\r\n    <span class=\"sr-only\">Toggle theme</span>\r\n  </button>\r\n</template>\r\n\r\n<style>\r\n/* Global CSS required for the clip-path animation to work correctly */\r\n::view-transition-old(root),\r\n::view-transition-new(root) {\r\n  animation: none;\r\n  mix-blend-mode: normal;\r\n}\r\n\r\n/* Ensure the new view is on top during the animation */\r\n::view-transition-new(root) {\r\n  z-index: 2147483646;\r\n}\r\n</style>",
+      "type": "registry:ui"
+    },
+    {
+      "path": "animated-theme-toggler/index.ts",
+      "content": "export { default as AnimatedThemeToggler } from './AnimatedThemeToggler.vue'\n",
+      "type": "registry:ui"
+    }
+  ]
+}

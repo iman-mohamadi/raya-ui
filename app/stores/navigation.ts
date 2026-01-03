@@ -23,6 +23,11 @@ export const useNavigationStore = defineStore('navigation', () => {
                     description: 'Tabs with smooth sliding indicators and transitions.'
                 },
                 {
+                    label: 'Animated Theme Toggler',
+                    to: '/docs/components/animated-theme-toggler',
+                    description: 'A theme toggle button with a circular clip-path transition effect.'
+                },
+                {
                     label: 'Bar Visualizer',
                     to: '/docs/components/bar-visualizer',
                     description: 'Audio-reactive bar visualization components.'
