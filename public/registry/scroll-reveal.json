@@ -1,0 +1,12 @@
+{
+  "name": "scroll-reveal",
+  "type": "registry:ui",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "scroll-reveal/index.ts",
+      "content": "// Warning: Could not auto-generate export for scroll-reveal\n",
+      "type": "registry:ui"
+    }
+  ]
+}

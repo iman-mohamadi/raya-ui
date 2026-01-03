@@ -19,6 +19,7 @@ import TreeDemo from '@/components/demo/TreeDemo.vue'
 import WheelPickerDemo from '@/components/demo/WheelPickerDemo.vue'
 import FlipClockDemo from '@/components/demo/FlipClockDemo.vue'
 import PartitionBarDemo from '@/components/demo/PartitionBarDemo.vue'
+import ScrollSpyDemo from '@/components/demo/ScrollSpyDemo.vue'
 
 // --- Background Imports ---
 import { AmbientGrid } from '@/components/ui/ambient-grid'
@@ -58,7 +59,8 @@ const componentMap: Record<string, any> = {
   'Ripple Effect': BackgroundRippleEffect,
   'Snow Effect': SnowEffect,
   'Flip Clock': FlipClockDemo,
-  'Partition Bar': PartitionBarDemo
+  'Partition Bar': PartitionBarDemo,
+  'Scroll Spy': ScrollSpyDemo
 }
 
 const getComponent = (label: string) => componentMap[label]

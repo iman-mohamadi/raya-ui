@@ -1,0 +1,14 @@
+{
+  "dependencies": [
+    "@vueuse/core",
+    "clsx",
+    "tailwind-merge"
+  ],
+  "files": [
+    "ScrollSpy.vue",
+    "ScrollSpyNav.vue",
+    "ScrollSpyLink.vue",
+    "ScrollSpyViewport.vue",
+    "ScrollSpySection.vue"
+  ]
+}

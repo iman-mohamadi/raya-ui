@@ -78,6 +78,11 @@ export const useNavigationStore = defineStore('navigation', () => {
                     description: 'The signature button component of the design system.'
                 },
                 {
+                    label: 'Scroll Spy',
+                    to: '/docs/components/scroll-spy',
+                    description: 'Automatically highlights navigation items based on scroll position.'
+                },
+                {
                     label: 'Tree',
                     to: '/docs/components/tree',
                     description: 'Hierarchical tree view for file structures or nested data.'
