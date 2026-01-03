@@ -96,12 +96,12 @@ const usageCode = `<template>
 
             <div class="relative z-10 p-6 rounded-2xl border border-white/10 bg-black/60 backdrop-blur-md space-y-4 w-64 shadow-2xl">
               <div class="space-y-1">
-                <label class="text-xs font-medium text-zinc-400">Grid Size ({{ config.gridSize }}px)</label>
+                <label class="text-xs font-medium text-zinc-400 dark:text-zinc-600">Grid Size ({{ config.gridSize }}px)</label>
                 <input type="range" v-model.number="config.gridSize" min="10" max="100" class="w-full accent-white" />
               </div>
 
               <div class="space-y-1">
-                <label class="text-xs font-medium text-zinc-400">Primary Color</label>
+                <label class="text-xs font-medium text-zinc-400 dark:text-zinc-600">Primary Color</label>
                 <div class="flex gap-2">
                   <button @click="config.color1 = '#a855f7'" class="w-6 h-6 rounded-full bg-purple-500 ring-2 ring-offset-2 ring-offset-black ring-transparent focus:ring-white"></button>
                   <button @click="config.color1 = '#ef4444'" class="w-6 h-6 rounded-full bg-red-500 ring-2 ring-offset-2 ring-offset-black ring-transparent focus:ring-white"></button>
@@ -110,7 +110,7 @@ const usageCode = `<template>
               </div>
 
               <div class="space-y-1">
-                <label class="text-xs font-medium text-zinc-400">Secondary Color</label>
+                <label class="text-xs font-medium text-zinc-400 dark:text-zinc-600">Secondary Color</label>
                 <div class="flex gap-2">
                   <button @click="config.color2 = '#3b82f6'" class="w-6 h-6 rounded-full bg-blue-500 ring-2 ring-offset-2 ring-offset-black ring-transparent focus:ring-white"></button>
                   <button @click="config.color2 = '#10b981'" class="w-6 h-6 rounded-full bg-emerald-500 ring-2 ring-offset-2 ring-offset-black ring-transparent focus:ring-white"></button>
@@ -134,9 +134,9 @@ const usageCode = `<template>
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
       <div class="space-y-4">
         <CodeBlock :code="installCommands.npm"/>
-        <p class="text-sm text-zinc-400">Or manually:</p>
+        <p class="text-sm text-zinc-400 dark:text-zinc-600">Or manually:</p>
         <div class="space-y-2">
-          <p class="text-sm text-zinc-400">Install dependencies:</p>
+          <p class="text-sm text-zinc-400 dark:text-zinc-600">Install dependencies:</p>
           <CodeBlock :code="installCommands.manual"  />
         </div>
       </div>
@@ -148,9 +148,9 @@ const usageCode = `<template>
 
     <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
-      <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
+      <div class="overflow-x-auto rounded-lg border border-edge bg-background">
         <table class="w-full text-sm text-left">
-          <thead class="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400">
+          <thead class="border-b border-edge bg-background text-zinc-400 dark:text-zinc-600">
           <tr>
             <th class="px-4 py-3 font-medium">Prop</th>
             <th class="px-4 py-3 font-medium">Type</th>
@@ -158,7 +158,7 @@ const usageCode = `<template>
             <th class="px-4 py-3 font-medium">Description</th>
           </tr>
           </thead>
-          <tbody class="divide-y divide-zinc-800 text-zinc-300">
+          <tbody class="divide-y divide-edge text-zinc-700 dark:text-zinc-300">
           <tr>
             <td class="px-4 py-3 font-mono text-purple-400">interactive</td>
             <td class="px-4 py-3 font-mono text-xs">boolean</td>

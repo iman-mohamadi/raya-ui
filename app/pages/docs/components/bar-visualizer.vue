@@ -44,7 +44,7 @@ const state = ref('speaking')
       :state="state"
       :bar-count="20"
       demo
-      class="w-full max-w-md h-32 bg-zinc-900/50 rounded-xl border border-white/5"
+      class="w-full max-w-md h-32 bg-zinc-900/50 rounded-xl border border-edge"
     />
 
     <div class="flex flex-wrap gap-2 justify-center">
@@ -99,12 +99,12 @@ useSeoMeta({
           </TabsTrigger>
         </TabsList>
         <TabsContent value="preview">
-          <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 flex flex-col items-center justify-center gap-8 min-h-[350px] p-10">
+          <div class="relative rounded-xl border border-edge bg-background flex flex-col items-center justify-center gap-8 min-h-[350px] p-10">
             <BarVisualizer
                 :state="currentState"
                 :bar-count="barCount"
                 demo
-                class="w-full max-w-md h-32 bg-zinc-900/50 rounded-xl border border-white/5"
+                class="w-full max-w-md h-32 bg-background rounded-xl border border-edge"
             />
 
             <div class="flex flex-wrap gap-2 justify-center">
@@ -160,7 +160,7 @@ useSeoMeta({
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
       <div class="space-y-4">
         <CodeBlock :code="installCommands.npm"/>
-        <p class="text-sm text-zinc-400">Or manually:</p>
+        <p class="text-sm text-zinc-400 dark:text-zinc-600">Or manually:</p>
         <CodeBlock :code="installCommands.manual"/>
       </div>
     </div>
@@ -183,9 +183,9 @@ useSeoMeta({
 
     <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
-      <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
+      <div class="overflow-x-auto rounded-lg border border-edge bg-background">
         <table class="w-full text-sm text-left">
-          <thead class="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400">
+          <thead class="border-b border-edge bg-background text-zinc-400 dark:text-zinc-600">
           <tr>
             <th class="px-4 py-3 font-medium">Prop</th>
             <th class="px-4 py-3 font-medium">Type</th>
@@ -193,7 +193,7 @@ useSeoMeta({
             <th class="px-4 py-3 font-medium">Description</th>
           </tr>
           </thead>
-          <tbody class="divide-y divide-zinc-800 text-zinc-300">
+          <tbody class="divide-y divide-edge text-zinc-700 dark:text-zinc-300">
           <tr>
             <td class="px-4 py-3 font-mono text-purple-400">state</td>
             <td class="px-4 py-3 font-mono text-xs">AgentState</td>

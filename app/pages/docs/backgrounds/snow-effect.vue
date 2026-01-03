@@ -235,7 +235,7 @@ function animate() {
             </div>
             <div class="space-y-2">
               <h3 class="text-base font-medium">2. Create Component</h3>
-              <p class="text-sm text-zinc-400">
+              <p class="text-sm text-zinc-400 dark:text-zinc-600">
                 Copy the code below into <code class="bg-zinc-900 px-1 py-0.5 rounded">components/ui/snow-effect/SnowEffect.vue</code>
               </p>
               <CodeBlock :code="componentCode" file-name="components/ui/snow-effect/SnowEffect.vue" />
@@ -251,9 +251,9 @@ function animate() {
 
     <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
-      <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
+      <div class="overflow-x-auto rounded-lg border border-edge bg-background">
         <table class="w-full text-sm text-left">
-          <thead class="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400">
+          <thead class="border-b border-edge bg-background text-zinc-400 dark:text-zinc-600">
           <tr>
             <th class="px-4 py-3 font-medium">Prop</th>
             <th class="px-4 py-3 font-medium">Type</th>
@@ -261,7 +261,7 @@ function animate() {
             <th class="px-4 py-3 font-medium">Description</th>
           </tr>
           </thead>
-          <tbody class="divide-y divide-zinc-800 text-zinc-300">
+          <tbody class="divide-y divide-edge text-zinc-700 dark:text-zinc-300">
           <tr>
             <td class="px-4 py-3 font-mono text-purple-400">color</td>
             <td class="px-4 py-3 font-mono text-xs">string</td>

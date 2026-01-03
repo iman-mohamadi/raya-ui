@@ -142,7 +142,7 @@ const scores = Array.from({ length: 11 }, (_, i) => ({ value: i, label: i.toStri
           </TabsTrigger>
         </TabsList>
         <TabsContent value="preview">
-          <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 flex items-center justify-center min-h-[400px] p-10">
+          <div class="relative rounded-xl border border-edge bg-background flex items-center justify-center min-h-[400px] p-10">
             <ClientOnly>
               <div class="relative flex h-56 w-64 flex-col items-center justify-center overflow-hidden rounded-3xl border border-zinc-800 bg-black shadow-2xl">
                 <div class="absolute top-0 left-1/2 z-20 h-6 w-24 -translate-x-1/2 rounded-b-xl bg-zinc-900"></div>
@@ -190,7 +190,7 @@ const scores = Array.from({ length: 11 }, (_, i) => ({ value: i, label: i.toStri
 
         <template #manual>
           <CodeBlock :code="installCommands.manual"  />
-          <div class="mt-4 text-sm text-zinc-400">
+          <div class="mt-4 text-sm text-zinc-400 dark:text-zinc-600">
             <p>1. Install dependencies.</p>
             <p>2. Copy the component code into your project.</p>
           </div>
@@ -220,7 +220,7 @@ const scores = Array.from({ length: 11 }, (_, i) => ({ value: i, label: i.toStri
 
       <div class="space-y-4">
         <h3 class="text-xl font-semibold">Date Picker</h3>
-        <p class="text-zinc-400 text-sm">Combine multiple pickers to create a cohesive date selector.</p>
+        <p class="text-zinc-400 dark:text-zinc-600 text-sm">Combine multiple pickers to create a cohesive date selector.</p>
 
         <Tabs default-value="preview">
           <TabsList>
@@ -228,7 +228,7 @@ const scores = Array.from({ length: 11 }, (_, i) => ({ value: i, label: i.toStri
             <TabsTrigger value="code">Code</TabsTrigger>
           </TabsList>
           <TabsContent value="preview">
-            <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 flex items-center justify-center min-h-[350px] p-10">
+            <div class="relative rounded-xl border border-edge bg-background flex items-center justify-center min-h-[350px] p-10">
               <ClientOnly>
                 <div class="w-80 rounded-xl border border-zinc-800 bg-black p-4">
                   <WheelPickerWrapper>
@@ -248,7 +248,7 @@ const scores = Array.from({ length: 11 }, (_, i) => ({ value: i, label: i.toStri
 
       <div class="space-y-4">
         <h3 class="text-xl font-semibold">Custom Styling</h3>
-        <p class="text-zinc-400 text-sm">Use <code>class-names</code> to style the highlight bar and text.</p>
+        <p class="text-zinc-400 dark:text-zinc-600 text-sm">Use <code>class-names</code> to style the highlight bar and text.</p>
 
         <Tabs default-value="preview">
           <TabsList>
@@ -256,7 +256,7 @@ const scores = Array.from({ length: 11 }, (_, i) => ({ value: i, label: i.toStri
             <TabsTrigger value="code">Code</TabsTrigger>
           </TabsList>
           <TabsContent value="preview">
-            <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 flex items-center justify-center min-h-[350px] p-10">
+            <div class="relative rounded-xl border border-edge bg-background flex items-center justify-center min-h-[350px] p-10">
               <ClientOnly>
                 <div class="w-48 rounded-xl border border-zinc-800 bg-black p-4">
                   <WheelPickerWrapper>

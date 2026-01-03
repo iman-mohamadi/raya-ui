@@ -253,8 +253,8 @@ const handleToggle = (item: any) => {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="preview">
-          <div class="rounded-xl border border-zinc-800 bg-zinc-950 p-10 min-h-[350px] flex items-start justify-center">
-            <div class="w-full max-w-sm rounded-lg border border-zinc-800 bg-zinc-950 p-2">
+          <div class="rounded-xl border border-edge bg-background p-10 min-h-[350px] flex items-start justify-center">
+            <div class="w-full max-w-sm rounded-lg border border-edge bg-background p-2">
               <Tree
                   v-model="selection"
                   v-model:expanded="expanded"
@@ -293,7 +293,7 @@ const handleToggle = (item: any) => {
             </div>
             <div class="space-y-2">
               <h3 class="text-base font-medium">2. Create Component</h3>
-              <p class="text-sm text-zinc-400">
+              <p class="text-sm text-zinc-400 dark:text-zinc-600">
                 Copy the code below into <code class="bg-zinc-900 px-1 py-0.5 rounded">components/ui/tree/Tree.vue</code>
               </p>
               <CodeBlock :code="componentCode" file-name="components/ui/tree/Tree.vue" />
@@ -309,9 +309,9 @@ const handleToggle = (item: any) => {
 
     <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
-      <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
+      <div class="overflow-x-auto rounded-lg border border-edge bg-background">
         <table class="w-full text-sm text-left">
-          <thead class="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400">
+          <thead class="border-b border-edge bg-background text-zinc-400 dark:text-zinc-600">
           <tr>
             <th class="px-4 py-3 font-medium">Prop</th>
             <th class="px-4 py-3 font-medium">Type</th>
@@ -319,7 +319,7 @@ const handleToggle = (item: any) => {
             <th class="px-4 py-3 font-medium">Description</th>
           </tr>
           </thead>
-          <tbody class="divide-y divide-zinc-800 text-zinc-300">
+          <tbody class="divide-y divide-edge text-zinc-700 dark:text-zinc-300">
           <tr>
             <td class="px-4 py-3 font-mono text-purple-400">items</td>
             <td class="px-4 py-3 font-mono text-xs">Array</td>
@@ -369,16 +369,16 @@ const handleToggle = (item: any) => {
 
     <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Emits</h2>
-      <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
+      <div class="overflow-x-auto rounded-lg border border-edge bg-background">
         <table class="w-full text-sm text-left">
-          <thead class="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400">
+          <thead class="border-b border-edge bg-background text-zinc-400 dark:text-zinc-600">
           <tr>
             <th class="px-4 py-3 font-medium">Event</th>
             <th class="px-4 py-3 font-medium">Payload</th>
             <th class="px-4 py-3 font-medium">Description</th>
           </tr>
           </thead>
-          <tbody class="divide-y divide-zinc-800 text-zinc-300">
+          <tbody class="divide-y divide-edge text-zinc-700 dark:text-zinc-300">
           <tr>
             <td class="px-4 py-3 font-mono text-purple-400">update:modelValue</td>
             <td class="px-4 py-3 font-mono text-xs">any</td>
@@ -396,16 +396,16 @@ const handleToggle = (item: any) => {
 
     <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Slots</h2>
-      <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
+      <div class="overflow-x-auto rounded-lg border border-edge bg-background">
         <table class="w-full text-sm text-left">
-          <thead class="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400">
+          <thead class="border-b border-edge bg-background text-zinc-400 dark:text-zinc-600">
           <tr>
             <th class="px-4 py-3 font-medium">Slot</th>
             <th class="px-4 py-3 font-medium">Props</th>
             <th class="px-4 py-3 font-medium">Description</th>
           </tr>
           </thead>
-          <tbody class="divide-y divide-zinc-800 text-zinc-300">
+          <tbody class="divide-y divide-edge text-zinc-700 dark:text-zinc-300">
           <tr>
             <td class="px-4 py-3 font-mono text-purple-400">#item</td>
             <td class="px-4 py-3 font-mono text-xs">{ item, expanded, selected, indeterminate }</td>

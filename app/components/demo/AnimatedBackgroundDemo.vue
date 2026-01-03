@@ -8,7 +8,7 @@ const CARDS = [
 </script>
 
 <template>
-  <div class="rounded-xl border border-zinc-800 bg-zinc-950/50 flex justify-center p-2 w-full h-full items-center">
+  <div class="rounded-xl border border-edge bg-background flex justify-center p-2 w-full h-full items-center">
     <div class="w-full max-w-sm">
       <AnimatedBackground
           :items="CARDS"

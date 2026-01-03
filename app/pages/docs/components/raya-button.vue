@@ -202,10 +202,10 @@ import { RayaButton } from '@/components/ui/raya-button'
 
         <template #manual>
           <div class="mt-4 space-y-4">
-            <p class="text-sm text-zinc-400">1. Install dependencies:</p>
+            <p class="text-sm text-zinc-400 dark:text-zinc-600">1. Install dependencies:</p>
             <CodeBlock :code="installCommands.manual" />
 
-            <p class="text-sm text-zinc-400">2. Copy the component code into <code>components/ui/raya-button</code>.</p>
+            <p class="text-sm text-zinc-400 dark:text-zinc-600">2. Copy the component code into <code>components/ui/raya-button</code>.</p>
           </div>
         </template>
 
@@ -213,7 +213,7 @@ import { RayaButton } from '@/components/ui/raya-button'
           <div class="mt-4 space-y-4">
             <div>
               <h3 class="font-semibold text-white">Update main.css</h3>
-              <p class="text-sm text-zinc-400 mt-1">
+              <p class="text-sm text-zinc-400 dark:text-zinc-600 mt-1">
                 Add these variables to your <code>assets/css/main.css</code> file. This is required for the semantic colors (success, warning, info) and utility classes.
               </p>
             </div>
@@ -232,16 +232,16 @@ import { RayaButton } from '@/components/ui/raya-button'
 
     <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
-      <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
+      <div class="overflow-x-auto rounded-lg border border-edge bg-background">
         <table class="w-full text-sm text-left">
-          <thead class="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400">
+          <thead class="border-b border-edge bg-background text-zinc-400 dark:text-zinc-600">
           <tr>
             <th class="px-4 py-3 font-medium">Prop</th>
             <th class="px-4 py-3 font-medium">Values</th>
             <th class="px-4 py-3 font-medium">Default</th>
           </tr>
           </thead>
-          <tbody class="divide-y divide-zinc-800 text-zinc-300">
+          <tbody class="divide-y divide-edge text-zinc-700 dark:text-zinc-300">
           <tr>
             <td class="px-4 py-3 font-mono text-purple-400">color</td>
             <td class="px-4 py-3 font-mono text-xs">primary | secondary | neutral | success | info | warning | error</td>

@@ -155,7 +155,7 @@ const ITEMS = [
         <h3 class="text-base font-medium text-zinc-800 dark:text-zinc-50">
           {{ item.title }}
         </h3>
-        <p class="text-base text-zinc-600 dark:text-zinc-400">
+        <p class="text-base text-zinc-600 dark:text-zinc-400 dark:text-zinc-600">
           {{ item.description }}
         </p>
       </div>
@@ -194,7 +194,7 @@ useSeoMeta({
         </TabsList>
         <TabsContent value="preview">
           <div
-              class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 flex flex-col items-center justify-center min-h-[250px]">
+              class="relative rounded-xl border border-edge bg-background flex flex-col items-center justify-center min-h-[250px]">
             <div class="flex w-fit space-x-2 rounded-xl border border-zinc-950/10 bg-white dark:bg-zinc-950 p-2">
               <AnimatedBackground
                   v-model="activeTab"
@@ -235,7 +235,7 @@ useSeoMeta({
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
       <div class="space-y-4">
         <CodeBlock :code="installCommands.npm"/>
-        <p class="text-sm text-zinc-400">Or manually:</p>
+        <p class="text-sm text-zinc-400 dark:text-zinc-600">Or manually:</p>
         <CodeBlock :code="installCommands.manual"/>
       </div>
     </div>
@@ -250,13 +250,13 @@ useSeoMeta({
 
       <div class="space-y-4">
         <h3 class="text-xl font-semibold">Card Grid</h3>
-        <p class="text-zinc-400 text-sm">
+        <p class="text-zinc-400 dark:text-zinc-600 text-sm">
           A grid of cards with a spring hover effect, using a custom layout and transition.
         </p>
 
         <AnimatedTabs :items="PREVIEW_TABS" class="space-y-4">
           <template #preview>
-            <div class="rounded-xl border border-zinc-800 bg-zinc-950/50 flex justify-center">
+            <div class="rounded-xl border border-edge bg-background flex justify-center">
               <div class="w-full">
                 <AnimatedBackground
                     :items="CARDS"
@@ -273,7 +273,7 @@ useSeoMeta({
                       <h3 class="text-base font-medium text-zinc-800 dark:text-zinc-50">
                         {{ item.title }}
                       </h3>
-                      <p class="text-base text-zinc-600 dark:text-zinc-400">
+                      <p class="text-base text-zinc-600 dark:text-zinc-400 dark:text-zinc-600">
                         {{ item.description }}
                       </p>
                     </div>
@@ -302,9 +302,9 @@ useSeoMeta({
     <!--  Table of Props, Emits , and ..  -->
     <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
-      <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
+      <div class="overflow-x-auto rounded-lg border border-edge bg-background">
         <table class="w-full text-sm text-left">
-          <thead class="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400">
+          <thead class="border-b border-edge bg-background text-zinc-400 dark:text-zinc-600">
           <tr>
             <th class="px-4 py-3 font-medium">Prop</th>
             <th class="px-4 py-3 font-medium">Type</th>
@@ -312,7 +312,7 @@ useSeoMeta({
             <th class="px-4 py-3 font-medium">Description</th>
           </tr>
           </thead>
-          <tbody class="divide-y divide-zinc-800 text-zinc-300">
+          <tbody class="divide-y divide-edge text-zinc-700 dark:text-zinc-300">
           <tr>
             <td class="px-4 py-3 font-mono text-purple-400">items</td>
             <td class="px-4 py-3 font-mono text-xs">any[]</td>
@@ -357,7 +357,7 @@ useSeoMeta({
     <div class="mt-4 text-sm">
       <p>Source content adapted from <a
           href="https://motion-primitives.com/docs/animated-background#update-the-import-paths-to-match-your-project-setup"
-          target="_blank" class="underline hover:text-zinc-300">Motion Primitives</a>.</p>
+          target="_blank" class="underline hover:text-zinc-700 dark:text-zinc-300">Motion Primitives</a>.</p>
     </div>
 
   </div>

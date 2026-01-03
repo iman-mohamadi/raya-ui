@@ -32,7 +32,7 @@ import { EncryptedText } from '@/components/ui/encrypted-text'
       />
     </h1>
 
-    <p class="text-zinc-400">
+    <p class="text-zinc-400 dark:text-zinc-600">
       <EncryptedText
         text="Secure, animated, and highly performant text rendering."
         :reveal-delay-ms="30"
@@ -61,7 +61,7 @@ import { EncryptedText } from '@/components/ui/encrypted-text'
           </TabsTrigger>
         </TabsList>
         <TabsContent value="preview">
-          <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 flex flex-col items-center justify-center min-h-[350px] p-8 text-center">
+          <div class="relative rounded-xl border border-edge bg-background flex flex-col items-center justify-center min-h-[350px] p-8 text-center">
             <div class="space-y-6 max-w-lg">
               <h2 class="text-3xl md:text-5xl font-black tracking-tight text-white">
                 <EncryptedText
@@ -70,7 +70,7 @@ import { EncryptedText } from '@/components/ui/encrypted-text'
                 />
               </h2>
 
-              <div class="text-lg text-zinc-400 font-mono">
+              <div class="text-lg text-zinc-400 dark:text-zinc-600 font-mono">
                 <span class="text-teal-500 mr-2">></span>
                 <EncryptedText
                     text="Initializing secure connection..."
@@ -103,11 +103,11 @@ import { EncryptedText } from '@/components/ui/encrypted-text'
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
       <div class="space-y-4">
         <CodeBlock :code="installCommands.npm"/>
-        <p class="text-sm text-zinc-400">Or manually:</p>
+        <p class="text-sm text-zinc-400 dark:text-zinc-600">Or manually:</p>
         <div class="space-y-2">
-          <p class="text-sm text-zinc-400">Install dependencies:</p>
+          <p class="text-sm text-zinc-400 dark:text-zinc-600">Install dependencies:</p>
           <CodeBlock :code="installCommands.manual"  />
-          <p class="text-sm text-zinc-400 mt-4">Copy the component code into your project.</p>
+          <p class="text-sm text-zinc-400 dark:text-zinc-600 mt-4">Copy the component code into your project.</p>
         </div>
       </div>
     </div>
@@ -118,9 +118,9 @@ import { EncryptedText } from '@/components/ui/encrypted-text'
 
     <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
-      <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
+      <div class="overflow-x-auto rounded-lg border border-edge bg-background">
         <table class="w-full text-sm text-left">
-          <thead class="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400">
+          <thead class="border-b border-edge bg-background text-zinc-400 dark:text-zinc-600">
           <tr>
             <th class="px-4 py-3 font-medium">Prop</th>
             <th class="px-4 py-3 font-medium">Type</th>
@@ -128,7 +128,7 @@ import { EncryptedText } from '@/components/ui/encrypted-text'
             <th class="px-4 py-3 font-medium">Description</th>
           </tr>
           </thead>
-          <tbody class="divide-y divide-zinc-800 text-zinc-300">
+          <tbody class="divide-y divide-edge text-zinc-700 dark:text-zinc-300">
           <tr>
             <td class="px-4 py-3 font-mono text-purple-400">text</td>
             <td class="px-4 py-3 font-mono text-xs">string</td>

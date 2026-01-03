@@ -99,7 +99,7 @@ useSeoMeta({
           </TabsTrigger>
         </TabsList>
         <TabsContent value="preview">
-          <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 flex flex-col items-center justify-center min-h-[350px] p-10">
+          <div class="relative rounded-xl border border-edge bg-background flex flex-col items-center justify-center min-h-[350px] p-10">
             <div class="w-full max-w-2xl">
               <PartitionBar>
                 <PartitionBarSegment :num="50">
@@ -132,7 +132,7 @@ useSeoMeta({
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
       <div class="space-y-4">
         <CodeBlock :code="installCommands.npm"/>
-        <p class="text-sm text-zinc-400">Or manually:</p>
+        <p class="text-sm text-zinc-400 dark:text-zinc-600">Or manually:</p>
         <CodeBlock :code="installCommands.manual"/>
       </div>
     </div>
@@ -146,12 +146,12 @@ useSeoMeta({
 
       <div class="space-y-4">
         <h3 class="text-xl font-semibold">Variants</h3>
-        <p class="text-zinc-400 text-sm">
+        <p class="text-zinc-400 dark:text-zinc-600 text-sm">
           Use <code>variant</code> props to apply standard theme colors.
         </p>
         <AnimatedTabs :items="PREVIEW_TABS" class="space-y-4">
           <template #preview>
-            <div class="rounded-xl border border-zinc-800 bg-zinc-950/50 flex flex-col items-center justify-center min-h-[250px] p-10">
+            <div class="rounded-xl border border-edge bg-background flex flex-col items-center justify-center min-h-[250px] p-10">
               <div class="w-full max-w-xl">
                 <PartitionBar :gap="2">
                   <PartitionBarSegment :num="4" variant="destructive">
@@ -177,12 +177,12 @@ useSeoMeta({
 
       <div class="space-y-4">
         <h3 class="text-xl font-semibold">Alignment & Sizes</h3>
-        <p class="text-zinc-400 text-sm">
+        <p class="text-zinc-400 dark:text-zinc-600 text-sm">
           Control label placement with <code>alignment</code> and spacing with <code>size</code>.
         </p>
         <AnimatedTabs :items="PREVIEW_TABS" class="space-y-4">
           <template #preview>
-            <div class="rounded-xl border border-zinc-800 bg-zinc-950/50 flex flex-col items-center justify-center min-h-[250px] p-10">
+            <div class="rounded-xl border border-edge bg-background flex flex-col items-center justify-center min-h-[250px] p-10">
               <div class="w-full max-w-xl">
                 <PartitionBar size="lg">
                   <PartitionBarSegment :num="60" alignment="left">
@@ -214,9 +214,9 @@ useSeoMeta({
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
 
       <h3 class="text-xl font-semibold mt-6 mb-4">PartitionBar</h3>
-      <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
+      <div class="overflow-x-auto rounded-lg border border-edge bg-background">
         <table class="w-full text-sm text-left">
-          <thead class="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400">
+          <thead class="border-b border-edge bg-background text-zinc-400 dark:text-zinc-600">
           <tr>
             <th class="px-4 py-3 font-medium">Prop</th>
             <th class="px-4 py-3 font-medium">Type</th>
@@ -224,7 +224,7 @@ useSeoMeta({
             <th class="px-4 py-3 font-medium">Description</th>
           </tr>
           </thead>
-          <tbody class="divide-y divide-zinc-800 text-zinc-300">
+          <tbody class="divide-y divide-edge text-zinc-700 dark:text-zinc-300">
           <tr>
             <td class="px-4 py-3 font-mono text-purple-400">gap</td>
             <td class="px-4 py-3 font-mono text-xs">number</td>
@@ -248,9 +248,9 @@ useSeoMeta({
       </div>
 
       <h3 class="text-xl font-semibold mt-8 mb-4">PartitionBarSegment</h3>
-      <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
+      <div class="overflow-x-auto rounded-lg border border-edge bg-background">
         <table class="w-full text-sm text-left">
-          <thead class="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400">
+          <thead class="border-b border-edge bg-background text-zinc-400 dark:text-zinc-600">
           <tr>
             <th class="px-4 py-3 font-medium">Prop</th>
             <th class="px-4 py-3 font-medium">Type</th>
@@ -258,7 +258,7 @@ useSeoMeta({
             <th class="px-4 py-3 font-medium">Description</th>
           </tr>
           </thead>
-          <tbody class="divide-y divide-zinc-800 text-zinc-300">
+          <tbody class="divide-y divide-edge text-zinc-700 dark:text-zinc-300">
           <tr>
             <td class="px-4 py-3 font-mono text-purple-400">num</td>
             <td class="px-4 py-3 font-mono text-xs">number</td>
@@ -295,7 +295,7 @@ useSeoMeta({
     <div class="mt-4 text-sm">
       <p>Source content adapted from <a
           href="https://ui.8starlabs.com/docs/components/partition-bar"
-          target="_blank" class="underline hover:text-zinc-300">8 Star labs</a>.</p>
+          target="_blank" class="underline hover:text-zinc-700 dark:text-zinc-300">8 Star labs</a>.</p>
     </div>
   </div>
 </template>

@@ -29,7 +29,7 @@ const highlightedCode = computed(() => {
 <template>
   <div
       :class="cn(
-      'relative overflow-hidden rounded-xl border-4 border-border bg-black',
+      'relative overflow-hidden rounded-xl border-4 border-border bg-background',
       props.class
     )"
   >

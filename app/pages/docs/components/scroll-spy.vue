@@ -61,17 +61,17 @@ const container = ref<HTMLElement | null>(null)
       <ScrollSpyViewport>
         <ScrollSpySection value="sidebar-1" class="h-[300px] space-y-4">
           <h3 class="text-xl font-bold">Introduction</h3>
-          <p class="text-zinc-400">Welcome to the introduction section.</p>
+          <p class="text-zinc-400 dark:text-zinc-600">Welcome to the introduction section.</p>
         </ScrollSpySection>
 
         <ScrollSpySection value="sidebar-2" class="h-[300px] space-y-4">
           <h3 class="text-xl font-bold">Features</h3>
-          <p class="text-zinc-400">Explore our amazing features.</p>
+          <p class="text-zinc-400 dark:text-zinc-600">Explore our amazing features.</p>
         </ScrollSpySection>
 
         <ScrollSpySection value="sidebar-3" class="h-[300px] space-y-4">
           <h3 class="text-xl font-bold">Pricing</h3>
-          <p class="text-zinc-400">Choose the plan that fits you best.</p>
+          <p class="text-zinc-400 dark:text-zinc-600">Choose the plan that fits you best.</p>
         </ScrollSpySection>
       </ScrollSpyViewport>
     </div>
@@ -113,17 +113,17 @@ const container = ref<HTMLElement | null>(null)
       <ScrollSpyViewport>
         <ScrollSpySection value="navbar-concept" class="h-[300px] space-y-4">
           <h3 class="text-xl font-bold">Concept</h3>
-          <p class="text-zinc-400">Understanding the core concept.</p>
+          <p class="text-zinc-400 dark:text-zinc-600">Understanding the core concept.</p>
         </ScrollSpySection>
 
         <ScrollSpySection value="navbar-design" class="h-[300px] space-y-4">
           <h3 class="text-xl font-bold">Design</h3>
-          <p class="text-zinc-400">Crafting the visual experience.</p>
+          <p class="text-zinc-400 dark:text-zinc-600">Crafting the visual experience.</p>
         </ScrollSpySection>
 
         <ScrollSpySection value="navbar-code" class="h-[300px] space-y-4">
           <h3 class="text-xl font-bold">Code</h3>
-          <p class="text-zinc-400">Implementing the solution.</p>
+          <p class="text-zinc-400 dark:text-zinc-600">Implementing the solution.</p>
         </ScrollSpySection>
       </ScrollSpyViewport>
     </div>
@@ -150,7 +150,7 @@ useSeoMeta({
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
       <div class="space-y-4">
         <CodeBlock :code="installCommands.npm"/>
-        <p class="text-sm text-zinc-400">Or manually:</p>
+        <p class="text-sm text-zinc-400 dark:text-zinc-600">Or manually:</p>
         <CodeBlock :code="installCommands.manual"/>
       </div>
     </div>
@@ -163,13 +163,13 @@ useSeoMeta({
 
       <div class="space-y-4">
         <h3 class="text-xl font-semibold">Sidebar Layout</h3>
-        <p class="text-zinc-400 text-sm">
+        <p class="text-zinc-400 dark:text-zinc-600 text-sm">
           Nav items placed vertically next to content.
         </p>
 
         <AnimatedTabs :items="PREVIEW_TABS" class="space-y-4">
           <template #preview>
-            <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 flex flex-col items-center justify-center p-10">
+            <div class="relative rounded-xl border border-edge bg-background flex flex-col items-center justify-center p-10">
               <ScrollSpy
                   :container="sidebarContainer"
                   orientation="horizontal"
@@ -209,20 +209,20 @@ useSeoMeta({
 
       <div class="space-y-4">
         <h3 class="text-xl font-semibold">Navbar Layout</h3>
-        <p class="text-zinc-400 text-sm">
+        <p class="text-zinc-400 dark:text-zinc-600 text-sm">
           Nav items placed horizontally above content.
         </p>
 
         <AnimatedTabs :items="PREVIEW_TABS" class="space-y-4">
           <template #preview>
-            <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 flex flex-col items-center justify-center p-10">
+            <div class="relative rounded-xl border border-edge bg-background flex flex-col items-center justify-center p-10">
               <ScrollSpy
                   :container="navbarContainer"
                   orientation="vertical"
                   class="w-full max-w-3xl h-[400px] border border-zinc-800 rounded-lg overflow-hidden flex bg-zinc-950"
               >
                 <div class="border-b border-zinc-800 p-4 bg-zinc-900/30 flex justify-between items-center">
-                  <span class="text-sm font-bold text-zinc-300">Docs</span>
+                  <span class="text-sm font-bold text-zinc-700 dark:text-zinc-300">Docs</span>
                   <ScrollSpyNav>
                     <ScrollSpyLink value="navbar-concept">Concept</ScrollSpyLink>
                     <ScrollSpyLink value="navbar-design">Design</ScrollSpyLink>
@@ -260,9 +260,9 @@ useSeoMeta({
 
     <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
-      <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
+      <div class="overflow-x-auto rounded-lg border border-edge bg-background">
         <table class="w-full text-sm text-left">
-          <thead class="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400">
+          <thead class="border-b border-edge bg-background text-zinc-400 dark:text-zinc-600">
           <tr>
             <th class="px-4 py-3 font-medium">Prop</th>
             <th class="px-4 py-3 font-medium">Type</th>
@@ -270,7 +270,7 @@ useSeoMeta({
             <th class="px-4 py-3 font-medium">Description</th>
           </tr>
           </thead>
-          <tbody class="divide-y divide-zinc-800 text-zinc-300">
+          <tbody class="divide-y divide-edge text-zinc-700 dark:text-zinc-300">
           <tr>
             <td class="px-4 py-3 font-mono text-purple-400">container</td>
             <td class="px-4 py-3 font-mono text-xs">HTMLElement | null</td>
@@ -302,7 +302,7 @@ useSeoMeta({
 
     <div class="mt-4 text-sm">
       <p class="text-zinc-500 text-sm">
-        Adapted for Vue from the original React component by <a href="https://www.diceui.com/docs/components/scroll-spy" target="_blank" class="text-zinc-300 underline underline-offset-4 hover:text-white transition-colors">DiceUI</a>.
+        Adapted for Vue from the original React component by <a href="https://www.diceui.com/docs/components/scroll-spy" target="_blank" class="text-zinc-700 dark:text-zinc-300 underline underline-offset-4 hover:text-white transition-colors">DiceUI</a>.
       </p>
     </div>
 

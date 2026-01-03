@@ -26,25 +26,25 @@ import {
 
           <ScrollSpySection value="introduction" class="min-h-[300px] space-y-4">
             <h2 class="text-2xl font-bold">Introduction</h2>
-            <p class="text-zinc-400">ScrollSpy is a utility component that automatically highlights navigation links based on the scroll position.</p>
+            <p class="text-zinc-400 dark:text-zinc-600">ScrollSpy is a utility component that automatically highlights navigation links based on the scroll position.</p>
             <div class="h-32 bg-zinc-900/50 rounded-lg border border-zinc-800 border-dashed" />
           </ScrollSpySection>
 
           <ScrollSpySection value="installation" class="min-h-[300px] space-y-4">
             <h2 class="text-2xl font-bold">Installation</h2>
-            <p class="text-zinc-400">Install the component via your package manager.</p>
+            <p class="text-zinc-400 dark:text-zinc-600">Install the component via your package manager.</p>
             <div class="h-32 bg-zinc-900/50 rounded-lg border border-zinc-800 border-dashed" />
           </ScrollSpySection>
 
           <ScrollSpySection value="usage" class="min-h-[300px] space-y-4">
             <h2 class="text-2xl font-bold">Usage</h2>
-            <p class="text-zinc-400">Wrap your navigation and content in the ScrollSpy component.</p>
+            <p class="text-zinc-400 dark:text-zinc-600">Wrap your navigation and content in the ScrollSpy component.</p>
             <div class="h-32 bg-zinc-900/50 rounded-lg border border-zinc-800 border-dashed" />
           </ScrollSpySection>
 
           <ScrollSpySection value="api" class="min-h-[300px] space-y-4">
             <h2 class="text-2xl font-bold">API Reference</h2>
-            <p class="text-zinc-400">Detailed documentation of props and methods.</p>
+            <p class="text-zinc-400 dark:text-zinc-600">Detailed documentation of props and methods.</p>
             <div class="h-32 bg-zinc-900/50 rounded-lg border border-zinc-800 border-dashed" />
           </ScrollSpySection>
 

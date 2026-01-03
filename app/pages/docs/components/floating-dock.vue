@@ -95,11 +95,11 @@ const items = [
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
       <div class="space-y-4">
         <CodeBlock :code="installCommands.npm"/>
-        <p class="text-sm text-zinc-400">Or manually:</p>
+        <p class="text-sm text-zinc-400 dark:text-zinc-600">Or manually:</p>
         <div class="space-y-2">
-          <p class="text-sm text-zinc-400">Install dependencies:</p>
+          <p class="text-sm text-zinc-400 dark:text-zinc-600">Install dependencies:</p>
           <CodeBlock :code="installCommands.manual"  />
-          <p class="text-sm text-zinc-400 mt-4">Copy the component code into your project.</p>
+          <p class="text-sm text-zinc-400 dark:text-zinc-600 mt-4">Copy the component code into your project.</p>
         </div>
       </div>
     </div>

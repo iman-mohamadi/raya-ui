@@ -42,7 +42,7 @@ const usageCode = `<template>
 
     <div class="relative z-10 text-center pointer-events-none">
       <h1 class="text-4xl font-bold text-white tracking-tighter">Gravity</h1>
-      <p class="text-zinc-400 text-sm mt-2">Move your mouse to attract stars.</p>
+      <p class="text-zinc-400 dark:text-zinc-600 text-sm mt-2">Move your mouse to attract stars.</p>
     </div>
 
   </div>
@@ -79,7 +79,7 @@ const usageCode = `<template>
             <LiquidGlass>
               <div class="relative z-10 text-center pointer-events-none p-6 bg-black/50 backdrop-blur-sm rounded-xl border border-white/10">
                 <h1 class="text-5xl font-black text-white tracking-tighter">Raya UI</h1>
-                <p class="text-zinc-300 font-medium mt-2">Gravity Effect</p>
+                <p class="text-zinc-700 dark:text-zinc-300 font-medium mt-2">Gravity Effect</p>
               </div>
             </LiquidGlass>
 
@@ -103,9 +103,9 @@ const usageCode = `<template>
         </template>
         <template #manual>
           <div class="space-y-2">
-            <p class="text-sm text-zinc-400">Install dependencies:</p>
+            <p class="text-sm text-zinc-400 dark:text-zinc-600">Install dependencies:</p>
             <CodeBlock :code="installCommands.manual"  />
-            <p class="text-sm text-zinc-400 mt-4">Copy the component code into your project.</p>
+            <p class="text-sm text-zinc-400 dark:text-zinc-600 mt-4">Copy the component code into your project.</p>
           </div>
         </template>
       </AnimatedTabs>
@@ -117,9 +117,9 @@ const usageCode = `<template>
 
     <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
-      <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
+      <div class="overflow-x-auto rounded-lg border border-edge bg-background">
         <table class="w-full text-sm text-left">
-          <thead class="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400">
+          <thead class="border-b border-edge bg-background text-zinc-400 dark:text-zinc-600">
           <tr>
             <th class="px-4 py-3 font-medium">Prop</th>
             <th class="px-4 py-3 font-medium">Type</th>
@@ -127,7 +127,7 @@ const usageCode = `<template>
             <th class="px-4 py-3 font-medium">Description</th>
           </tr>
           </thead>
-          <tbody class="divide-y divide-zinc-800 text-zinc-300">
+          <tbody class="divide-y divide-edge text-zinc-700 dark:text-zinc-300">
           <tr>
             <td class="px-4 py-3 font-mono text-purple-400">starsCount</td>
             <td class="px-4 py-3 font-mono text-xs">number</td>

@@ -86,7 +86,7 @@ const animatedTabsUsage = `<template>
           </TabsTrigger>
         </TabsList>
         <TabsContent value="preview">
-          <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 flex flex-col items-center justify-center min-h-[350px] p-10">
+          <div class="relative rounded-xl border border-edge bg-background flex flex-col items-center justify-center min-h-[350px] p-10">
             <div class="w-full max-w-md">
               <CodeBlock :code="simpleCode" lang="typescript" />
             </div>
@@ -118,7 +118,7 @@ const animatedTabsUsage = `<template>
 
       <div class="space-y-4">
         <h3 class="text-xl font-semibold">With Filename</h3>
-        <p class="text-zinc-400 text-sm">Adding a <code>file-name</code> prop automatically creates a header bar.</p>
+        <p class="text-zinc-400 dark:text-zinc-600 text-sm">Adding a <code>file-name</code> prop automatically creates a header bar.</p>
 
         <Tabs default-value="preview">
           <TabsList>
@@ -126,7 +126,7 @@ const animatedTabsUsage = `<template>
             <TabsTrigger value="code">Code</TabsTrigger>
           </TabsList>
           <TabsContent value="preview">
-            <div class="rounded-xl border border-zinc-800 bg-zinc-950/50 p-6 flex justify-center">
+            <div class="rounded-xl border border-edge bg-background p-6 flex justify-center">
               <div class="w-full max-w-md">
                 <CodeBlock :code="installCode" file-name="Terminal" />
               </div>
@@ -140,7 +140,7 @@ const animatedTabsUsage = `<template>
 
       <div class="space-y-4">
         <h3 class="text-xl font-semibold">With Animated Tabs</h3>
-        <p class="text-zinc-400 text-sm">
+        <p class="text-zinc-400 dark:text-zinc-600 text-sm">
           You can place <code>AnimatedTabs</code> directly inside the <code>#header</code> slot.
         </p>
 
@@ -150,7 +150,7 @@ const animatedTabsUsage = `<template>
             <TabsTrigger value="code">Code</TabsTrigger>
           </TabsList>
           <TabsContent value="preview">
-            <div class="rounded-xl border border-zinc-800 bg-zinc-950/50 p-6 flex justify-center">
+            <div class="rounded-xl border border-edge bg-background p-6 flex justify-center">
               <div class="w-full max-w-md">
                 <CodeBlock :code="commands[currentFramework]">
                   <template #header>
@@ -180,16 +180,16 @@ const animatedTabsUsage = `<template>
 
     <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
-      <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
+      <div class="overflow-x-auto rounded-lg border border-edge bg-background">
         <table class="w-full text-sm text-left">
-          <thead class="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400">
+          <thead class="border-b border-edge bg-background text-zinc-400 dark:text-zinc-600">
           <tr>
             <th class="px-4 py-3 font-medium">Prop</th>
             <th class="px-4 py-3 font-medium">Type</th>
             <th class="px-4 py-3 font-medium">Description</th>
           </tr>
           </thead>
-          <tbody class="divide-y divide-zinc-800 text-zinc-300">
+          <tbody class="divide-y divide-edge text-zinc-700 dark:text-zinc-300">
           <tr>
             <td class="px-4 py-3 font-mono text-purple-400">code</td>
             <td class="px-4 py-3 font-mono text-xs">string</td>
@@ -212,15 +212,15 @@ const animatedTabsUsage = `<template>
 
     <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Slots</h2>
-      <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
+      <div class="overflow-x-auto rounded-lg border border-edge bg-background">
         <table class="w-full text-sm text-left">
-          <thead class="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400">
+          <thead class="border-b border-edge bg-background text-zinc-400 dark:text-zinc-600">
           <tr>
             <th class="px-4 py-3 font-medium">Slot</th>
             <th class="px-4 py-3 font-medium">Description</th>
           </tr>
           </thead>
-          <tbody class="divide-y divide-zinc-800 text-zinc-300">
+          <tbody class="divide-y divide-edge text-zinc-700 dark:text-zinc-300">
           <tr>
             <td class="px-4 py-3 font-mono text-purple-400">#header</td>
             <td class="px-4 py-3">

@@ -83,7 +83,7 @@ const usageCode = `<template>
   <LiquidGlass :radius="30" :scale="-180" :blur="10">
     <div class="p-6">
       <h2 class="text-white text-lg font-bold">Glass Card</h2>
-      <p class="text-zinc-300">Content inside the glass.</p>
+      <p class="text-zinc-700 dark:text-zinc-300">Content inside the glass.</p>
     </div>
   </LiquidGlass>
 </template>`
@@ -107,7 +107,7 @@ const usageCode = `<template>
           </TabsTrigger>
         </TabsList>
         <TabsContent value="preview">
-          <div class="relative rounded-xl border border-zinc-800 bg-zinc-950 overflow-hidden min-h-[500px]">
+          <div class="relative rounded-xl border border-edge bg-background overflow-hidden min-h-[500px]">
 
             <div ref="containerEl" class="absolute inset-0 overflow-hidden select-none">
               <AmbientGrid :grid-size="40" color1="var(--primary)" color2="#3b82f6" />
@@ -166,9 +166,9 @@ const usageCode = `<template>
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
       <div class="space-y-4">
         <CodeBlock :code="installCommands.npm"/>
-        <p class="text-sm text-zinc-400">Or manually:</p>
+        <p class="text-sm text-zinc-400 dark:text-zinc-600">Or manually:</p>
         <div class="space-y-2">
-          <p class="text-sm text-zinc-400">Copy the component code into your project.</p>
+          <p class="text-sm text-zinc-400 dark:text-zinc-600">Copy the component code into your project.</p>
           <CodeBlock :code="installCommands.manual"  />
         </div>
       </div>
@@ -189,16 +189,16 @@ const usageCode = `<template>
 
     <div class="space-y-6 mt-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
-      <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
+      <div class="overflow-x-auto rounded-lg border border-edge bg-background">
         <table class="w-full text-sm text-left">
-          <thead class="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400">
+          <thead class="border-b border-edge bg-background text-zinc-400 dark:text-zinc-600">
           <tr>
             <th class="px-4 py-3 font-medium">Prop</th>
             <th class="px-4 py-3 font-medium">Default</th>
             <th class="px-4 py-3 font-medium">Description</th>
           </tr>
           </thead>
-          <tbody class="divide-y divide-zinc-800 text-zinc-300">
+          <tbody class="divide-y divide-edge text-zinc-700 dark:text-zinc-300">
           <tr>
             <td class="px-4 py-3 font-mono text-purple-400">radius</td>
             <td class="px-4 py-3 font-mono text-xs">16</td>

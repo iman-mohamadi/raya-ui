@@ -40,14 +40,14 @@ useSeoMeta({
         <h2 class="scroll-m-20 border-b border-zinc-800 pb-2 text-2xl font-semibold tracking-tight text-white">
           Philosophy
         </h2>
-        <p class="leading-7 text-zinc-400">
+        <p class="leading-7 text-zinc-400 dark:text-zinc-600">
           {{ config.name }} is not a component library. It's a collection of re-usable components that you can copy and paste into your apps.
         </p>
-        <p class="leading-7 text-zinc-400">
+        <p class="leading-7 text-zinc-400 dark:text-zinc-600">
           <strong>What do you mean by "not a component library"?</strong><br>
           I mean you do not install it as a dependency. It is not available or distributed via npm.
         </p>
-        <p class="leading-7 text-zinc-400">
+        <p class="leading-7 text-zinc-400 dark:text-zinc-600">
           Pick the components you need. Copy and paste the code into your project and customize to your needs. The code is yours.
         </p>
       </div>
@@ -59,7 +59,7 @@ useSeoMeta({
           <Check class="h-4 w-4 text-white" />
           Themable
         </h3>
-        <p class="text-sm text-zinc-400 leading-relaxed">
+        <p class="text-sm text-zinc-400 dark:text-zinc-600 leading-relaxed">
           Built on top of Tailwind CSS variables. If you use Shadcn Vue, these components automatically adapt to your theme (colors, radius, dark mode).
         </p>
       </div>
@@ -69,7 +69,7 @@ useSeoMeta({
           <Check class="h-4 w-4 text-white" />
           Accessible
         </h3>
-        <p class="text-sm text-zinc-400 leading-relaxed">
+        <p class="text-sm text-zinc-400 dark:text-zinc-600 leading-relaxed">
           We use <a href="https://reka-ui.com/" target="_blank" class="underline underline-offset-4 hover:text-white">Reka UI</a> (formerly Radix Vue) primitives to ensure keyboard navigation, focus management, and ARIA support out of the box.
         </p>
       </div>

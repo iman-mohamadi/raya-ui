@@ -70,17 +70,17 @@ const frameworkTabs = [
           <div class="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
             <div class="space-y-4">
               <h3 class="text-lg font-semibold text-white">1. Create project</h3>
-              <p class="text-zinc-400">Start by creating a new Vue project using Vite.</p>
+              <p class="text-zinc-400 dark:text-zinc-600">Start by creating a new Vue project using Vite.</p>
               <CodeBlock :code="frameworkCommands.vite.create"  />
             </div>
             <div class="space-y-4">
               <h3 class="text-lg font-semibold text-white">2. Run the CLI</h3>
-              <p class="text-zinc-400">Initialize Shadcn Vue to set up Tailwind and CSS variables.</p>
+              <p class="text-zinc-400 dark:text-zinc-600">Initialize Shadcn Vue to set up Tailwind and CSS variables.</p>
               <CodeBlock :code="frameworkCommands.vite.init"  />
             </div>
             <div class="space-y-4">
               <h3 class="text-lg font-semibold text-white">3. Add {{ config.name }} Components</h3>
-              <p class="text-zinc-400">You can now add any component from our registry.</p>
+              <p class="text-zinc-400 dark:text-zinc-600">You can now add any component from our registry.</p>
               <CodeBlock :code="frameworkCommands.vite.add"  />
             </div>
           </div>
@@ -90,12 +90,12 @@ const frameworkTabs = [
           <div class="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
             <div class="space-y-4">
               <h3 class="text-lg font-semibold text-white">1. Create project</h3>
-              <p class="text-zinc-400">Initialize a new Nuxt application.</p>
+              <p class="text-zinc-400 dark:text-zinc-600">Initialize a new Nuxt application.</p>
               <CodeBlock :code="frameworkCommands.nuxt.create"  />
             </div>
             <div class="space-y-4">
               <h3 class="text-lg font-semibold text-white">2. Run the CLI</h3>
-              <p class="text-zinc-400">Run the Shadcn init command to configure `components.json` and Tailwind.</p>
+              <p class="text-zinc-400 dark:text-zinc-600">Run the Shadcn init command to configure `components.json` and Tailwind.</p>
               <CodeBlock :code="frameworkCommands.nuxt.init"  />
             </div>
             <div class="space-y-4">
@@ -109,12 +109,12 @@ const frameworkTabs = [
           <div class="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
             <div class="space-y-4">
               <h3 class="text-lg font-semibold text-white">1. Create project</h3>
-              <p class="text-zinc-400">Create a new Astro project.</p>
+              <p class="text-zinc-400 dark:text-zinc-600">Create a new Astro project.</p>
               <CodeBlock :code="frameworkCommands.astro.create"  />
             </div>
             <div class="space-y-4">
               <h3 class="text-lg font-semibold text-white">2. Run the CLI</h3>
-              <p class="text-zinc-400">Initialize Shadcn Vue.</p>
+              <p class="text-zinc-400 dark:text-zinc-600">Initialize Shadcn Vue.</p>
               <CodeBlock :code="frameworkCommands.astro.init"  />
             </div>
             <div class="space-y-4">
@@ -128,12 +128,12 @@ const frameworkTabs = [
           <div class="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
             <div class="space-y-4">
               <h3 class="text-lg font-semibold text-white">1. Create project</h3>
-              <p class="text-zinc-400">Start a new Laravel project.</p>
+              <p class="text-zinc-400 dark:text-zinc-600">Start a new Laravel project.</p>
               <CodeBlock :code="frameworkCommands.laravel.create"  />
             </div>
             <div class="space-y-4">
               <h3 class="text-lg font-semibold text-white">2. Run the CLI</h3>
-              <p class="text-zinc-400">Configure Shadcn Vue for Laravel.</p>
+              <p class="text-zinc-400 dark:text-zinc-600">Configure Shadcn Vue for Laravel.</p>
               <CodeBlock :code="frameworkCommands.laravel.init"  />
             </div>
             <div class="space-y-4">
@@ -151,13 +151,13 @@ const frameworkTabs = [
 
             <div class="space-y-4">
               <h3 class="text-lg font-semibold text-white">1. Install Dependencies</h3>
-              <p class="text-zinc-400">Install the required utility libraries and primitives.</p>
+              <p class="text-zinc-400 dark:text-zinc-600">Install the required utility libraries and primitives.</p>
               <CodeBlock :code="frameworkCommands.manual.deps"  />
             </div>
 
             <div class="space-y-4">
               <h3 class="text-lg font-semibold text-white">2. Configure Utils</h3>
-              <p class="text-zinc-400">Create a `lib/utils.ts` file for the class merger.</p>
+              <p class="text-zinc-400 dark:text-zinc-600">Create a `lib/utils.ts` file for the class merger.</p>
               <CodeBlock :code="frameworkCommands.manual.utils" lang="typescript" file-name="lib/utils.ts" />
             </div>
           </div>
