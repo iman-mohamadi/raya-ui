@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Github, Book, Package, Image as ImageIcon, Menu, ChevronDown } from 'lucide-vue-next'
-import {useRoute} from "vue-router";
+import { useRoute } from "vue-router";
+import { AnimatedThemeToggler } from '@/components/ui/animated-theme-toggler'
 
 const config = useAppConfig().raya
 const route = useRoute()
@@ -49,7 +50,9 @@ watch(() => route.path, () => {
             </NuxtLink>
           </nav>
 
-          <a :href="config?.github" target="_blank" class="text-zinc-500 hover:text-white transition-colors">
+          <AnimatedThemeToggler class="text-zinc-500 hover:text-foreground transition-colors" />
+
+          <a :href="config?.github" target="_blank" class="text-zinc-500 hover:text-foreground transition-colors">
             <Github class="h-5 w-5" />
           </a>
         </div>
