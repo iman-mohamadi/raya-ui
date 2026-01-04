@@ -63,6 +63,11 @@ export const useNavigationStore = defineStore('navigation', () => {
                     description: 'A magnetic effect for elements that allows them to be attracted to the mouse cursor.'
                 },
                 {
+                    label: 'Marquee',
+                    to: '/docs/components/marquee',
+                    description: 'An infinite scrolling component that handles content loops effortlessly.'
+                },
+                {
                     label: 'Morphing Text',
                     to: '/docs/components/morphing-text',
                     description: 'Text that morphs smoothly between different states.'
