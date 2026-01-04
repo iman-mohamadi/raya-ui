@@ -8,7 +8,7 @@ import {
   computed,
   type PropType
 } from 'vue'
-import { Primitive, type PrimitiveProps } from 'reka-ui'
+import { Primitive } from 'reka-ui'
 import { cn } from '@/lib/utils'
 import { useVModel } from '@vueuse/core'
 
@@ -38,7 +38,6 @@ const isScrolling = ref(false)
 const scrollTimeout = ref<ReturnType<typeof setTimeout> | null>(null)
 let observer: IntersectionObserver | null = null
 
-// Registration methods for children
 const registerSection = (id: string, element: HTMLElement) => {
   sectionMap.set(id, element)
   updateObserver()
@@ -49,8 +48,7 @@ const unregisterSection = (id: string) => {
   updateObserver()
 }
 
-// Scroll Logic
-const scrollToSection = (id: string) => {
+const scrollTo = (id: string) => {
   const element = sectionMap.get(id) || document.getElementById(id)
 
   if (!element) {
@@ -64,7 +62,6 @@ const scrollToSection = (id: string) => {
   const containerEl = props.container || window
   const isWindow = containerEl === window
 
-  // Calculate position
   let targetTop = 0
   if (!isWindow && containerEl instanceof HTMLElement) {
     const containerRect = containerEl.getBoundingClientRect()
@@ -87,20 +84,17 @@ const scrollToSection = (id: string) => {
     })
   }
 
-  // Timeout to re-enable observer after scroll animation
   if (scrollTimeout.value) clearTimeout(scrollTimeout.value)
   scrollTimeout.value = setTimeout(() => {
     isScrolling.value = false
-  }, 1000) // generous timeout for smooth scroll
+  }, 1000)
 }
 
-// Observer Logic
 const updateObserver = () => {
   if (observer) observer.disconnect()
   if (sectionMap.size === 0) return
 
   const root = props.container || null
-  // default margin logic from original react component
   const margin = props.rootMargin ?? `${-props.offset}px 0px -70% 0px`
 
   observer = new IntersectionObserver((entries) => {
@@ -109,7 +103,6 @@ const updateObserver = () => {
     const intersecting = entries.filter(e => e.isIntersecting)
     if (intersecting.length === 0) return
 
-    // Find the topmost intersecting element
     const topmost = intersecting.reduce((prev, curr) => {
       return curr.boundingClientRect.top < prev.boundingClientRect.top ? curr : prev
     })
@@ -140,7 +133,7 @@ onBeforeUnmount(() => {
 
 provide('scroll-spy', {
   activeId,
-  scrollToSection,
+  scrollTo,
   registerSection,
   unregisterSection,
   orientation: computed(() => props.orientation)
@@ -151,7 +144,13 @@ provide('scroll-spy', {
   <Primitive
       :as="as"
       :as-child="asChild"
-      :class="cn('flex', orientation === 'horizontal' ? 'flex-row' : 'flex-col', props.class)"
+      :class="cn(
+        'flex',
+        // FIX: Vertical orientation = Sidebar Mode = Row Layout (Sidebar | Content)
+        // Horizontal orientation = Navbar Mode = Col Layout (Navbar / Content)
+        orientation === 'horizontal' ? 'flex-col' : 'flex-row',
+        props.class
+      )"
   >
     <slot />
   </Primitive>

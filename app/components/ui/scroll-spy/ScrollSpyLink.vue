@@ -1,19 +1,24 @@
 <script setup lang="ts">
-import { inject, computed, type Ref, type ComputedRef } from 'vue'
+import { inject, computed, type Ref } from 'vue'
 import { Primitive } from 'reka-ui'
 import { cn } from '@/lib/utils'
 
-const props = defineProps({
-  value: { type: String, required: true },
-  asChild: { type: Boolean, default: false },
-  as: { type: String, default: 'a' },
-  class: { type: String, default: '' }
+interface Props {
+  value: string
+  as?: string
+  asChild?: boolean
+  class?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  as: 'a',
+  asChild: false,
+  class: '',
 })
 
 const context = inject<{
   activeId: Ref<string>,
-  scrollToSection: (id: string) => void,
-  orientation: ComputedRef<string>
+  scrollTo: (id: string) => void
 }>('scroll-spy')
 
 if (!context) {
@@ -24,7 +29,7 @@ const isActive = computed(() => context.activeId.value === props.value)
 
 const handleClick = (e: MouseEvent) => {
   e.preventDefault()
-  context.scrollToSection(props.value)
+  context.scrollTo(props.value)
 }
 </script>
 
@@ -34,11 +39,11 @@ const handleClick = (e: MouseEvent) => {
       :as-child="asChild"
       :href="`#${value}`"
       :data-state="isActive ? 'active' : 'inactive'"
-      :data-orientation="context.orientation.value"
+      :data-scroll-spy-value="value"
       @click="handleClick"
       :class="cn(
-      'rounded px-3 py-1.5 font-medium text-muted-foreground text-sm transition-colors',
-      'hover:bg-accent hover:text-accent-foreground',
+      'rounded-md px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer',
+      'text-muted-foreground hover:text-foreground hover:bg-accent/50',
       'data-[state=active]:bg-accent data-[state=active]:text-foreground',
       props.class
     )"

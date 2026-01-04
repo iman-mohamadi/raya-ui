@@ -1,0 +1,12 @@
+{
+  "name": "table-of-contents",
+  "type": "registry:ui",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "table-of-contents/index.ts",
+      "content": "// Warning: Could not auto-generate export for table-of-contents\n",
+      "type": "registry:ui"
+    }
+  ]
+}
