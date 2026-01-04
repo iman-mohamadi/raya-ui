@@ -32,21 +32,21 @@
 
 ## 📖 Introduction
 
-**Raya** is not a component library. It's a collection of re-usable components that you can copy and paste into your apps.
+**Raya UI** is not a traditional component library. It's a collection of re-usable components that you can copy and paste into your apps.
 
-It is built on top of [Tailwind CSS](https://tailwindcss.com) and [Radix Vue (Reka UI)](https://www.radix-vue.com/), providing accessible, customizable, and production-ready components for the modern Vue ecosystem.
+It is built on top of **[Shadcn Vue](https://www.shadcn-vue.com/)** (whose core primitives are powered by **[Reka UI](https://reka-ui.com/)**, formerly Radix Vue) and Tailwind CSS. This ensures that every component is accessible, customizable, and production-ready for the modern Vue ecosystem.
 
 ## 🚀 Features
 
 - **Copy-Paste:** No heavy dependencies or black-box npm packages. You own the code.
-- **Accessible:** Built on top of `reka-ui` (formerly radix-vue) for full accessibility.
+- **Accessible:** Leverages **Reka UI** primitives for full accessibility and keyboard navigation.
 - **Themable:** Designed to work seamlessly with Tailwind CSS and Shadcn's design tokens.
 - **Vue 3 & Nuxt Ready:** Optimized for the modern Vue ecosystem.
 - **Animations:** Includes complex animations like Marquees, Scroll Spies, and 3D effects powered by CSS and Vue transitions.
 
 ## 📦 Installation
 
-You can add components to your project using the `shadcn-vue` CLI or by manually copying the code.
+You can add components to your project using the CLI or by manually copying the code.
 
 ### CLI (Recommended)
 
