@@ -53,6 +53,11 @@ export const useNavigationStore = defineStore('navigation', () => {
                     description: 'MacOS-style floating dock for navigation links.'
                 },
                 {
+                    label: 'Glowing Effect',
+                    to: '/docs/components/glowing-effect',
+                    description: 'A glowing border effect that follows the mouse pointer.'
+                },
+                {
                     label: 'Liquid Glass',
                     to: '/docs/components/liquid-glass',
                     description: 'Glassmorphism effects with liquid distortions.'
