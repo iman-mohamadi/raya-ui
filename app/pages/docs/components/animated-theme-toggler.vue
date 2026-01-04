@@ -75,7 +75,7 @@ useSeoMeta({
         <CodeBlock :code="installCommands.manual"/>
       </div>
 
-      <div class="p-4 border border-amber-500/20 bg-amber-500/10 rounded-lg text-amber-200 text-sm">
+      <div class="p-4 border border-amber-500/20 bg-amber-500/10 rounded-lg text-amber-500 dark:text-amber-200 text-sm">
         <strong>Note:</strong> This component relies on the <a href="https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API" target="_blank" class="underline">View Transitions API</a>. It will gracefully degrade to a standard toggle on browsers that don't support it.
       </div>
     </div>

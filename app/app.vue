@@ -5,14 +5,27 @@ import { SpeedInsights } from '@vercel/speed-insights/vue'
 const appConfig = useAppConfig()
 
 useHead({
-  // Dynamic title: "Page Name - EnzOUi"
   titleTemplate: (titleChunk) => {
     return titleChunk ? `${titleChunk} - ${appConfig.raya.name}` : appConfig.raya.name
   },
   htmlAttrs: {
-    lang: 'en',
-    class: 'dark' // Forces Dark Mode for Shadcn
-  }
+    lang: 'en'
+  },
+  script: [
+    {
+      innerHTML: `(function() {
+        try {
+          var localValue = localStorage.getItem('theme');
+          if (localValue === 'dark' || (!localValue && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {}
+      })()`,
+      type: 'text/javascript'
+    }
+  ]
 })
 
 useSeoMeta({

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, nextTick } from 'vue'
 import { Moon, Sun } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
+import { useDark, useToggle } from '@vueuse/core'
 
 interface Props {
   duration?: number
@@ -13,46 +14,22 @@ const props = withDefaults(defineProps<Props>(), {
   class: ''
 })
 
-const isDark = ref(false)
+// Use VueUse to handle state and localStorage automatically
+const isDark = useDark({
+  storageKey: 'theme',
+  valueDark: 'dark',
+  valueLight: 'light',
+  initialValue: 'dark', // Default to dark if nothing stored
+})
+const toggleDark = useToggle(isDark)
+
 const buttonRef = ref<HTMLButtonElement | null>(null)
-let observer: MutationObserver | null = null
-
-// Helper to actually change the DOM and Storage
-const updateDOM = (dark: boolean) => {
-  if (dark) {
-    document.documentElement.classList.add("dark")
-    localStorage.setItem("theme", "dark")
-  } else {
-    document.documentElement.classList.remove("dark")
-    localStorage.setItem("theme", "light")
-  }
-}
-
-const updateThemeState = () => {
-  isDark.value = document.documentElement.classList.contains("dark")
-}
-
-onMounted(() => {
-  updateThemeState()
-
-  observer = new MutationObserver(updateThemeState)
-  observer.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ["class"],
-  })
-})
-
-onBeforeUnmount(() => {
-  observer?.disconnect()
-})
 
 const toggleTheme = async (event: MouseEvent) => {
-  const newThemeIsDark = !isDark.value
-
-  // @ts-ignore - View Transition API is strictly typed in some environments
+  // If View Transitions aren't supported, just toggle
+  // @ts-ignore
   if (!document.startViewTransition) {
-    isDark.value = newThemeIsDark
-    updateDOM(newThemeIsDark)
+    toggleDark()
     return
   }
 
@@ -62,8 +39,7 @@ const toggleTheme = async (event: MouseEvent) => {
   // Start the transition
   // @ts-ignore
   const transition = document.startViewTransition(async () => {
-    isDark.value = newThemeIsDark
-    updateDOM(newThemeIsDark)
+    toggleDark()
     // Wait for Vue to update the DOM inside the transition callback
     await nextTick()
   })
@@ -103,7 +79,7 @@ const toggleTheme = async (event: MouseEvent) => {
       @click="toggleTheme"
       :class="cn('relative inline-flex items-center justify-center rounded-md p-2 hover:bg-accent hover:text-accent-foreground transition-colors', props.class)"
   >
-    <Sun v-if="!isDark" class="h-5 w-5" />
+    <Sun v-if="isDark" class="h-5 w-5" />
     <Moon v-else class="h-5 w-5" />
     <span class="sr-only">Toggle theme</span>
   </button>
