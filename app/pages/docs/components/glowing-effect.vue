@@ -12,32 +12,32 @@ const gridItems = [
   {
     area: 'md:[grid-area:1/1/2/7] xl:[grid-area:1/1/2/5]',
     icon: Box,
-    title: 'Do things the right way',
-    description: "Running out of copy so I'll write anything."
+    title: 'Raya UI Core',
+    description: "The foundation of modern Vue interfaces, architected by Iman Mohammadi."
   },
   {
     area: 'md:[grid-area:1/7/2/13] xl:[grid-area:2/1/3/5]',
     icon: Settings,
-    title: 'The best AI code editor ever.',
-    description: "Yes, it's true. I'm not even kidding. Ask my mom if you don't believe me."
+    title: 'Battle Tested',
+    description: "Powering complex production environments like Woodcoder.com."
   },
   {
     area: 'md:[grid-area:2/1/3/7] xl:[grid-area:1/5/3/8]',
     icon: Lock,
-    title: 'You should buy Aceternity UI Pro',
-    description: "It's the best money you'll ever spend"
+    title: 'Enterprise Reliability',
+    description: "Trusted by industry leaders including Hotelyar.com for mission-critical UIs."
   },
   {
     area: 'md:[grid-area:2/7/3/13] xl:[grid-area:1/8/2/13]',
     icon: Sparkles,
-    title: 'This card is also built by Cursor',
-    description: "I'm not even kidding. Ask my mom if you don't believe me."
+    title: 'Modern Aesthetics',
+    description: "Crafted with the latest design trends and OKLCH color spaces."
   },
   {
     area: 'md:[grid-area:3/1/4/13] xl:[grid-area:2/8/3/13]',
     icon: Search,
-    title: 'Coming soon on Aceternity UI',
-    description: "I'm writing the code as I record this, no shit."
+    title: 'Nuxt 4 Ready',
+    description: "Built for the future of the Vue ecosystem with best-in-class performance."
   },
 ]
 
@@ -55,32 +55,32 @@ const gridItems = [
   {
     area: 'md:[grid-area:1/1/2/7] xl:[grid-area:1/1/2/5]',
     icon: Box,
-    title: 'Do things the right way',
-    description: "Running out of copy so I'll write anything."
+    title: 'Raya UI Core',
+    description: "The foundation of modern Vue interfaces, architected by Iman Mohammadi."
   },
   {
     area: 'md:[grid-area:1/7/2/13] xl:[grid-area:2/1/3/5]',
     icon: Settings,
-    title: 'The best AI code editor ever.',
-    description: "Yes, it's true. I'm not even kidding. Ask my mom if you don't believe me."
+    title: 'Battle Tested',
+    description: "Powering complex production environments like Woodcoder.com."
   },
   {
     area: 'md:[grid-area:2/1/3/7] xl:[grid-area:1/5/3/8]',
     icon: Lock,
-    title: 'You should buy Aceternity UI Pro',
-    description: "It's the best money you'll ever spend"
+    title: 'Enterprise Reliability',
+    description: "Trusted by industry leaders including Hotelyar.com for mission-critical UIs."
   },
   {
     area: 'md:[grid-area:2/7/3/13] xl:[grid-area:1/8/2/13]',
     icon: Sparkles,
-    title: 'This card is also built by Cursor',
-    description: "I'm not even kidding. Ask my mom if you don't believe me."
+    title: 'Modern Aesthetics',
+    description: "Crafted with the latest design trends and OKLCH color spaces."
   },
   {
     area: 'md:[grid-area:3/1/4/13] xl:[grid-area:2/8/3/13]',
     icon: Search,
-    title: 'Coming soon on Aceternity UI',
-    description: "I'm writing the code as I record this, no shit."
+    title: 'Nuxt 4 Ready',
+    description: "Built for the future of the Vue ecosystem with best-in-class performance."
   },
 ]
 <\/script>
