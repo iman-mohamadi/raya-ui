@@ -11,7 +11,8 @@ import {
   X,
   CheckCircle2,
   ChevronDown,
-  Trash2
+  Trash2,
+  Pencil
 } from 'lucide-vue-next'
 
 // --- State ---
@@ -23,8 +24,25 @@ const dataLoading = ref(false)
 const showAddAdmin = ref(false)
 const isCreating = ref(false)
 const isRemoving = ref(false)
+const isEditing = ref(false)
+const isEditForm = ref(false)
+
+const roles = [
+  {
+    title: 'Admin',
+    value: 'admin',
+  },
+  {
+    title: 'Moderator',
+    value: 'moderator',
+  },
+  {
+    title: 'User',
+    value: 'user',
+  }
+]
 // Default to 'admin' role
-const newAdmin = reactive({
+const adminForm = reactive({
   name: '',
   email: '',
   password: '',
@@ -57,20 +75,22 @@ const fetchData = async () => {
 }
 
 // --- 3. Create Admin Logic ---
-const createAdmin = async () => {
+const submitForm = async () => {
   isCreating.value = true
+  const url = isEditForm.value ? '/api/admin/update' : '/api/admin/create'
+  const method = isCreating.value ? 'PUT' : 'POST'
   try {
-    await $fetch('/api/admin/create', {
-      method: 'POST',
-      body: newAdmin
+    await $fetch(url, {
+      method,
+      body: adminForm
     })
 
     // Success: Clear form and refresh list
     showAddAdmin.value = false
-    newAdmin.name = ''
-    newAdmin.email = ''
-    newAdmin.password = ''
-    newAdmin.role = 'admin' // Reset to default
+    adminForm.name = ''
+    adminForm.email = ''
+    adminForm.password = ''
+    adminForm.role = 'admin' // Reset to default
     await refetchUsers()
 
   } catch (e) {
@@ -99,6 +119,21 @@ const removeUser = async (userId) => {
   }
 }
 
+const editUser = (u) => {
+  adminForm.name = u.name
+  adminForm.email = u.email
+  adminForm.role = u.role
+  isEditForm.value = true
+  showAddAdmin.value = true
+}
+
+const toggleForm = () => {
+  showAddAdmin.value = !showAddAdmin.value
+  adminForm.name = ''
+  adminForm.email = ''
+  adminForm.password = ''
+  adminForm.role = 'user'
+}
 // --- Helpers ---
 const formatDate = (dateString) => {
   if (!dateString) return ''
@@ -209,7 +244,7 @@ const formatDate = (dateString) => {
 
           <button
               v-if="user?.role == 'founder'"
-              @click="showAddAdmin = !showAddAdmin"
+              @click="toggleForm()"
               class="text-xs bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-md flex items-center gap-1.5 transition font-medium border border-purple-500/50 shadow-lg shadow-purple-900/20"
           >
             <X v-if="showAddAdmin" class="w-3.5 h-3.5"/>
@@ -220,11 +255,11 @@ const formatDate = (dateString) => {
 
         <div v-if="showAddAdmin" class="p-5 bg-gray-800/30 border-b border-gray-800 transition-all">
           <p class="text-xs text-gray-500 mb-3 uppercase tracking-wider font-bold">New User Details</p>
-          <form @submit.prevent="createAdmin" class="space-y-3">
+          <form @submit.prevent="submitForm" class="space-y-3">
 
             <div class="grid grid-cols-2 gap-3">
               <input
-                  v-model="newAdmin.name"
+                  v-model="adminForm.name"
                   placeholder="Full Name"
                   required
                   class="w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:ring-1 focus:ring-purple-500 outline-none placeholder-gray-600"
@@ -232,18 +267,17 @@ const formatDate = (dateString) => {
 
               <div class="relative">
                 <select
-                    v-model="newAdmin.role"
+                    v-model="adminForm.role"
                     class="w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:ring-1 focus:ring-purple-500 outline-none appearance-none"
                 >
-                  <option value="admin">Admin</option>
-                  <option value="moderator">Moderator</option>
+                  <option v-for="role in roles" :value="role.value">{{ role.title }}</option>
                 </select>
                 <ChevronDown class="absolute right-3 top-2.5 w-4 h-4 text-gray-500 pointer-events-none"/>
               </div>
             </div>
 
             <input
-                v-model="newAdmin.email"
+                v-model="adminForm.email"
                 type="email"
                 placeholder="Email Address"
                 required
@@ -251,7 +285,7 @@ const formatDate = (dateString) => {
             />
 
             <input
-                v-model="newAdmin.password"
+                v-model="adminForm.password"
                 type="text"
                 placeholder="Set Password"
                 required
@@ -260,13 +294,15 @@ const formatDate = (dateString) => {
 
             <button
                 type="submit"
-                :disabled="isCreating"
+                :disabled="isCreating || isEditing"
                 class="w-full bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold uppercase py-2.5 rounded transition flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
             >
-              <Spinner v-if="isCreating" class="w-3 h-3 text-white"/>
+              <Spinner v-if="isCreating || isEditing" class="w-3 h-3 text-white"/>
               <template v-else>
                 <CheckCircle2 class="w-3.5 h-3.5"/>
-                <span>Create User</span>
+                <span>
+                  {{ isEditForm ? 'Edit User' : 'Create User' }}
+                </span>
               </template>
             </button>
           </form>
@@ -324,15 +360,28 @@ const formatDate = (dateString) => {
                     </span>
               </td>
               <td v-if="user?.role === 'founder'" class="p-4 text-right pr-6">
-                <button
-                    v-if="u.role !== 'founder'"
-                    @click="removeUser(u.id)"
-                    :disabled="isRemoving"
-                    class="text-gray-600 hover:text-red-400 p-2 rounded-md hover:bg-red-500/10 transition disabled:opacity-50"
-                    title="Revoke Admin Access"
-                >
-                  <Trash2 class="w-4 h-4" />
-                </button>
+                <div class="flex items-center gap-2" v-if="u.role !== 'founder'">
+                  <Button
+                      @click="removeUser(u.id)"
+                      :disabled="isRemoving"
+                      class="text-gray-600 hover:text-red-400 p-2 rounded-md hover:bg-red-500/10 disabled:opacity-50"
+                      title="Revoke Admin Access"
+                      variant="ghost"
+                      size="sm"
+                  >
+                    <Trash2 class="w-4 h-4"/>
+                  </Button>
+                  <Button
+                      @click="editUser(u)"
+                      :disabled="isEditing"
+                      variant="ghost"
+                      size="sm"
+                      class="text-gray-600 hover:text-amber-400 p-2 rounded-md hover:bg-amber-500/10 disabled:opacity-50"
+                      title="Edit Admin Access"
+                  >
+                    <Pencil class="size-4"/>
+                  </Button>
+                </div>
               </td>
             </tr>
             </tbody>

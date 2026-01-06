@@ -22,8 +22,7 @@ import Divider from "~/components/Divider.vue";
         </div>
       </div>
     </div>
-    <footer class="col-start-3">
-    </footer>
+    <AppFooter />
     <div
         class="col-start-4 row-span-full row-start-2 text-edge border-x border-x-current bg-patterned"></div>
   </div>
