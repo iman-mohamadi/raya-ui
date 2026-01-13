@@ -5,6 +5,7 @@ import { CodeBlock } from '@/components/ui/code-block'
 
 definePageMeta({ layout: 'docs' })
 const config = useAppConfig().raya
+const colorMode = useColorMode()
 
 const PREVIEW_TABS = [
   { label: 'Preview', slot: 'preview' },
@@ -14,6 +15,10 @@ const PREVIEW_TABS = [
 const installCommands = {
   npm: `npx shadcn-vue@latest add ${config.baseUrl}/animated-theme-toggler.json`,
   manual: `npm install lucide-vue-next clsx tailwind-merge`
+}
+
+const toggleDark = (isDark: boolean) => {
+  colorMode.value = isDark ? 'dark' : 'light'
 }
 
 const defaultCode = `<script setup lang="ts">
@@ -54,7 +59,7 @@ useSeoMeta({
         </TabsList>
         <TabsContent value="preview">
           <div class="relative rounded-xl border border-edge bg-background flex flex-col items-center justify-center min-h-[350px] p-10 gap-8">
-            <AnimatedThemeToggler />
+            <AnimatedThemeToggler @update:modelValue="toggleDark" :theme="colorMode"/>
             <span class="text-sm text-muted-foreground">Click to see the effect</span>
           </div>
         </TabsContent>
@@ -94,8 +99,8 @@ useSeoMeta({
           <template #preview>
             <div class="relative rounded-xl border border-edge bg-background flex flex-col items-center justify-center min-h-[250px] p-10 gap-8">
               <div class="flex gap-4 items-center">
-                <AnimatedThemeToggler class="rounded-full bg-zinc-800 text-white w-12 h-12 hover:bg-zinc-700" />
-                <AnimatedThemeToggler class="border border-zinc-700 rounded-lg" :duration="1000" />
+                <AnimatedThemeToggler @update:modelValue="toggleDark" :theme="colorMode" class="rounded-full bg-zinc-800 text-white w-12 h-12 hover:bg-zinc-700" />
+                <AnimatedThemeToggler @update:modelValue="toggleDark" :theme="colorMode" class="border border-zinc-700 rounded-lg" :duration="1000" />
               </div>
             </div>
           </template>
@@ -125,6 +130,12 @@ useSeoMeta({
           </thead>
           <tbody class="divide-y divide-edge text-zinc-700 dark:text-zinc-300">
           <tr>
+            <td class="px-4 py-3 font-mono text-purple-400">theme</td>
+            <td class="px-4 py-3 font-mono text-xs">string</td>
+            <td class="px-4 py-3 font-mono text-xs">dark</td>
+            <td class="px-4 py-3">Current theme</td>
+          </tr>
+          <tr>
             <td class="px-4 py-3 font-mono text-purple-400">duration</td>
             <td class="px-4 py-3 font-mono text-xs">number</td>
             <td class="px-4 py-3 font-mono text-xs">400</td>
@@ -135,6 +146,28 @@ useSeoMeta({
             <td class="px-4 py-3 font-mono text-xs">string</td>
             <td class="px-4 py-3 font-mono text-xs">''</td>
             <td class="px-4 py-3">Custom classes for the button element.</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="space-y-6 mt-4">
+      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Emits</h2>
+      <div class="overflow-x-auto rounded-lg border border-edge bg-background">
+        <table class="w-full text-sm text-left">
+          <thead class="border-b border-edge bg-background text-zinc-400 dark:text-zinc-600">
+          <tr>
+            <th class="px-4 py-3 font-medium">Event</th>
+            <th class="px-4 py-3 font-medium">Payload</th>
+            <th class="px-4 py-3 font-medium">Description</th>
+          </tr>
+          </thead>
+          <tbody class="divide-y divide-edge text-zinc-700 dark:text-zinc-300">
+          <tr>
+            <td class="px-4 py-3 font-mono text-purple-400">update:modelValue</td>
+            <td class="px-4 py-3 font-mono text-xs">any</td>
+            <td class="px-4 py-3 font-mono text-xs">Fired when theme changes.</td>
           </tr>
           </tbody>
         </table>

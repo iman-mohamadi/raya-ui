@@ -5,6 +5,7 @@ import { AnimatedThemeToggler } from '@/components/ui/animated-theme-toggler'
 
 const config = useAppConfig().raya
 const route = useRoute()
+const colorMode = useColorMode()
 const props = defineProps({
   showDoc: {
     type: Boolean,
@@ -18,6 +19,10 @@ const props = defineProps({
 
 // --- Mobile Menu State ---
 const isMobileMenuOpen = ref(false)
+
+const toggleDark = (isDark: boolean) => {
+  colorMode.value = isDark ? 'dark' : 'light'
+}
 
 // Close mobile menu when route changes
 watch(() => route.path, () => {
@@ -50,7 +55,7 @@ watch(() => route.path, () => {
             </NuxtLink>
           </nav>
 
-          <AnimatedThemeToggler class="text-zinc-500 hover:text-foreground transition-colors" />
+          <AnimatedThemeToggler @update:modelValue="toggleDark" :theme="colorMode" class="text-zinc-500 hover:text-foreground transition-colors" />
 
           <a :href="config?.github" target="_blank" class="text-zinc-500 hover:text-foreground transition-colors">
             <Github class="h-5 w-5" />

@@ -2,34 +2,41 @@
 import { ref, nextTick, onMounted } from 'vue'
 import { Moon, Sun } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
-import { useDark, useToggle } from '@vueuse/core'
 
 interface Props {
+  theme?: string
   duration?: number
   class?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  theme: 'dark',
   duration: 400,
   class: ''
 })
+
+const emit = defineEmits(['update:modelValue', 'toggle'])
 
 // Track if the component is mounted (client-side)
 const mounted = ref(false)
 
 // Use VueUse to handle state and localStorage automatically
-const isDark = useDark({
-  storageKey: 'theme',
-  valueDark: 'dark',
-  valueLight: 'light',
-  initialValue: 'dark',
-})
-const toggleDark = useToggle(isDark)
+const isDark = ref(true)
+
+const toggleDark = () => {
+  isDark.value = !isDark.value
+  emit('update:modelValue', isDark.value)
+}
 
 const buttonRef = ref<HTMLButtonElement | null>(null)
 
 onMounted(() => {
   mounted.value = true
+  isDark.value = props.theme === 'dark'
+})
+
+watch(() => props.theme, () => {
+  isDark.value = props.theme === 'dark'
 })
 
 const toggleTheme = async (event: MouseEvent) => {
