@@ -199,7 +199,7 @@ useSeoMeta({
               <AnimatedBackground
                   v-model="activeTab"
                   :items="TABS"
-                  class="rounded-lg bg-zinc-100 dark:bg-zinc-800"
+                  class="rounded-lg"
                   :transition="{
                     type: 'spring',
                     bounce: 0.2,

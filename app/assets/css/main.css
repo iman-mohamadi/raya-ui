@@ -523,14 +523,14 @@ button {
     grid-template-columns: 1fr;
 }
 
-@media (min-width: 440px) {
+@media (width >= 40rem) {
     .blocks-list-grid-lines {
         grid-template-columns: 1fr var(--g) 1fr;
     }
     .blocks-list-grid-lines .line-1 { display: block; grid-column: 2; }
 }
 
-@media (min-width: 40rem) {
+@media (width >= 64rem) {
     .blocks-list-grid-lines {
         grid-template-columns: 1fr var(--g) 1fr var(--g) 1fr;
     }
@@ -538,7 +538,7 @@ button {
     .blocks-list-grid-lines .line-2 { display: block; grid-column: 4; }
 }
 
-@media (min-width: 64rem) {
+@media (width >= 80rem) {
     .blocks-list-grid-lines {
         grid-template-columns: 1fr var(--g) 1fr var(--g) 1fr var(--g) 1fr;
     }

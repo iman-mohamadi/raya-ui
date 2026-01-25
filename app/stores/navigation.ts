@@ -10,102 +10,122 @@ export const useNavigationStore = defineStore('navigation', () => {
                 {
                     label: 'Animated Background',
                     to: '/docs/components/animated-background',
-                    description: 'Dynamic background elements that react to interaction.'
+                    description: 'Dynamic background elements that react to interaction.',
+                    img: '/components/animated-background.png'
                 },
                 {
                     label: 'Animated Input',
                     to: '/docs/components/animated-input',
-                    description: 'Input fields with smooth focus and validation animations.'
+                    description: 'Input fields with smooth focus and validation animations.',
+                    img: '/components/animated-input.png'
                 },
                 {
                     label: 'Animated Tabs',
                     to: '/docs/components/animated-tabs',
-                    description: 'Tabs with smooth sliding indicators and transitions.'
+                    description: 'Tabs with smooth sliding indicators and transitions.',
+                    img: '/components/animated-tabs.png'
                 },
                 {
                     label: 'Animated Theme Toggler',
                     to: '/docs/components/animated-theme-toggler',
-                    description: 'A theme toggle button with a circular clip-path transition effect.'
+                    description: 'A theme toggle button with a circular clip-path transition effect.',
+                    img: '/components/animated-theme-toggler.png'
                 },
                 {
                     label: 'Bar Visualizer',
                     to: '/docs/components/bar-visualizer',
-                    description: 'Audio-reactive bar visualization components.'
+                    description: 'Audio-reactive bar visualization components.',
+                    img: '/components/bar-visualizer.png'
                 },
                 {
                     label: 'Code Block',
                     to: '/docs/components/code-block',
-                    description: 'Syntax highlighting with copy functionality and theme support.'
+                    description: 'Syntax highlighting with copy functionality and theme support.',
+                    img: '/components/code-block.png'
                 },
                 {
                     label: 'Encrypted Text',
                     to: '/docs/components/encrypted-text',
-                    description: 'Text that reveals itself with a matrix-like scrambling effect.'
+                    description: 'Text that reveals itself with a matrix-like scrambling effect.',
+                    img: '/components/encrypted-text.png'
                 },
                 {
                     label: 'Flip Clock',
                     to: '/docs/components/flip-clock',
-                    description: 'A retro-style mechanical flip clock with real-time and countdown modes.'
+                    description: 'A retro-style mechanical flip clock with real-time and countdown modes.',
+                    img: '/components/flip-clock.png'
                 },
                 {
                     label: 'Floating Dock',
                     to: '/docs/components/floating-dock',
-                    description: 'MacOS-style floating dock for navigation links.'
+                    description: 'MacOS-style floating dock for navigation links.',
+                    img: '/components/floating-dock.png'
                 },
                 {
                     label: 'Glowing Effect',
                     to: '/docs/components/glowing-effect',
-                    description: 'A glowing border effect that follows the mouse pointer.'
+                    description: 'A glowing border effect that follows the mouse pointer.',
+                    img: '/components/glowing-effect.png'
                 },
                 {
                     label: 'Liquid Glass',
                     to: '/docs/components/liquid-glass',
-                    description: 'Glassmorphism effects with liquid distortions.'
+                    description: 'Glassmorphism effects with liquid distortions.',
+                    img: '/components/liquid-glass.png'
                 },
                 {
                     label: 'Magnetic',
                     to: '/docs/components/magnetic',
-                    description: 'A magnetic effect for elements that allows them to be attracted to the mouse cursor.'
+                    description: 'A magnetic effect for elements that allows them to be attracted to the mouse cursor.',
+                    img: '/components/magnetic.png'
                 },
                 {
                     label: 'Marquee',
                     to: '/docs/components/marquee',
-                    description: 'An infinite scrolling component that handles content loops effortlessly.'
+                    description: 'An infinite scrolling component that handles content loops effortlessly.',
+                    img: '/components/marquee.png'
                 },
                 {
                     label: 'Morphing Text',
                     to: '/docs/components/morphing-text',
-                    description: 'Text that morphs smoothly between different states.'
+                    description: 'Text that morphs smoothly between different states.',
+                    img: '/components/morphing-text.png'
                 },
                 {
                     label: 'Partition Bar',
                     to: '/docs/components/partition-bar',
-                    description: 'A proportional bar chart component for visualizing distributed data values.'
+                    description: 'A proportional bar chart component for visualizing distributed data values.',
+                    img: '/components/partition-bar.png'
                 },
                 {
                     label: 'Pixelated Button',
                     to: '/docs/components/pixelated-button',
-                    description: 'Retro-style buttons with pixelated interactions.'
+                    description: 'Retro-style buttons with pixelated interactions.',
+                    img: '/components/pixelated-button.png'
                 },
                 {
                     label: 'Raya Button',
                     to: '/docs/components/raya-button',
-                    description: 'The signature button component of the design system.'
+                    description: 'The signature button component of the design system.',
+                    img: '/components/raya-button.png'
                 },
                 {
                     label: 'Scroll Spy',
                     to: '/docs/components/scroll-spy',
-                    description: 'Automatically highlights navigation items based on scroll position.'
+                    description: 'Automatically highlights navigation items based on scroll position.',
+                    img: '/components/scroll-spy.png'
                 },
                 {
                     label: 'Tree',
                     to: '/docs/components/tree',
-                    description: 'Hierarchical tree view for file structures or nested data.'
+                    description: 'Hierarchical tree view for file structures or nested data.',
+                    img: '/components/tree.png'
                 },
                 {
                     label: 'Wheel Picker',
                     to: '/docs/components/wheel-picker',
-                    description: 'iOS-style scrollable wheel picker for selecting values.'
+                    description: 'iOS-style scrollable wheel picker for selecting values.',
+                    img: '/components/wheel-picker.png'
                 },
             ]
         },

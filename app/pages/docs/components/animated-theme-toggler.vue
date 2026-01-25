@@ -173,6 +173,5 @@ useSeoMeta({
         </table>
       </div>
     </div>
-
   </div>
 </template>

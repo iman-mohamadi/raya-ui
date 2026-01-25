@@ -102,7 +102,7 @@ useSeoMeta({
           <div class="relative rounded-xl border border-edge bg-background flex flex-col items-center justify-center min-h-[350px] p-10">
             <div class="w-full max-w-2xl">
               <PartitionBar>
-                <PartitionBarSegment :num="50">
+                <PartitionBarSegment :num="50" variant="destructive">
                   <PartitionBarSegmentTitle>System</PartitionBarSegmentTitle>
                   <PartitionBarSegmentValue>50GB</PartitionBarSegmentValue>
                 </PartitionBarSegment>

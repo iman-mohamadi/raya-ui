@@ -158,17 +158,17 @@ const parentCode = `<template>
           <TabsContent value="preview">
             <div class="rounded-xl border border-edge bg-background p-10 flex justify-center min-h-[200px] items-center">
               <div class="flex gap-6">
-                <Magnetic :intensity="0.2" :range="60">
+                <Magnetic :intensity="0.2" :range="100">
                   <div class="p-4 rounded-full bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 transition-colors cursor-pointer group">
                     <Github class="w-5 h-5 text-zinc-400 dark:text-zinc-600 group-hover:text-white transition-colors" />
                   </div>
                 </Magnetic>
-                <Magnetic :intensity="0.2" :range="60">
+                <Magnetic :intensity="0.2" :range="100">
                   <div class="p-4 rounded-full bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 transition-colors cursor-pointer group">
                     <Twitter class="w-5 h-5 text-zinc-400 dark:text-zinc-600 group-hover:text-white transition-colors" />
                   </div>
                 </Magnetic>
-                <Magnetic :intensity="0.2" :range="60">
+                <Magnetic :intensity="0.2" :range="100">
                   <div class="p-4 rounded-full bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 transition-colors cursor-pointer group">
                     <Instagram class="w-5 h-5 text-zinc-400 dark:text-zinc-600 group-hover:text-white transition-colors" />
                   </div>
