@@ -2,6 +2,14 @@
 import { computed } from 'vue'
 import { useNavigationStore } from "~/stores/navigation";
 
+// Import your background components
+import AmbientGrid from '@/components/ui/ambient-grid/AmbientGrid.vue'
+import BackgroundBeams from '@/components/ui/background-beams/BackgroundBeams.vue'
+import DottedGlowBackground from '@/components/ui/dotted-glow-background/DottedGlowBackground.vue'
+import GravityStars from '@/components/ui/gravity-stars/GravityStars.vue'
+import BackgroundRippleEffect from '@/components/ui/background-ripple-effect/BackgroundRippleEffect.vue'
+import SnowEffect from '@/components/ui/snow-effect/SnowEffect.vue'
+
 definePageMeta({layout: 'docs'})
 
 const navStore = useNavigationStore()
@@ -9,6 +17,16 @@ const navStore = useNavigationStore()
 const groups = computed(() => {
   return navStore.navGroups.filter(g => g.title !== 'Guide')
 })
+
+// Map the navigation labels to the actual components
+const backgroundComponents: Record<string, any> = {
+  'Ambient Grid': AmbientGrid,
+  'Background Beams': BackgroundBeams,
+  'Dotted Glow': DottedGlowBackground,
+  'Gravity Stars': GravityStars,
+  'Ripple Effect': BackgroundRippleEffect,
+  'Snow Effect': SnowEffect,
+}
 </script>
 
 <template>
@@ -36,8 +54,20 @@ const groups = computed(() => {
             :to="item.to"
             class="group row-line"
         >
-          <div class="bg-background aspect-390/200 overflow-hidden relative flex items-center justify-center p-6  transition-all duration-500 ease-out wrapper-line-after">
-            <NuxtImg :src="item.img"  :alt="item.label" class="w-full object-center mix-blend-exclusion"/>
+          <div class="bg-background aspect-390/200 overflow-hidden relative flex items-center justify-center p-6 transition-all duration-500 ease-out wrapper-line-after">
+
+            <component
+                v-if="!item.img && backgroundComponents[item.label]"
+                :is="backgroundComponents[item.label]"
+                class="absolute z-10 w-full h-full"
+            />
+
+            <NuxtImg
+                v-else-if="item.img"
+                :src="item.img"
+                :alt="item.label"
+                class="w-full object-center mix-blend-exclusion"
+            />
           </div>
 
           <div class="pl-m py-2 before:hidden pb-8 block">
