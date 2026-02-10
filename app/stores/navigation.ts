@@ -50,6 +50,12 @@ export const useNavigationStore = defineStore('navigation', () => {
                     img: '/components/encrypted-text.png'
                 },
                 {
+                    label: 'File Upload',
+                    to: '/docs/components/file-upload',
+                    description: 'Drag and drop file upload with preview and progress tracking.',
+                    img: '/components/file-upload.png'
+                },
+                {
                     label: 'Flip Clock',
                     to: '/docs/components/flip-clock',
                     description: 'A retro-style mechanical flip clock with real-time and countdown modes.',

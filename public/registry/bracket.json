@@ -1,0 +1,12 @@
+{
+  "name": "bracket",
+  "type": "registry:ui",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "bracket/index.ts",
+      "content": "// Warning: Could not auto-generate export for bracket\n",
+      "type": "registry:ui"
+    }
+  ]
+}

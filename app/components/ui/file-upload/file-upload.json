@@ -1,0 +1,15 @@
+{
+  "name": "file-upload",
+  "type": "registry:ui",
+  "dependencies": [
+    "lucide-vue-next",
+    "@vueuse/core"
+  ],
+  "files": [
+    "FileUpload.vue","FileUploadDropzone.vue",
+    "FileUploadTrigger.vue","FileUploadList.vue",
+    "FileUploadItem.vue","FileUploadItemPreview.vue",
+    "FileUploadItemMetadata.vue","FileUploadItemProgress.vue",
+    "FileUploadItemDelete.vue","FileUploadClear.vue"
+  ]
+}
