@@ -53,4 +53,4 @@ You can add components to your project using the CLI or by manually copying the 
 Use the CLI to automatically install a component and its dependencies.
 
 ```bash
-npx shadcn-vue@latest add [https://raya-ui.com/registry/wheel-picker.json](https://raya-ui.com/registry/wheel-picker.json)
+npx shadcn-vue@latest add https://raya-ui.com/registry/wheel-picker.json
