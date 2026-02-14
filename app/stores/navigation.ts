@@ -104,6 +104,11 @@ export const useNavigationStore = defineStore('navigation', () => {
                     img: '/components/partition-bar.png'
                 },
                 {
+                    label: 'Persian Date Picker',
+                    to: '/docs/components/persian-date-picker',
+                    description: 'Jalali (Persian) calendar date picker with Persian labels and digits.'
+                },
+                {
                     label: 'Pixelated Button',
                     to: '/docs/components/pixelated-button',
                     description: 'Retro-style buttons with pixelated interactions.',
