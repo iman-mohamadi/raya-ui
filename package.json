@@ -12,6 +12,7 @@
     "build:registry": "tsx app/scripts/build-registry.ts"
   },
   "dependencies": {
+    "@internationalized/date": "^3.11.0",
     "@neondatabase/serverless": "^1.0.2",
     "@nuxt/image": "2.0.0",
     "@nuxtjs/sitemap": "7.4.9",
