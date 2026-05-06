@@ -43,7 +43,7 @@ const navLinks = [
 
       <!-- Actions -->
       <div class="flex items-center gap-3">
-        <a href="https://github.com/imanmohammadi/raya-ui" target="_blank" class="p-2 text-muted-foreground hover:text-foreground transition-colors">
+        <a href="https://github.com/iman-mohamadi/raya-ui" target="_blank" class="p-2 text-muted-foreground hover:text-foreground transition-colors">
           <Github class="size-5" />
         </a>
         <ThemeSwitcher />
