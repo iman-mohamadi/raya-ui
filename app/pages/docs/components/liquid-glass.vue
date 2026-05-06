@@ -6,7 +6,7 @@ import { LiquidGlass } from '@/components/ui/liquid-glass'
 import { AmbientGrid } from '@/components/ui/ambient-grid'
 import { CodeBlock } from '@/components/ui/code-block'
 
-definePageMeta({ layout: false })
+definePageMeta({ layout: 'docs' })
 
 useSeoMeta({
   title: 'Liquid Glass Component for Vue & Nuxt',
@@ -111,7 +111,7 @@ import { LiquidGlass } from '@/components/ui/liquid-glass'
 </script>
 
 <template>
-  <NuxtLayout name="docs">
+  <DocContent>
     <!-- Breadcrumb Title -->
     <template #breadcrumb-title>
       <span class="text-foreground text-sm font-medium">Liquid Glass</span>
@@ -436,5 +436,5 @@ import { LiquidGlass } from '@/components/ui/liquid-glass'
       </div>
 
     </template>
-  </NuxtLayout>
+  </DocContent>
 </template>

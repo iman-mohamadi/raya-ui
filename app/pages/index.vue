@@ -67,8 +67,9 @@ const features = [
                 </RayaButton>
               </NuxtLink>
               <NuxtLink to="/docs/components/tree">
-                <RayaButton class="h-16 px-12 rounded-none border-foreground font-black uppercase tracking-widest hover:bg-foreground hover:text-background transition-colors"
-                            variant="outline">
+                <RayaButton
+                    class="h-16 px-12 rounded-none border-foreground font-black uppercase tracking-widest hover:bg-foreground hover:text-background transition-colors"
+                    variant="outline">
                   Library
                 </RayaButton>
               </NuxtLink>
@@ -130,22 +131,23 @@ const features = [
           <div v-for="i in 100" :key="i" class="aspect-square border border-foreground/20"/>
         </div>
       </div>
-
-      <Motion
-          :in-view="{ opacity: 1, scale: 1 }"
-          :initial="{ opacity: 0, scale: 0.9 }"
-          class="relative z-10 space-y-12"
-      >
-        <h2 class="text-[10vw] font-black leading-none uppercase italic tracking-tighter">
-          Stop <br/> Building <br/> Junk.
-        </h2>
-        <NuxtLink to="/docs/installation">
-          <RayaButton
-              class="h-20 px-20 bg-primary text-white font-black text-xl uppercase tracking-tighter italic hover:scale-105 transition-transform">
-            Initialize Raya_UI
-          </RayaButton>
-        </NuxtLink>
-      </Motion>
+      <ClientOnly>
+        <Motion
+            :in-view="{ opacity: 1, scale: 1 }"
+            :initial="{ opacity: 0, scale: 0.9 }"
+            class="relative z-10 space-y-12"
+        >
+          <h2 class="text-[10vw] font-black leading-none uppercase italic tracking-tighter">
+            Stop <br/> Building <br/> Junk.
+          </h2>
+          <NuxtLink to="/docs/installation">
+            <RayaButton
+                class="h-20 px-20 bg-primary text-white font-black text-xl uppercase tracking-tighter italic hover:scale-105 transition-transform">
+              Initialize Raya_UI
+            </RayaButton>
+          </NuxtLink>
+        </Motion>
+      </ClientOnly>
     </section>
 
     <!-- --- FOOTER INTEL --- -->

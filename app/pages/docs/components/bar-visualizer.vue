@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
-definePageMeta({ layout: false })
+definePageMeta({ layout: 'docs' })
 
 useSeoMeta({
   title: 'Bar Visualizer Component for Vue & Nuxt',
@@ -64,7 +64,7 @@ import { BarVisualizer } from '@/components/ui/bar-visualizer'
 </script>
 
 <template>
-  <NuxtLayout name="docs">
+  <DocContent>
     <!-- Breadcrumb Title -->
     <template #breadcrumb-title>
       <span class="text-foreground text-sm font-medium">Bar Visualizer</span>
@@ -364,5 +364,5 @@ import { BarVisualizer } from '@/components/ui/bar-visualizer'
       </div>
 
     </template>
-  </NuxtLayout>
+  </DocContent>
 </template>

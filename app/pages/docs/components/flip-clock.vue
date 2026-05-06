@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 
-definePageMeta({ layout: false })
+definePageMeta({ layout: 'docs' })
 
 useSeoMeta({
   title: 'Flip Clock Component for Vue & Nuxt',
@@ -85,7 +85,7 @@ import { FlipClock } from '@/components/ui/flip-clock'${setupCode}
 </script>
 
 <template>
-  <NuxtLayout name="docs">
+  <DocContent>
     <!-- Breadcrumb Title -->
     <template #breadcrumb-title>
       <span class="text-foreground text-sm font-medium">Flip Clock</span>
@@ -358,5 +358,5 @@ import { FlipClock } from '@/components/ui/flip-clock'${setupCode}
       </div>
 
     </template>
-  </NuxtLayout>
+  </DocContent>
 </template>

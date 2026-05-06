@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { MorphingText } from '@/components/ui/morphing-text'
 import { CodeBlock } from '@/components/ui/code-block'
 
-definePageMeta({ layout: false })
+definePageMeta({ layout: 'docs' })
 
 useSeoMeta({
   title: 'Morphing Text Component for Vue & Nuxt',
@@ -74,7 +74,7 @@ ${formattedTexts}
 </script>
 
 <template>
-  <NuxtLayout name="docs">
+  <DocContent>
     <!-- Breadcrumb Title -->
     <template #breadcrumb-title>
       <span class="text-foreground text-sm font-medium">Morphing Text</span>
@@ -305,5 +305,5 @@ ${formattedTexts}
       </div>
 
     </template>
-  </NuxtLayout>
+  </DocContent>
 </template>

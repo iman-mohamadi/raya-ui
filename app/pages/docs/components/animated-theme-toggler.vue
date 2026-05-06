@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
-definePageMeta({ layout: false })
+definePageMeta({ layout: 'docs' })
 
 useSeoMeta({
   title: 'Animated Theme Toggler Component for Vue & Nuxt',
@@ -68,7 +68,7 @@ const toggleDark = (isDark: boolean) => {
 </script>
 
 <template>
-  <NuxtLayout name="docs">
+  <DocContent>
     <!-- Breadcrumb Title -->
     <template #breadcrumb-title>
       <span class="text-foreground text-sm font-medium">Animated Theme Toggler</span>
@@ -274,5 +274,5 @@ const toggleDark = (isDark: boolean) => {
       </div>
 
     </template>
-  </NuxtLayout>
+  </DocContent>
 </template>

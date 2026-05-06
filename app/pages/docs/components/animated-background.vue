@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
-definePageMeta({ layout: false })
+definePageMeta({layout: 'docs'})
 
 useSeoMeta({
   title: 'Animated Background Component for Vue & Nuxt',
@@ -67,15 +67,11 @@ import { AnimatedBackground } from '@/components/ui/animated-background'
 </script>
 
 <template>
-  <NuxtLayout name="docs">
-    <!-- Breadcrumb Title -->
+  <DocContent>
     <template #breadcrumb-title>
       <span class="text-foreground text-sm font-medium">Animated Background</span>
     </template>
 
-    <!-- ========================================== -->
-    <!-- LEFT PANE: Full Documentation              -->
-    <!-- ========================================== -->
     <div class="flex flex-col gap-1.5">
       <h1 class="text-3xl sm:text-4xl md:text-5xl font-base tracking-tighter text-foreground">Animated Background</h1>
       <p class="text-base md:text-lg text-muted-foreground mt-1 leading-relaxed">
@@ -83,11 +79,9 @@ import { AnimatedBackground } from '@/components/ui/animated-background'
       </p>
     </div>
 
-    <!-- Installation -->
     <div class="flex flex-col mt-4">
       <h2 class="text-4xl mt-8 mb-5 tracking-tight text-foreground">Installation</h2>
 
-      <!-- Main Install Tabs -->
       <div class="flex items-center gap-2 mb-4 border-b border-border pb-2">
         <button
             v-for="tab in ['cli', 'manual', 'css']"
@@ -100,7 +94,6 @@ import { AnimatedBackground } from '@/components/ui/animated-background'
         </button>
       </div>
 
-      <!-- CLI Install -->
       <div v-if="activeInstallTab === 'cli'" class="w-full gap-0 rounded-xl overflow-hidden border border-border bg-background">
         <div class="flex items-center px-3 h-10 border-b border-border">
           <div class="flex items-center gap-0.5 relative">
@@ -120,7 +113,6 @@ import { AnimatedBackground } from '@/components/ui/animated-background'
         </div>
       </div>
 
-      <!-- Manual Install -->
       <div v-if="activeInstallTab === 'manual'" class="flex flex-col gap-4">
         <p class="text-sm text-muted-foreground">1. Install dependencies:</p>
         <div class="rounded-xl overflow-hidden border border-border bg-background p-1.5">
@@ -129,7 +121,6 @@ import { AnimatedBackground } from '@/components/ui/animated-background'
         <p class="text-sm text-muted-foreground mt-2">2. Copy the component code into <code>components/ui/animated-background</code>.</p>
       </div>
 
-      <!-- CSS Install -->
       <div v-if="activeInstallTab === 'css'" class="flex flex-col gap-4">
         <div class="rounded-lg border border-info/20 bg-info/10 p-4 text-sm text-info mb-2">
           <strong class="font-semibold">Ready to go:</strong> This component seamlessly inherits your layout colors from <code>main.css</code>. No extra setup required!
@@ -137,7 +128,6 @@ import { AnimatedBackground } from '@/components/ui/animated-background'
       </div>
     </div>
 
-    <!-- File Structure -->
     <div class="flex flex-col mt-4">
       <h2 class="text-4xl mt-8 mb-5 tracking-tight text-foreground">File Structure</h2>
       <div class="my-4 rounded-xl border border-border overflow-hidden bg-background">
@@ -162,7 +152,6 @@ import { AnimatedBackground } from '@/components/ui/animated-background'
       </div>
     </div>
 
-    <!-- API Reference -->
     <div class="flex flex-col mt-4">
       <h2 class="text-4xl mt-8 mb-5 tracking-tight text-foreground">API Reference</h2>
       <h3 class="text-2xl mt-7 mb-3 text-foreground">AnimatedBackground</h3>
@@ -213,9 +202,6 @@ import { AnimatedBackground } from '@/components/ui/animated-background'
       </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- RIGHT PANE: Visual Preview Slot            -->
-    <!-- ========================================== -->
     <template #preview>
       <div class="w-full h-full p-8 flex items-center justify-center">
         <!-- Assuming AnimatedBackground acts as a wrapper. If it is a standalone element, remove the slot content -->
@@ -232,24 +218,16 @@ import { AnimatedBackground } from '@/components/ui/animated-background'
       </div>
     </template>
 
-    <!-- ========================================== -->
-    <!-- RIGHT PANE: Source Code Slot               -->
-    <!-- ========================================== -->
     <template #code>
       <CodeBlock language="vue" :code="codeString" class="border-0 bg-transparent m-0 p-0" />
     </template>
 
-    <!-- ========================================== -->
-    <!-- RIGHT PANE: Settings Panel Slot            -->
-    <!-- ========================================== -->
     <template #settings>
-      <!-- Panel Header & Reset -->
       <div class="flex items-center justify-between mb-8">
         <span class="font-semibold text-base text-foreground tracking-tight">Settings</span>
         <button @click="resetSettings" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Reset</button>
       </div>
 
-      <!-- Animation Type Select -->
       <div class="flex flex-col gap-2 mb-6">
         <label class="text-sm font-medium text-foreground">Animation</label>
         <div class="relative">
@@ -264,7 +242,6 @@ import { AnimatedBackground } from '@/components/ui/animated-background'
         </div>
       </div>
 
-      <!-- Speed Select -->
       <div class="flex flex-col gap-2 mb-6">
         <label class="text-sm font-medium text-foreground">Speed</label>
         <div class="relative">
@@ -279,7 +256,6 @@ import { AnimatedBackground } from '@/components/ui/animated-background'
         </div>
       </div>
 
-      <!-- Blur Select -->
       <div class="flex flex-col gap-2 mb-2">
         <label class="text-sm font-medium text-foreground">Blur Intensity</label>
         <div class="relative">
@@ -294,5 +270,5 @@ import { AnimatedBackground } from '@/components/ui/animated-background'
         </div>
       </div>
     </template>
-  </NuxtLayout>
+  </DocContent>
 </template>

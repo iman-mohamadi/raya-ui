@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
-definePageMeta({ layout: false })
+definePageMeta({ layout: 'docs' })
 
 useSeoMeta({
   title: 'Encrypted Text Component for Vue & Nuxt',
@@ -60,7 +60,7 @@ import { EncryptedText } from '@/components/ui/encrypted-text'
 </script>
 
 <template>
-  <NuxtLayout name="docs">
+  <DocContent>
     <!-- Breadcrumb Title -->
     <template #breadcrumb-title>
       <span class="text-foreground text-sm font-medium">Encrypted Text</span>
@@ -307,5 +307,5 @@ import { EncryptedText } from '@/components/ui/encrypted-text'
       </div>
 
     </template>
-  </NuxtLayout>
+  </DocContent>
 </template>

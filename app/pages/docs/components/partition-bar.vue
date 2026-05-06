@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/partition-bar'
 import { CodeBlock } from '@/components/ui/code-block'
 
-definePageMeta({ layout: false })
+definePageMeta({ layout: 'docs' })
 
 useSeoMeta({
   title: 'Partition Bar Component for Vue & Nuxt',
@@ -122,7 +122,7 @@ import { PartitionBar, PartitionBarSegment, PartitionBarSegmentTitle, PartitionB
 </script>
 
 <template>
-  <NuxtLayout name="docs">
+  <DocContent>
     <!-- Breadcrumb Title -->
     <template #breadcrumb-title>
       <span class="text-foreground text-sm font-medium">Partition Bar</span>
@@ -428,5 +428,5 @@ import { PartitionBar, PartitionBarSegment, PartitionBarSegmentTitle, PartitionB
       </div>
 
     </template>
-  </NuxtLayout>
+  </DocContent>
 </template>

@@ -5,7 +5,7 @@ import { CodeBlock } from '@/components/ui/code-block'
 import { Button } from '@/components/ui/button'
 import { Plus, Github, Twitter, Instagram } from 'lucide-vue-next'
 
-definePageMeta({ layout: false })
+definePageMeta({ layout: 'docs' })
 
 useSeoMeta({
   title: 'Magnetic Component for Vue & Nuxt',
@@ -125,7 +125,7 @@ import { Plus } from 'lucide-vue-next'
 </script>
 
 <template>
-  <NuxtLayout name="docs">
+  <DocContent>
     <!-- Breadcrumb Title -->
     <template #breadcrumb-title>
       <span class="text-foreground text-sm font-medium">Magnetic</span>
@@ -399,5 +399,5 @@ import { Plus } from 'lucide-vue-next'
       </div>
 
     </template>
-  </NuxtLayout>
+  </DocContent>
 </template>

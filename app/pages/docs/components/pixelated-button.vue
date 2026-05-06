@@ -4,7 +4,7 @@ import { PixelatedButton } from '@/components/ui/pixelated-button'
 import { CodeBlock } from '@/components/ui/code-block'
 import { Crown, Ghost, Sword } from 'lucide-vue-next'
 
-definePageMeta({ layout: false })
+definePageMeta({ layout: 'docs' })
 
 useSeoMeta({
   title: 'Pixelated Button Component for Vue & Nuxt',
@@ -73,7 +73,7 @@ import { Crown } from 'lucide-vue-next'
 </script>
 
 <template>
-  <NuxtLayout name="docs">
+  <DocContent>
     <!-- Breadcrumb Title -->
     <template #breadcrumb-title>
       <span class="text-foreground text-sm font-medium">Pixelated Button</span>
@@ -394,5 +394,5 @@ import { Crown } from 'lucide-vue-next'
       </div>
 
     </template>
-  </NuxtLayout>
+  </DocContent>
 </template>

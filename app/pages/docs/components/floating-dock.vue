@@ -5,7 +5,7 @@ import {
   LayoutGrid, FolderGit2, Ghost
 } from 'lucide-vue-next'
 
-definePageMeta({ layout: false })
+definePageMeta({ layout: 'docs' })
 
 useSeoMeta({
   title: 'Floating Dock Component for Vue & Nuxt',
@@ -87,7 +87,7 @@ ${itemsArray}
 </script>
 
 <template>
-  <NuxtLayout name="docs">
+  <DocContent>
     <!-- Breadcrumb Title -->
     <template #breadcrumb-title>
       <span class="text-foreground text-sm font-medium">Floating Dock</span>
@@ -306,5 +306,5 @@ ${itemsArray}
       </div>
 
     </template>
-  </NuxtLayout>
+  </DocContent>
 </template>

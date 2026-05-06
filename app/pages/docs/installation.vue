@@ -4,8 +4,6 @@ import { AnimatedTabs } from '@/components/ui/animated-tabs'
 import { CodeBlock } from '@/components/ui/code-block'
 import { Terminal, Box, Info } from 'lucide-vue-next'
 
-// Using the new default layout
-definePageMeta({ layout: false })
 const config = useAppConfig().raya
 
 useSeoMeta({
@@ -50,7 +48,6 @@ const frameworkTabs = [
 </script>
 
 <template>
-  <NuxtLayout name="default">
     <div class="max-w-4xl mx-auto">
 
       <!-- Header Section -->
@@ -191,5 +188,4 @@ const frameworkTabs = [
       </footer>
 
     </div>
-  </NuxtLayout>
 </template>

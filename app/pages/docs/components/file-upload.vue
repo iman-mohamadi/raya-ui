@@ -17,7 +17,7 @@ import { CodeBlock } from '@/components/ui/code-block'
 import { CloudUpload, X, Upload, Paperclip, ArrowUp } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
 
-definePageMeta({ layout: false })
+definePageMeta({ layout: 'docs' })
 
 useSeoMeta({
   title: 'File Upload Component for Vue & Nuxt',
@@ -365,7 +365,7 @@ const activeCodeString = computed(() => {
 </script>
 
 <template>
-  <NuxtLayout name="docs">
+  <DocContent>
     <!-- Breadcrumb Title -->
     <template #breadcrumb-title>
       <span class="text-foreground text-sm font-medium">File Upload</span>
@@ -804,5 +804,5 @@ const activeCodeString = computed(() => {
       </div>
 
     </template>
-  </NuxtLayout>
+  </DocContent>
 </template>

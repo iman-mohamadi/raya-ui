@@ -47,28 +47,3 @@ import {Motion} from 'motion-v'
     </footer>
   </div>
 </template>
-
-<style>
-/* Smooth Scroll for the whole app */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Custom Scrollbar for Raya UI */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-muted-foreground);
-}
-</style>

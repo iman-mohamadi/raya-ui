@@ -4,7 +4,7 @@ import { Marquee } from '@/components/ui/marquee'
 import { CodeBlock } from '@/components/ui/code-block'
 import { cn } from '@/lib/utils'
 
-definePageMeta({ layout: false })
+definePageMeta({ layout: 'docs' })
 
 useSeoMeta({
   title: 'Marquee Component for Vue & Nuxt',
@@ -187,7 +187,7 @@ import { Marquee } from '@/components/ui/marquee'
 </script>
 
 <template>
-  <NuxtLayout name="docs">
+  <DocContent>
     <!-- Breadcrumb Title -->
     <template #breadcrumb-title>
       <span class="text-foreground text-sm font-medium">Marquee</span>
@@ -581,5 +581,5 @@ import { Marquee } from '@/components/ui/marquee'
       </div>
 
     </template>
-  </NuxtLayout>
+  </DocContent>
 </template>

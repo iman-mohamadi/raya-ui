@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
-definePageMeta({ layout: false })
+definePageMeta({ layout: 'docs' })
 
 useSeoMeta({
   title: 'Animated Input Component for Vue & Nuxt',
@@ -69,7 +69,7 @@ const value = ref('')
 </script>
 
 <template>
-  <NuxtLayout name="docs">
+  <DocContent>
     <!-- Breadcrumb Title -->
     <template #breadcrumb-title>
       <span class="text-foreground text-sm font-medium">Animated Input</span>
@@ -313,5 +313,5 @@ const value = ref('')
       </div>
 
     </template>
-  </NuxtLayout>
+  </DocContent>
 </template>

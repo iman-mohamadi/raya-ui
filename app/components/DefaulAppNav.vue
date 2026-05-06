@@ -7,7 +7,7 @@ const isOpen = ref(false)
 const navLinks = [
   { name: 'Introduction', href: '/docs/introduction' },
   { name: 'Installation', href: '/docs/installation' },
-  { name: 'Components', href: '/docs/components/glowing-effect' }
+  { name: 'Components', href: '/components' }
 ]
 </script>
 

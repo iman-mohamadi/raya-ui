@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
-definePageMeta({ layout: false })
+definePageMeta({ layout: 'docs' })
 
 useSeoMeta({
   title: 'Raya Button Component for Vue & Nuxt',
@@ -79,7 +79,7 @@ import { RayaButton } from '@/components/ui/raya-button'
 </script>
 
 <template>
-  <NuxtLayout name="docs">
+  <DocContent>
     <template #breadcrumb-title>
       <span class="text-foreground text-sm font-medium">Raya Button</span>
     </template>
@@ -300,5 +300,5 @@ import { RayaButton } from '@/components/ui/raya-button'
         </button>
       </div>
     </template>
-  </NuxtLayout>
+  </DocContent>
 </template>

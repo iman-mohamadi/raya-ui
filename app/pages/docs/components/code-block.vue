@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
-definePageMeta({ layout: false })
+definePageMeta({ layout: 'docs' })
 
 useSeoMeta({
   title: 'Code Block Component for Vue & Nuxt',
@@ -121,7 +121,7 @@ const code = \`${previewCodeContent.value}\`
 </script>
 
 <template>
-  <NuxtLayout name="docs">
+  <DocContent>
     <!-- Breadcrumb Title -->
     <template #breadcrumb-title>
       <span class="text-foreground text-sm font-medium">Code Block</span>
@@ -377,5 +377,5 @@ const code = \`${previewCodeContent.value}\`
       </div>
 
     </template>
-  </NuxtLayout>
+  </DocContent>
 </template>
