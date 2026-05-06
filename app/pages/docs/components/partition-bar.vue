@@ -1,53 +1,69 @@
 <script setup lang="ts">
-import { PartitionBar, PartitionBarSegment, PartitionBarSegmentTitle, PartitionBarSegmentValue } from '@/components/ui/partition-bar'
-import { AnimatedTabs } from '@/components/ui/animated-tabs'
-import { CodeBlock } from '@/components/ui/code-block'
-
-definePageMeta({ layout: 'docs' })
-const config = useAppConfig().raya
-
-const PREVIEW_TABS = [
-  { label: 'Preview', slot: 'preview' },
-  { label: 'Code', slot: 'code' }
-]
-
-const installCommands = {
-  npm: `npx shadcn-vue@latest add ${config.baseUrl}/partition-bar.json`,
-  manual: `npm install clsx tailwind-merge class-variance-authority`
-}
-
-const defaultCode = `<script setup lang="ts">
+import { ref, computed } from 'vue'
 import {
   PartitionBar,
   PartitionBarSegment,
   PartitionBarSegmentTitle,
   PartitionBarSegmentValue
 } from '@/components/ui/partition-bar'
+import { CodeBlock } from '@/components/ui/code-block'
+
+definePageMeta({ layout: false })
+
+useSeoMeta({
+  title: 'Partition Bar Component for Vue & Nuxt',
+  description: 'A proportional bar chart component for visualizing distributed data values.',
+  ogTitle: 'Partition Bar Component for Vue & Nuxt',
+  ogDescription: 'A proportional bar chart component for visualizing distributed data values.',
+})
+
+// --- Interactive Settings State ---
+const activeExample = ref('default') // default, variants, alignment
+const gap = ref(1)
+const size = ref('md')
+
+const resetSettings = () => {
+  activeExample.value = 'default'
+  gap.value = 1
+  size.value = 'md'
+}
+
+// --- Installation Tabs ---
+const activeInstallTab = ref('cli')
+const activeCliTab = ref('npm')
+const cliTabs = ['npm', 'pnpm', 'yarn', 'bun']
+
+const installCommands = computed(() => {
+  let cliCmd = 'npx raya-ui@latest add partition-bar'
+  switch(activeCliTab.value) {
+    case 'pnpm': cliCmd = 'pnpm dlx raya-ui@latest add partition-bar'; break;
+    case 'yarn': cliCmd = 'yarn dlx raya-ui@latest add partition-bar'; break;
+    case 'bun':  cliCmd = 'bun x --bun raya-ui@latest add partition-bar'; break;
+  }
+
+  return {
+    cli: cliCmd,
+    manual: `npm install clsx tailwind-merge class-variance-authority`,
+    css: `/* Inherits seamlessly from your main.css theme variables */`
+  }
+})
+
+// --- Dynamic Source Code ---
+const codeString = computed(() => {
+  const barProps = [
+    gap.value !== 1 ? `:gap="${gap.value}"` : '',
+    size.value !== 'md' ? `size="${size.value}"` : ''
+  ].filter(Boolean).join(' ')
+
+  const propStr = barProps ? ` ${barProps}` : ''
+
+  if (activeExample.value === 'variants') {
+    return `<script setup lang="ts">
+import { PartitionBar, PartitionBarSegment, PartitionBarSegmentTitle } from '@/components/ui/partition-bar'
 <\/script>
 
 <template>
-  <div class="w-full max-w-2xl">
-    <PartitionBar>
-      <PartitionBarSegment :num="50">
-        <PartitionBarSegmentTitle>System</PartitionBarSegmentTitle>
-        <PartitionBarSegmentValue>50GB</PartitionBarSegmentValue>
-      </PartitionBarSegment>
-
-      <PartitionBarSegment :num="30" variant="secondary">
-        <PartitionBarSegmentTitle>Apps</PartitionBarSegmentTitle>
-        <PartitionBarSegmentValue>30GB</PartitionBarSegmentValue>
-      </PartitionBarSegment>
-
-      <PartitionBarSegment :num="20" variant="muted">
-        <PartitionBarSegmentTitle>Free</PartitionBarSegmentTitle>
-        <PartitionBarSegmentValue>20GB</PartitionBarSegmentValue>
-      </PartitionBarSegment>
-    </PartitionBar>
-  </div>
-</template>`
-
-const coloredCode = `<template>
-  <PartitionBar :gap="2">
+  <PartitionBar${propStr}>
     <PartitionBarSegment :num="4" variant="destructive">
       <PartitionBarSegmentTitle>Errors</PartitionBarSegmentTitle>
     </PartitionBarSegment>
@@ -59,9 +75,15 @@ const coloredCode = `<template>
     </PartitionBarSegment>
   </PartitionBar>
 </template>`
+  }
 
-const alignmentCode = `<template>
-  <PartitionBar size="lg">
+  if (activeExample.value === 'alignment') {
+    return `<script setup lang="ts">
+import { PartitionBar, PartitionBarSegment, PartitionBarSegmentTitle, PartitionBarSegmentValue } from '@/components/ui/partition-bar'
+<\/script>
+
+<template>
+  <PartitionBar${propStr}>
     <PartitionBarSegment :num="60" alignment="left">
       <PartitionBarSegmentTitle>Left Aligned</PartitionBarSegmentTitle>
       <PartitionBarSegmentValue>60%</PartitionBarSegmentValue>
@@ -72,230 +94,339 @@ const alignmentCode = `<template>
     </PartitionBarSegment>
   </PartitionBar>
 </template>`
+  }
 
-useSeoMeta({
-  title: 'Partition Bar Component for Vue & Nuxt',
-  description: 'A proportional bar chart component for visualizing distributed data values.',
-  ogTitle: 'Partition Bar Component for Vue & Nuxt',
-  ogDescription: 'A proportional bar chart component for visualizing distributed data values.',
+  return `<script setup lang="ts">
+import { PartitionBar, PartitionBarSegment, PartitionBarSegmentTitle, PartitionBarSegmentValue } from '@/components/ui/partition-bar'
+<\/script>
+
+<template>
+  <PartitionBar${propStr}>
+    <PartitionBarSegment :num="50">
+      <PartitionBarSegmentTitle>System</PartitionBarSegmentTitle>
+      <PartitionBarSegmentValue>50GB</PartitionBarSegmentValue>
+    </PartitionBarSegment>
+
+    <PartitionBarSegment :num="30" variant="secondary">
+      <PartitionBarSegmentTitle>Apps</PartitionBarSegmentTitle>
+      <PartitionBarSegmentValue>30GB</PartitionBarSegmentValue>
+    </PartitionBarSegment>
+
+    <PartitionBarSegment :num="20" variant="muted">
+      <PartitionBarSegmentTitle>Free</PartitionBarSegmentTitle>
+      <PartitionBarSegmentValue>20GB</PartitionBarSegmentValue>
+    </PartitionBarSegment>
+  </PartitionBar>
+</template>`
 })
 </script>
 
 <template>
-  <div class="pb-5">
-    <PageTitle
-        title="Partition Bar"
-        description="A horizontal proportional bar chart for visualizing part-to-whole relationships."
-    />
-    <Divider/>
-    <div class="mt-4">
-      <Tabs default-value="preview">
-        <TabsList>
-          <TabsTrigger value="preview">
-            Preview
-          </TabsTrigger>
-          <TabsTrigger value="code">
-            Code
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="preview">
-          <div class="relative rounded-xl border border-edge bg-background flex flex-col items-center justify-center min-h-[350px] p-10">
-            <div class="w-full max-w-2xl">
-              <PartitionBar>
-                <PartitionBarSegment :num="50" variant="destructive">
-                  <PartitionBarSegmentTitle>System</PartitionBarSegmentTitle>
-                  <PartitionBarSegmentValue>50GB</PartitionBarSegmentValue>
-                </PartitionBarSegment>
-                <PartitionBarSegment :num="30" variant="secondary">
-                  <PartitionBarSegmentTitle>Apps</PartitionBarSegmentTitle>
-                  <PartitionBarSegmentValue>30GB</PartitionBarSegmentValue>
-                </PartitionBarSegment>
-                <PartitionBarSegment :num="20" variant="muted">
-                  <PartitionBarSegmentTitle>Free</PartitionBarSegmentTitle>
-                  <PartitionBarSegmentValue>20GB</PartitionBarSegmentValue>
-                </PartitionBarSegment>
-              </PartitionBar>
+  <NuxtLayout name="docs">
+    <!-- Breadcrumb Title -->
+    <template #breadcrumb-title>
+      <span class="text-foreground text-sm font-medium">Partition Bar</span>
+    </template>
+
+    <!-- ========================================== -->
+    <!-- LEFT PANE: Full Documentation              -->
+    <!-- ========================================== -->
+    <div class="flex flex-col gap-1.5">
+      <h1 class="text-3xl sm:text-4xl md:text-5xl font-base tracking-tighter text-foreground">Partition Bar</h1>
+      <p class="text-base md:text-lg text-muted-foreground mt-1 leading-relaxed">
+        A horizontal proportional bar chart for effectively visualizing part-to-whole distributed data relationships.
+      </p>
+    </div>
+
+    <!-- Installation -->
+    <div class="flex flex-col mt-4">
+      <h2 class="text-4xl mt-8 mb-5 tracking-tight text-foreground">Installation</h2>
+
+      <!-- Main Install Tabs -->
+      <div class="flex items-center gap-2 mb-4 border-b border-border pb-2">
+        <button
+            v-for="tab in ['cli', 'manual', 'css']"
+            :key="tab"
+            @click="activeInstallTab = tab"
+            class="px-4 py-1.5 rounded-full text-sm font-medium transition-colors capitalize"
+            :class="activeInstallTab === tab ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground'"
+        >
+          {{ tab }}
+        </button>
+      </div>
+
+      <!-- CLI Install -->
+      <div v-if="activeInstallTab === 'cli'" class="w-full gap-0 rounded-xl overflow-hidden border border-border bg-background">
+        <div class="flex items-center px-3 h-10 border-b border-border">
+          <div class="flex items-center gap-0.5 relative">
+            <button
+                v-for="tab in cliTabs"
+                :key="tab"
+                @click="activeCliTab = tab"
+                class="relative z-10 px-3 h-7 rounded-md text-sm transition-colors"
+                :class="activeCliTab === tab ? 'text-foreground bg-muted' : 'text-muted-foreground hover:text-foreground'"
+            >
+              {{ tab }}
+            </button>
+          </div>
+        </div>
+        <div class="p-1.5">
+          <CodeBlock language="bash" :code="installCommands.cli" class="border-0 m-0 bg-transparent" />
+        </div>
+      </div>
+
+      <!-- Manual Install -->
+      <div v-if="activeInstallTab === 'manual'" class="flex flex-col gap-4">
+        <p class="text-sm text-muted-foreground">1. Install dependencies:</p>
+        <div class="rounded-xl overflow-hidden border border-border bg-background p-1.5">
+          <CodeBlock language="bash" :code="installCommands.manual" class="border-0 m-0 bg-transparent" />
+        </div>
+        <p class="text-sm text-muted-foreground mt-2">2. Copy the component code into <code>components/ui/partition-bar</code>.</p>
+      </div>
+
+      <!-- CSS Install -->
+      <div v-if="activeInstallTab === 'css'" class="flex flex-col gap-4">
+        <div class="rounded-lg border border-info/20 bg-info/10 p-4 text-sm text-info mb-2">
+          <strong class="font-semibold">Ready to go:</strong> This component inherits your typography and semantic UI colors seamlessly from your <code>main.css</code> theme variables.
+        </div>
+      </div>
+    </div>
+
+    <!-- File Structure -->
+    <div class="flex flex-col mt-4">
+      <h2 class="text-4xl mt-8 mb-5 tracking-tight text-foreground">File Structure</h2>
+      <div class="my-4 rounded-xl border border-border overflow-hidden bg-background">
+        <div class="p-4 w-full relative font-mono text-sm text-muted-foreground">
+          <div class="flex items-center gap-2 text-foreground">
+            <svg class="size-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+            your-project
+          </div>
+          <div class="relative ml-6 before:absolute before:-left-2 before:inset-y-0 before:w-px before:bg-border">
+            <div class="flex items-center gap-2 py-2">
+              <svg class="size-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+              components
+            </div>
+            <div class="relative ml-6 before:absolute before:-left-2 before:inset-y-0 before:w-px before:bg-border">
+              <div class="flex items-center gap-2 py-2">
+                <svg class="size-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+                ui
+              </div>
+              <div class="relative ml-6 before:absolute before:-left-2 before:inset-y-0 before:w-px before:bg-border">
+                <div class="flex items-center gap-2 py-2 text-pink-500">
+                  <svg class="size-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                  partition-bar
+                </div>
+                <div class="relative ml-6 before:absolute before:-left-2 before:inset-y-0 before:w-px before:bg-border">
+                  <div class="flex items-center gap-2 py-1 text-muted-foreground"><div class="w-4 border-t border-border mr-2"></div>PartitionBar.vue</div>
+                  <div class="flex items-center gap-2 py-1 text-muted-foreground"><div class="w-4 border-t border-border mr-2"></div>PartitionBarSegment.vue</div>
+                  <div class="flex items-center gap-2 py-1 text-muted-foreground"><div class="w-4 border-t border-border mr-2"></div>PartitionBarSegmentTitle.vue</div>
+                  <div class="flex items-center gap-2 py-1 text-muted-foreground"><div class="w-4 border-t border-border mr-2"></div>PartitionBarSegmentValue.vue</div>
+                </div>
+              </div>
             </div>
           </div>
-        </TabsContent>
-        <TabsContent value="code">
-          <CodeBlock :code="defaultCode" lang="html"/>
-        </TabsContent>
-      </Tabs>
-    </div>
-
-    <div class="h-g"/>
-
-    <Divider/>
-
-    <div class="space-y-6 mt-4">
-      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
-      <div class="space-y-4">
-        <CodeBlock :code="installCommands.npm"/>
-        <p class="text-sm text-zinc-400 dark:text-zinc-600">Or manually:</p>
-        <CodeBlock :code="installCommands.manual"/>
+        </div>
       </div>
     </div>
 
-    <div class="h-g"/>
+    <!-- API Reference -->
+    <div class="flex flex-col mt-4">
+      <h2 class="text-4xl mt-8 mb-5 tracking-tight text-foreground">API Reference</h2>
 
-    <Divider/>
-
-    <div class="space-y-12 mt-4">
-      <h2 class="scroll-m-20 text-3xl font-bold tracking-tight">Examples</h2>
-
-      <div class="space-y-4">
-        <h3 class="text-xl font-semibold">Variants</h3>
-        <p class="text-zinc-400 dark:text-zinc-600 text-sm">
-          Use <code>variant</code> props to apply standard theme colors.
-        </p>
-        <AnimatedTabs :items="PREVIEW_TABS" class="space-y-4">
-          <template #preview>
-            <div class="rounded-xl border border-edge bg-background flex flex-col items-center justify-center min-h-[250px] p-10">
-              <div class="w-full max-w-xl">
-                <PartitionBar :gap="2">
-                  <PartitionBarSegment :num="4" variant="destructive">
-                    <PartitionBarSegmentTitle>Errors</PartitionBarSegmentTitle>
-                  </PartitionBarSegment>
-                  <PartitionBarSegment :num="12" variant="default">
-                    <PartitionBarSegmentTitle>Success</PartitionBarSegmentTitle>
-                  </PartitionBarSegment>
-                  <PartitionBarSegment :num="6" variant="secondary">
-                    <PartitionBarSegmentTitle>Pending</PartitionBarSegmentTitle>
-                  </PartitionBarSegment>
-                </PartitionBar>
-              </div>
+      <h3 class="text-2xl mt-7 mb-3 text-foreground">PartitionBar Props</h3>
+      <div class="rounded-none border-t border-border mt-4 overflow-hidden">
+        <div class="flex items-start gap-4 px-5 py-4 border-b border-border">
+          <div class="w-44 shrink-0">
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg">gap</code>
+          </div>
+          <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <code class="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">number</code>
+              <div class="flex-1"></div>
+              <code class="text-sm font-mono text-foreground bg-muted px-2 py-0.5 rounded-md">1</code>
             </div>
-          </template>
-          <template #code>
-            <div class="mt-4">
-              <CodeBlock :code="coloredCode" lang="html"/>
+            <p class="text-sm text-muted-foreground leading-relaxed mt-2">Space between segments (multiplied by 4px internally).</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-4 px-5 py-4 border-b border-border">
+          <div class="w-44 shrink-0">
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg">size</code>
+          </div>
+          <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <code class="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">enum</code>
+              <div class="flex-1"></div>
+              <code class="text-sm font-mono text-foreground bg-muted px-2 py-0.5 rounded-md">"md"</code>
             </div>
-          </template>
-        </AnimatedTabs>
+            <p class="text-sm text-muted-foreground leading-relaxed mt-2">Height of the bar segments. Accepts 'sm', 'md', or 'lg'.</p>
+          </div>
+        </div>
       </div>
 
-      <div class="space-y-4">
-        <h3 class="text-xl font-semibold">Alignment & Sizes</h3>
-        <p class="text-zinc-400 dark:text-zinc-600 text-sm">
-          Control label placement with <code>alignment</code> and spacing with <code>size</code>.
-        </p>
-        <AnimatedTabs :items="PREVIEW_TABS" class="space-y-4">
-          <template #preview>
-            <div class="rounded-xl border border-edge bg-background flex flex-col items-center justify-center min-h-[250px] p-10">
-              <div class="w-full max-w-xl">
-                <PartitionBar size="lg">
-                  <PartitionBarSegment :num="60" alignment="left">
-                    <PartitionBarSegmentTitle>Left Aligned</PartitionBarSegmentTitle>
-                    <PartitionBarSegmentValue>60%</PartitionBarSegmentValue>
-                  </PartitionBarSegment>
-                  <PartitionBarSegment :num="40" variant="outline" alignment="right">
-                    <PartitionBarSegmentTitle>Right Aligned</PartitionBarSegmentTitle>
-                    <PartitionBarSegmentValue>40%</PartitionBarSegmentValue>
-                  </PartitionBarSegment>
-                </PartitionBar>
-              </div>
+      <h3 class="text-2xl mt-8 mb-3 text-foreground">PartitionBarSegment Props</h3>
+      <div class="rounded-none border-t border-border mt-4 overflow-hidden">
+        <div class="flex items-start gap-4 px-5 py-4 border-b border-border">
+          <div class="w-44 shrink-0">
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg">num</code>
+          </div>
+          <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <code class="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">number</code>
+              <div class="flex-1"></div>
+              <code class="text-sm font-mono text-foreground bg-muted px-2 py-0.5 rounded-md">0</code>
             </div>
-          </template>
-          <template #code>
-            <div class="mt-4">
-              <CodeBlock :code="alignmentCode" lang="html"/>
+            <p class="text-sm text-muted-foreground leading-relaxed mt-2">The value of this segment relative to the sum of all segments in the bar.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-4 px-5 py-4 border-b border-border">
+          <div class="w-44 shrink-0">
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg">variant</code>
+          </div>
+          <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <code class="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">string</code>
+              <div class="flex-1"></div>
+              <code class="text-sm font-mono text-foreground bg-muted px-2 py-0.5 rounded-md">"default"</code>
             </div>
-          </template>
-        </AnimatedTabs>
+            <p class="text-sm text-muted-foreground leading-relaxed mt-2">Theme color matching standard Shadcn variants (default, secondary, destructive, outline, muted).</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-4 px-5 py-4 border-b border-border">
+          <div class="w-44 shrink-0">
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg">alignment</code>
+          </div>
+          <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <code class="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">enum</code>
+              <div class="flex-1"></div>
+              <code class="text-sm font-mono text-foreground bg-muted px-2 py-0.5 rounded-md">"center"</code>
+            </div>
+            <p class="text-sm text-muted-foreground leading-relaxed mt-2">Horizontal alignment of the content under the bar segment. Accepts 'left', 'center', or 'right'.</p>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="h-g"/>
+    <!-- Credits -->
+    <div class="mt-8 text-sm text-muted-foreground flex flex-col md:flex-row justify-between items-center gap-2 bg-muted/20 p-4 rounded-xl border border-border">
+      <p>Source content adapted from <a href="https://ui.8starlabs.com/docs/components/partition-bar" target="_blank" rel="noopener noreferrer" class="text-foreground hover:text-primary underline underline-offset-4 transition-colors">8 Star labs</a>.</p>
+    </div>
 
-    <Divider/>
+    <!-- ========================================== -->
+    <!-- RIGHT PANE: Visual Preview Slot            -->
+    <!-- ========================================== -->
+    <template #preview>
+      <div class="w-full flex items-center justify-center p-6 h-full min-h-[300px]">
+        <div class="w-full max-w-2xl">
 
-    <div class="space-y-6 mt-4">
-      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
+          <!-- Default Example -->
+          <PartitionBar v-if="activeExample === 'default'" :gap="gap" :size="size">
+            <PartitionBarSegment :num="50" variant="destructive">
+              <PartitionBarSegmentTitle>System</PartitionBarSegmentTitle>
+              <PartitionBarSegmentValue>50GB</PartitionBarSegmentValue>
+            </PartitionBarSegment>
+            <PartitionBarSegment :num="30" variant="secondary">
+              <PartitionBarSegmentTitle>Apps</PartitionBarSegmentTitle>
+              <PartitionBarSegmentValue>30GB</PartitionBarSegmentValue>
+            </PartitionBarSegment>
+            <PartitionBarSegment :num="20" variant="muted">
+              <PartitionBarSegmentTitle>Free</PartitionBarSegmentTitle>
+              <PartitionBarSegmentValue>20GB</PartitionBarSegmentValue>
+            </PartitionBarSegment>
+          </PartitionBar>
 
-      <h3 class="text-xl font-semibold mt-6 mb-4">PartitionBar</h3>
-      <div class="overflow-x-auto rounded-lg border border-edge bg-background">
-        <table class="w-full text-sm text-left">
-          <thead class="border-b border-edge bg-background text-zinc-400 dark:text-zinc-600">
-          <tr>
-            <th class="px-4 py-3 font-medium">Prop</th>
-            <th class="px-4 py-3 font-medium">Type</th>
-            <th class="px-4 py-3 font-medium">Default</th>
-            <th class="px-4 py-3 font-medium">Description</th>
-          </tr>
-          </thead>
-          <tbody class="divide-y divide-edge text-zinc-700 dark:text-zinc-300">
-          <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">gap</td>
-            <td class="px-4 py-3 font-mono text-xs">number</td>
-            <td class="px-4 py-3 font-mono text-xs text-zinc-500">1</td>
-            <td class="px-4 py-3">Space between segments (multiplied by 4px).</td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">size</td>
-            <td class="px-4 py-3 font-mono text-xs">'sm' | 'md' | 'lg'</td>
-            <td class="px-4 py-3 font-mono text-xs text-zinc-500">'md'</td>
-            <td class="px-4 py-3">Height of the bar segments.</td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">class</td>
-            <td class="px-4 py-3 font-mono text-xs">string</td>
-            <td class="px-4 py-3 font-mono text-xs">-</td>
-            <td class="px-4 py-3">Custom class for the wrapper list.</td>
-          </tr>
-          </tbody>
-        </table>
+          <!-- Variants Example -->
+          <PartitionBar v-else-if="activeExample === 'variants'" :gap="gap" :size="size">
+            <PartitionBarSegment :num="4" variant="destructive">
+              <PartitionBarSegmentTitle>Errors</PartitionBarSegmentTitle>
+            </PartitionBarSegment>
+            <PartitionBarSegment :num="12" variant="default">
+              <PartitionBarSegmentTitle>Success</PartitionBarSegmentTitle>
+            </PartitionBarSegment>
+            <PartitionBarSegment :num="6" variant="secondary">
+              <PartitionBarSegmentTitle>Pending</PartitionBarSegmentTitle>
+            </PartitionBarSegment>
+          </PartitionBar>
+
+          <!-- Alignment Example -->
+          <PartitionBar v-else-if="activeExample === 'alignment'" :gap="gap" :size="size">
+            <PartitionBarSegment :num="60" alignment="left">
+              <PartitionBarSegmentTitle>Left Aligned</PartitionBarSegmentTitle>
+              <PartitionBarSegmentValue>60%</PartitionBarSegmentValue>
+            </PartitionBarSegment>
+            <PartitionBarSegment :num="40" variant="outline" alignment="right">
+              <PartitionBarSegmentTitle>Right Aligned</PartitionBarSegmentTitle>
+              <PartitionBarSegmentValue>40%</PartitionBarSegmentValue>
+            </PartitionBarSegment>
+          </PartitionBar>
+
+        </div>
+      </div>
+    </template>
+
+    <!-- ========================================== -->
+    <!-- RIGHT PANE: Source Code Slot               -->
+    <!-- ========================================== -->
+    <template #code>
+      <CodeBlock language="vue" :code="codeString" class="border-0 bg-transparent m-0 p-0" />
+    </template>
+
+    <!-- ========================================== -->
+    <!-- RIGHT PANE: Settings Panel Slot            -->
+    <!-- ========================================== -->
+    <template #settings>
+      <!-- Panel Header & Reset -->
+      <div class="flex items-center justify-between mb-8">
+        <span class="font-semibold text-base text-foreground tracking-tight">Settings</span>
+        <button @click="resetSettings" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Reset</button>
       </div>
 
-      <h3 class="text-xl font-semibold mt-8 mb-4">PartitionBarSegment</h3>
-      <div class="overflow-x-auto rounded-lg border border-edge bg-background">
-        <table class="w-full text-sm text-left">
-          <thead class="border-b border-edge bg-background text-zinc-400 dark:text-zinc-600">
-          <tr>
-            <th class="px-4 py-3 font-medium">Prop</th>
-            <th class="px-4 py-3 font-medium">Type</th>
-            <th class="px-4 py-3 font-medium">Default</th>
-            <th class="px-4 py-3 font-medium">Description</th>
-          </tr>
-          </thead>
-          <tbody class="divide-y divide-edge text-zinc-700 dark:text-zinc-300">
-          <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">num</td>
-            <td class="px-4 py-3 font-mono text-xs">number</td>
-            <td class="px-4 py-3 font-mono text-xs text-zinc-500">0</td>
-            <td class="px-4 py-3">Value relative to the sum of all segments.</td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">variant</td>
-            <td class="px-4 py-3 font-mono text-xs">string</td>
-            <td class="px-4 py-3 font-mono text-xs text-zinc-500">'default'</td>
-            <td class="px-4 py-3">Theme color (default, secondary, destructive, outline, muted).</td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">alignment</td>
-            <td class="px-4 py-3 font-mono text-xs">'left' | 'center' | 'right'</td>
-            <td class="px-4 py-3 font-mono text-xs text-zinc-500">'center'</td>
-            <td class="px-4 py-3">Horizontal alignment of the content under the bar.</td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">class</td>
-            <td class="px-4 py-3 font-mono text-xs">string</td>
-            <td class="px-4 py-3 font-mono text-xs">-</td>
-            <td class="px-4 py-3">Custom class for the segment wrapper.</td>
-          </tr>
-          </tbody>
-        </table>
+      <!-- Example Switcher -->
+      <div class="flex flex-col gap-2 mb-6 border-b border-border pb-6">
+        <label class="text-sm font-medium text-foreground">Example Variant</label>
+        <div class="relative">
+          <select v-model="activeExample" class="w-full appearance-none bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-muted-foreground transition-all">
+            <option value="default">Default Proportions</option>
+            <option value="variants">Theme Variants</option>
+            <option value="alignment">Content Alignment</option>
+          </select>
+          <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-muted-foreground">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7"></path></svg>
+          </div>
+        </div>
       </div>
-    </div>
-    <!--  Copy Right if exist  -->
-    <div class="h-g"/>
 
-    <Divider/>
+      <!-- Gap Slider -->
+      <div class="flex flex-col gap-3 mb-6">
+        <div class="flex justify-between items-center">
+          <label class="text-sm font-medium text-foreground">Gap Spacing</label>
+          <span class="text-xs font-mono text-muted-foreground">{{ gap }} ({{ gap * 4 }}px)</span>
+        </div>
+        <input
+            type="range"
+            v-model.number="gap"
+            min="0"
+            max="8"
+            step="1"
+            class="w-full accent-foreground"
+        />
+      </div>
 
-    <div class="mt-4 text-sm">
-      <p>Source content adapted from <a
-          href="https://ui.8starlabs.com/docs/components/partition-bar"
-          target="_blank" class="underline hover:text-zinc-700 dark:text-zinc-300">8 Star labs</a>.</p>
-    </div>
-  </div>
+      <!-- Size Select -->
+      <div class="flex flex-col gap-2 mb-2">
+        <label class="text-sm font-medium text-foreground">Bar Size</label>
+        <div class="relative">
+          <select v-model="size" class="w-full appearance-none bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-muted-foreground transition-all">
+            <option value="sm">Small (sm)</option>
+            <option value="md">Medium (md)</option>
+            <option value="lg">Large (lg)</option>
+          </select>
+          <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-muted-foreground">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7"></path></svg>
+          </div>
+        </div>
+      </div>
+
+    </template>
+  </NuxtLayout>
 </template>

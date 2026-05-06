@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { BackgroundRippleEffect } from '@/components/ui/background-ripple-effect'
-import { AnimatedTabs } from '@/components/ui/animated-tabs'
 import { CodeBlock } from '@/components/ui/code-block'
 
-definePageMeta({ layout: 'docs' })
-const appConfig = useAppConfig().raya
+definePageMeta({ layout: false })
 
 useSeoMeta({
   title: 'Background Ripple Effect Component for Vue & Nuxt',
@@ -14,183 +12,322 @@ useSeoMeta({
   ogDescription: 'A grid of interactive cells that ripple outwards when clicked, optimized for Vue and Nuxt projects.',
 })
 
-// --- Demo State ---
-const config = ref({
-  rows: 7,
-  cols: 12,
-  cellSize: 40,
-  interactive: true,
-  fill: false
-})
+// --- Interactive Settings State ---
+const fill = ref(false)
+const rows = ref(7)
+const cols = ref(12)
+const cellSize = ref(40)
+const interactive = ref(true)
 
-// --- Tabs Config ---
-const previewTabs = [
-  { label: 'Preview', slot: 'preview' },
-  { label: 'Code', slot: 'code' }
-]
-
-const installTabs = [
-  { label: 'CLI', slot: 'cli' },
-  { label: 'Manual', slot: 'manual' }
-]
-
-// --- Code Snippets ---
-const installCommands = {
-  npm: `npx shadcn-vue@latest add ${appConfig.baseUrl}/background-ripple-effect.json`,
-  manual: `npm install @vueuse/core clsx tailwind-merge`
+const resetSettings = () => {
+  fill.value = false
+  rows.value = 7
+  cols.value = 12
+  cellSize.value = 40
+  interactive.value = true
 }
 
-const usageCode = `<template>
-  <div class="relative min-h-screen overflow-hidden bg-background">
-    <BackgroundRippleEffect
-      :fill="true"
-      :cell-size="50"
-      :interactive="true"
+// --- Installation Tabs ---
+const activeInstallTab = ref('cli')
+const activeCliTab = ref('npm')
+const cliTabs = ['npm', 'pnpm', 'yarn', 'bun']
+
+const installCommands = computed(() => {
+  let cliCmd = 'npx raya-ui@latest add background-ripple-effect'
+  switch(activeCliTab.value) {
+    case 'pnpm': cliCmd = 'pnpm dlx raya-ui@latest add background-ripple-effect'; break;
+    case 'yarn': cliCmd = 'yarn dlx raya-ui@latest add background-ripple-effect'; break;
+    case 'bun':  cliCmd = 'bun x --bun raya-ui@latest add background-ripple-effect'; break;
+  }
+
+  return {
+    cli: cliCmd,
+    manual: `npm install @vueuse/core clsx tailwind-merge`,
+    css: `/* Natively inherits your theme colors and typography from main.css */`
+  }
+})
+
+// --- Dynamic Source Code ---
+const codeString = computed(() => {
+  let props = ``
+  if (fill.value) props += `\n    fill`
+  else {
+    if (rows.value !== 8) props += `\n    :rows="${rows.value}"`
+    if (cols.value !== 27) props += `\n    :cols="${cols.value}"`
+  }
+  if (cellSize.value !== 56) props += `\n    :cell-size="${cellSize.value}"`
+  if (!interactive.value) props += `\n    :interactive="false"`
+
+  return `<script setup lang="ts">
+import { BackgroundRippleEffect } from '@/components/ui/background-ripple-effect'
+<\/script>
+
+<template>
+  <div class="relative w-full h-[500px] overflow-hidden bg-background">
+    <BackgroundRippleEffect${props}
     />
 
-    <main class="relative z-10 flex flex-col items-center justify-center h-full pointer-events-none">
-      <h1 class="text-4xl font-bold">Ripple Effect</h1>
-    </main>
+    <div class="relative z-10 flex items-center justify-center h-full pointer-events-none">
+      <h1 class="text-4xl font-bold tracking-tighter">Click the Grid</h1>
+    </div>
   </div>
 </template>`
+})
 </script>
 
 <template>
-  <div class="pb-5">
-    <PageTitle
-        title="Background Ripple Effect"
-        description="A grid of interactive cells that ripple outwards when clicked."
-    />
-    <Divider/>
-    <div class="mt-4">
-      <Tabs default-value="preview">
-        <TabsList>
-          <TabsTrigger value="preview">
-            Preview
-          </TabsTrigger>
-          <TabsTrigger value="code">
-            Code
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="preview">
-          <div class="relative overflow-hidden rounded-xl border border-zinc-800 bg-background flex items-center justify-center min-h-[500px]">
+  <NuxtLayout name="docs">
+    <!-- Breadcrumb Title -->
+    <template #breadcrumb-title>
+      <span class="text-foreground text-sm font-medium">Background Ripple</span>
+    </template>
 
-            <BackgroundRippleEffect
-                class="absolute inset-0"
-                :rows="config.rows"
-                :cols="config.cols"
-                :cell-size="config.cellSize"
-                :interactive="config.interactive"
-                :fill="config.fill"
-            />
-
-            <div class="absolute bottom-6 left-6 z-10 p-6 rounded-2xl border border-border/50 bg-card/60 backdrop-blur-md space-y-4 w-72 shadow-2xl">
-              <h3 class="font-semibold text-sm mb-2">Controls</h3>
-
-              <div class="flex items-center justify-between">
-                <label class="text-xs font-medium text-muted-foreground">Fill Parent</label>
-                <input type="checkbox" v-model="config.fill" class="accent-primary" />
-              </div>
-
-              <template v-if="!config.fill">
-                <div class="space-y-1">
-                  <label class="text-xs font-medium text-muted-foreground">Rows ({{ config.rows }})</label>
-                  <input type="range" v-model.number="config.rows" min="4" max="20" class="w-full" />
-                </div>
-
-                <div class="space-y-1">
-                  <label class="text-xs font-medium text-muted-foreground">Cols ({{ config.cols }})</label>
-                  <input type="range" v-model.number="config.cols" min="4" max="30" class="w-full" />
-                </div>
-              </template>
-
-              <div class="space-y-1">
-                <label class="text-xs font-medium text-muted-foreground">Cell Size ({{ config.cellSize }}px)</label>
-                <input type="range" v-model.number="config.cellSize" min="20" max="80" class="w-full" />
-              </div>
-
-              <div class="flex items-center justify-between">
-                <label class="text-xs font-medium text-muted-foreground">Interactive</label>
-                <input type="checkbox" v-model="config.interactive" class="accent-primary" />
-              </div>
-            </div>
-
-            <div class="relative z-0 pointer-events-none">
-              <h1 class="text-4xl font-bold tracking-tighter text-foreground">
-                Click the Grid
-              </h1>
-            </div>
-          </div>
-        </TabsContent>
-        <TabsContent value="code">
-          <CodeBlock :code="usageCode" lang="html"/>
-        </TabsContent>
-      </Tabs>
+    <!-- ========================================== -->
+    <!-- LEFT PANE: Full Documentation              -->
+    <!-- ========================================== -->
+    <div class="flex flex-col gap-1.5">
+      <h1 class="text-3xl sm:text-4xl md:text-5xl font-base tracking-tighter text-foreground">Background Ripple</h1>
+      <p class="text-base md:text-lg text-muted-foreground mt-1 leading-relaxed">
+        An interactive background component consisting of a grid of cells that trigger a radial ripple animation upon interaction. Perfect for landing pages and hero sections.
+      </p>
     </div>
 
-    <div class="h-g"/>
+    <!-- Installation -->
+    <div class="flex flex-col mt-4">
+      <h2 class="text-4xl mt-8 mb-5 tracking-tight text-foreground">Installation</h2>
 
-    <Divider/>
+      <div class="flex items-center gap-2 mb-4 border-b border-border pb-2">
+        <button
+            v-for="tab in ['cli', 'manual', 'css']"
+            :key="tab"
+            @click="activeInstallTab = tab"
+            class="px-4 py-1.5 rounded-full text-sm font-medium transition-colors capitalize"
+            :class="activeInstallTab === tab ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground'"
+        >
+          {{ tab }}
+        </button>
+      </div>
 
-    <div class="space-y-6 mt-4">
-      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
-      <AnimatedTabs :items="installTabs" class="space-y-6">
-        <template #cli>
-          <CodeBlock :code="installCommands.npm"  />
-        </template>
-        <template #manual>
-          <div class="space-y-2">
-            <p class="text-sm text-zinc-400 dark:text-zinc-600">Install dependencies:</p>
-            <CodeBlock :code="installCommands.manual"  />
+      <div v-if="activeInstallTab === 'cli'" class="w-full gap-0 rounded-xl overflow-hidden border border-border bg-background">
+        <div class="flex items-center px-3 h-10 border-b border-border">
+          <div class="flex items-center gap-0.5 relative">
+            <button
+                v-for="tab in cliTabs"
+                :key="tab"
+                @click="activeCliTab = tab"
+                class="relative z-10 px-3 h-7 rounded-md text-sm transition-colors"
+                :class="activeCliTab === tab ? 'text-foreground bg-muted' : 'text-muted-foreground hover:text-foreground'"
+            >
+              {{ tab }}
+            </button>
           </div>
-        </template>
-      </AnimatedTabs>
-    </div>
+        </div>
+        <div class="p-1.5">
+          <CodeBlock language="bash" :code="installCommands.cli" class="border-0 m-0 bg-transparent" />
+        </div>
+      </div>
 
-    <div class="h-g"/>
+      <div v-if="activeInstallTab === 'manual'" class="flex flex-col gap-4">
+        <p class="text-sm text-muted-foreground">1. Install dependencies:</p>
+        <div class="rounded-xl overflow-hidden border border-border bg-background p-1.5">
+          <CodeBlock language="bash" :code="installCommands.manual" class="border-0 m-0 bg-transparent" />
+        </div>
+        <p class="text-sm text-muted-foreground mt-2">2. Copy the component code into <code>components/ui/background-ripple-effect</code>.</p>
+      </div>
 
-    <Divider/>
-
-    <div class="space-y-6 mt-4">
-      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
-      <div class="overflow-x-auto rounded-lg border border-edge bg-background">
-        <table class="w-full text-sm text-left">
-          <thead class="border-b border-edge bg-background text-zinc-400 dark:text-zinc-600">
-          <tr>
-            <th class="px-4 py-3 font-medium">Prop</th>
-            <th class="px-4 py-3 font-medium">Type</th>
-            <th class="px-4 py-3 font-medium">Default</th>
-            <th class="px-4 py-3 font-medium">Description</th>
-          </tr>
-          </thead>
-          <tbody class="divide-y divide-edge text-zinc-700 dark:text-zinc-300">
-          <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">fill</td>
-            <td class="px-4 py-3 font-mono text-xs">boolean</td>
-            <td class="px-4 py-3 font-mono text-xs text-zinc-500">false</td>
-            <td class="px-4 py-3">If true, ignores rows/cols and fills parent.</td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">rows</td>
-            <td class="px-4 py-3 font-mono text-xs">number</td>
-            <td class="px-4 py-3 font-mono text-xs text-zinc-500">8</td>
-            <td class="px-4 py-3">Number of rows (disabled if fill is true).</td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">cols</td>
-            <td class="px-4 py-3 font-mono text-xs">number</td>
-            <td class="px-4 py-3 font-mono text-xs text-zinc-500">27</td>
-            <td class="px-4 py-3">Number of columns (disabled if fill is true).</td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">cellSize</td>
-            <td class="px-4 py-3 font-mono text-xs">number</td>
-            <td class="px-4 py-3 font-mono text-xs text-zinc-500">56</td>
-            <td class="px-4 py-3">Width and height of each cell in pixels.</td>
-          </tr>
-          </tbody>
-        </table>
+      <div v-if="activeInstallTab === 'css'" class="flex flex-col gap-4">
+        <div class="rounded-lg border border-info/20 bg-info/10 p-4 text-sm text-info mb-2">
+          <strong class="font-semibold">Ready to go:</strong> This component uses CSS-based animations and inherits your theme's primary color and surface variables.
+        </div>
       </div>
     </div>
-  </div>
+
+    <!-- File Structure -->
+    <div class="flex flex-col mt-4">
+      <h2 class="text-4xl mt-8 mb-5 tracking-tight text-foreground">File Structure</h2>
+      <div class="my-4 rounded-xl border border-border overflow-hidden bg-background">
+        <div class="p-4 w-full relative font-mono text-sm text-muted-foreground">
+          <div class="flex items-center gap-2 text-foreground">
+            <svg class="size-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+            your-project
+          </div>
+          <div class="relative ml-6 before:absolute before:-left-2 before:inset-y-0 before:w-px before:bg-border">
+            <div class="flex items-center gap-2 py-2">
+              <svg class="size-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+              components
+            </div>
+            <div class="relative ml-6 before:absolute before:-left-2 before:inset-y-0 before:w-px before:bg-border">
+              <div class="flex items-center gap-2 py-2">
+                <svg class="size-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+                ui
+              </div>
+              <div class="relative ml-6 before:absolute before:-left-2 before:inset-y-0 before:w-px before:bg-border">
+                <div class="flex items-center gap-2 py-2 text-pink-500">
+                  <svg class="size-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                  background-ripple-effect
+                </div>
+                <div class="relative ml-6 before:absolute before:-left-2 before:inset-y-0 before:w-px before:bg-border">
+                  <div class="flex items-center gap-2 py-1 text-muted-foreground"><div class="w-4 border-t border-border mr-2"></div>BackgroundRippleEffect.vue</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- API Reference -->
+    <div class="flex flex-col mt-4">
+      <h2 class="text-4xl mt-8 mb-5 tracking-tight text-foreground">API Reference</h2>
+
+      <h3 class="text-2xl mt-7 mb-3 text-foreground">Props</h3>
+      <div class="rounded-none border-t border-border mt-4 overflow-hidden">
+
+        <div class="flex items-start gap-4 px-5 py-4 border-b border-border">
+          <div class="w-44 shrink-0">
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg">fill</code>
+          </div>
+          <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <code class="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">boolean</code>
+              <div class="flex-1"></div>
+              <code class="text-sm font-mono text-foreground bg-muted px-2 py-0.5 rounded-md">false</code>
+            </div>
+            <p class="text-sm text-muted-foreground leading-relaxed mt-2">When true, the component ignores row/col props and automatically calculates the grid to fill its parent container.</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-4 px-5 py-4 border-b border-border">
+          <div class="w-44 shrink-0">
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg">cellSize</code>
+          </div>
+          <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <code class="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">number</code>
+              <div class="flex-1"></div>
+              <code class="text-sm font-mono text-foreground bg-muted px-2 py-0.5 rounded-md">56</code>
+            </div>
+            <p class="text-sm text-muted-foreground leading-relaxed mt-2">The width and height (in pixels) of each interactive grid cell.</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-4 px-5 py-4 border-b border-border">
+          <div class="w-44 shrink-0">
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg">rows</code>
+          </div>
+          <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <code class="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">number</code>
+              <div class="flex-1"></div>
+              <code class="text-sm font-mono text-foreground bg-muted px-2 py-0.5 rounded-md">8</code>
+            </div>
+            <p class="text-sm text-muted-foreground leading-relaxed mt-2">Explicit number of horizontal rows. (Ignored if <code>fill</code> is true).</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-4 px-5 py-4 border-b border-border">
+          <div class="w-44 shrink-0">
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg">cols</code>
+          </div>
+          <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <code class="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">number</code>
+              <div class="flex-1"></div>
+              <code class="text-sm font-mono text-foreground bg-muted px-2 py-0.5 rounded-md">27</code>
+            </div>
+            <p class="text-sm text-muted-foreground leading-relaxed mt-2">Explicit number of vertical columns. (Ignored if <code>fill</code> is true).</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- RIGHT PANE: Visual Preview Slot            -->
+    <!-- ========================================== -->
+    <template #preview>
+      <div class="w-full h-full relative overflow-hidden flex items-center justify-center p-6 bg-background rounded-3xl">
+        <BackgroundRippleEffect
+            :fill="fill"
+            :rows="rows"
+            :cols="cols"
+            :cell-size="cellSize"
+            :interactive="interactive"
+            class="absolute inset-0"
+        />
+
+        <div class="relative z-10 pointer-events-none text-center">
+          <h2 class="text-4xl font-bold tracking-tighter text-foreground drop-shadow-sm">
+            Ripple Grid
+          </h2>
+          <p class="text-muted-foreground text-sm mt-2">Click anywhere on the surface to see the effect</p>
+        </div>
+      </div>
+    </template>
+
+    <!-- ========================================== -->
+    <!-- RIGHT PANE: Source Code Slot               -->
+    <!-- ========================================== -->
+    <template #code>
+      <CodeBlock language="vue" :code="codeString" class="border-0 bg-transparent m-0 p-0" />
+    </template>
+
+    <!-- ========================================== -->
+    <!-- RIGHT PANE: Settings Panel Slot            -->
+    <!-- ========================================== -->
+    <template #settings>
+      <div class="flex items-center justify-between mb-8">
+        <span class="font-semibold text-base text-foreground tracking-tight">Settings</span>
+        <button @click="resetSettings" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Reset</button>
+      </div>
+
+      <!-- Fill Parent Toggle -->
+      <div class="flex items-center justify-between mb-6 border-b border-border pb-6">
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-foreground cursor-pointer select-none" @click="fill = !fill">Fill Parent</label>
+          <span class="text-xs text-muted-foreground">Auto-calculate grid coverage.</span>
+        </div>
+        <button @click="fill = !fill" :class="['w-10 h-6 rounded-full transition-colors duration-300 relative shrink-0', fill ? 'bg-foreground' : 'bg-muted']">
+          <div :class="['w-4 h-4 rounded-full absolute top-[4px] transition-transform duration-300', fill ? 'translate-x-[20px] bg-background' : 'translate-x-[4px] bg-muted-foreground shadow-sm']"></div>
+        </button>
+      </div>
+
+      <!-- Grid Dimensions (Enabled only if fill is false) -->
+      <div :class="{ 'opacity-50 pointer-events-none': fill }">
+        <div class="flex flex-col gap-3 mb-6">
+          <div class="flex justify-between items-center">
+            <label class="text-sm font-medium text-foreground">Rows</label>
+            <span class="text-xs font-mono text-muted-foreground">{{ rows }}</span>
+          </div>
+          <input type="range" v-model.number="rows" min="4" max="20" step="1" class="w-full accent-foreground" />
+        </div>
+
+        <div class="flex flex-col gap-3 mb-6">
+          <div class="flex justify-between items-center">
+            <label class="text-sm font-medium text-foreground">Columns</label>
+            <span class="text-xs font-mono text-muted-foreground">{{ cols }}</span>
+          </div>
+          <input type="range" v-model.number="cols" min="4" max="40" step="1" class="w-full accent-foreground" />
+        </div>
+      </div>
+
+      <!-- Cell Size Slider -->
+      <div class="flex flex-col gap-3 mb-6">
+        <div class="flex justify-between items-center">
+          <label class="text-sm font-medium text-foreground">Cell Size</label>
+          <span class="text-xs font-mono text-muted-foreground">{{ cellSize }}px</span>
+        </div>
+        <input type="range" v-model.number="cellSize" min="20" max="100" step="4" class="w-full accent-foreground" />
+      </div>
+
+      <!-- Interactive Toggle -->
+      <div class="flex items-center justify-between mb-2">
+        <label class="text-sm font-medium text-foreground cursor-pointer select-none" @click="interactive = !interactive">Interactive</label>
+        <button @click="interactive = !interactive" :class="['w-10 h-6 rounded-full transition-colors duration-300 relative shrink-0', interactive ? 'bg-foreground' : 'bg-muted']">
+          <div :class="['w-4 h-4 rounded-full absolute top-[4px] transition-transform duration-300', interactive ? 'translate-x-[20px] bg-background' : 'translate-x-[4px] bg-muted-foreground shadow-sm']"></div>
+        </button>
+      </div>
+
+    </template>
+  </NuxtLayout>
 </template>

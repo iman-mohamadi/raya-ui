@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, computed, watch } from 'vue'
 import {
   ScrollSpy,
   ScrollSpyNav,
@@ -6,102 +7,9 @@ import {
   ScrollSpyViewport,
   ScrollSpySection
 } from '@/components/ui/scroll-spy'
-import { AnimatedTabs } from '@/components/ui/animated-tabs'
 import { CodeBlock } from '@/components/ui/code-block'
-import { ref } from 'vue'
 
-definePageMeta({ layout: 'docs' })
-const config = useAppConfig().raya
-
-const PREVIEW_TABS = [
-  { label: 'Preview', slot: 'preview' },
-  { label: 'Code', slot: 'code' }
-]
-
-const installCommands = {
-  npm: `npx shadcn-vue@latest add ${config.baseUrl}/scroll-spy.json`,
-  manual: `npm install reka-ui @vueuse/core clsx tailwind-merge`
-}
-
-const container1 = ref<HTMLElement | null>(null)
-const container2 = ref<HTMLElement | null>(null)
-const container3 = ref<HTMLElement | null>(null)
-
-// 1. Sidebar Code (Corrected: orientation="vertical")
-const sidebarCode = `<script setup lang="ts">
-import { ref } from 'vue'
-import { ScrollSpy, ScrollSpyNav, ScrollSpyLink, ScrollSpyViewport, ScrollSpySection } from '@/components/ui/scroll-spy'
-
-const container = ref<HTMLElement | null>(null)
-<\/script>
-
-<template>
-  <ScrollSpy :container="container" orientation="vertical" class="flex w-full h-[400px] border rounded-lg bg-zinc-950 overflow-hidden">
-    <div class="w-48 border-r border-zinc-800 p-4 bg-zinc-900/30">
-      <h4 class="mb-4 text-xs font-semibold uppercase text-zinc-500">Docs</h4>
-      <ScrollSpyNav indicator indicator-position="before">
-        <ScrollSpyLink value="s1-intro" class="block py-2 text-sm text-zinc-500 hover:text-white transition-colors">Introduction</ScrollSpyLink>
-        <ScrollSpyLink value="s1-install" class="block py-2 text-sm text-zinc-500 hover:text-white transition-colors">Installation</ScrollSpyLink>
-        <ScrollSpyLink value="s1-config" class="block py-2 text-sm text-zinc-500 hover:text-white transition-colors">Configuration</ScrollSpyLink>
-      </ScrollSpyNav>
-    </div>
-
-    <div ref="container" class="flex-1 overflow-y-auto p-8 scroll-smooth relative">
-      <ScrollSpyViewport>
-        <ScrollSpySection value="s1-intro" class="h-[250px] space-y-2">
-          <h2 class="text-xl font-bold">Introduction</h2>
-          <p class="text-zinc-400">Sidebar layout with active indicator.</p>
-        </ScrollSpySection>
-        <ScrollSpySection value="s1-install" class="h-[250px] space-y-2">
-          <h2 class="text-xl font-bold">Installation</h2>
-          <p class="text-zinc-400">Scroll down to see it move.</p>
-        </ScrollSpySection>
-        <ScrollSpySection value="s1-config" class="h-[250px] space-y-2">
-          <h2 class="text-xl font-bold">Configuration</h2>
-          <p class="text-zinc-400">Fully customizable.</p>
-        </ScrollSpySection>
-      </ScrollSpyViewport>
-    </div>
-  </ScrollSpy>
-</template>`
-
-// 2. Navbar Code (Corrected: orientation="horizontal")
-const navbarCode = `<template>
-  <ScrollSpy :container="container" orientation="horizontal" class="flex flex-col h-[400px] border rounded-lg bg-zinc-950 overflow-hidden">
-    <div class="border-b border-zinc-800 p-4 bg-zinc-900/30 flex justify-between items-center shrink-0">
-      <span class="font-bold">Logo</span>
-      <ScrollSpyNav indicator indicator-position="after" class="gap-6">
-        <ScrollSpyLink value="n-1" class="text-sm font-medium text-zinc-400 hover:text-white transition-colors">Concept</ScrollSpyLink>
-        <ScrollSpyLink value="n-2" class="text-sm font-medium text-zinc-400 hover:text-white transition-colors">Design</ScrollSpyLink>
-        <ScrollSpyLink value="n-3" class="text-sm font-medium text-zinc-400 hover:text-white transition-colors">Code</ScrollSpyLink>
-      </ScrollSpyNav>
-    </div>
-
-    <div ref="container" class="flex-1 overflow-y-auto p-8 scroll-smooth">
-      <ScrollSpyViewport>
-        </ScrollSpyViewport>
-    </div>
-  </ScrollSpy>
-</template>`
-
-// 3. Right Nav Code
-const rightNavCode = `<template>
-  <ScrollSpy :container="container" orientation="vertical" class="flex w-full h-[400px] border rounded-lg bg-zinc-950 overflow-hidden">
-    <div ref="container" class="flex-1 overflow-y-auto p-8 scroll-smooth">
-      <ScrollSpyViewport>
-        </ScrollSpyViewport>
-    </div>
-
-    <div class="w-48 border-l border-zinc-800 p-4 bg-zinc-900/30">
-      <h4 class="mb-4 text-xs font-semibold uppercase text-zinc-500 text-right">On this page</h4>
-      <ScrollSpyNav indicator indicator-position="after" class="items-end">
-        <ScrollSpyLink value="r-1" class="block py-2 text-right">Overview</ScrollSpyLink>
-        <ScrollSpyLink value="r-2" class="block py-2 text-right">Features</ScrollSpyLink>
-        <ScrollSpyLink value="r-3" class="block py-2 text-right">Pricing</ScrollSpyLink>
-      </ScrollSpyNav>
-    </div>
-  </ScrollSpy>
-</template>`
+definePageMeta({ layout: false })
 
 useSeoMeta({
   title: 'Scroll Spy Component for Vue & Nuxt',
@@ -109,267 +17,582 @@ useSeoMeta({
   ogTitle: 'Scroll Spy Component for Vue & Nuxt',
   ogDescription: 'Automatically highlights navigation items based on scroll position.',
 })
+
+// --- Interactive Settings State ---
+const activeExample = ref('sidebar-left') // sidebar-left, navbar-top, sidebar-right
+const showIndicator = ref(true)
+const indicatorPosition = ref('before') // before, after
+const offset = ref(0)
+
+const resetSettings = () => {
+  activeExample.value = 'sidebar-left'
+  showIndicator.value = true
+  indicatorPosition.value = 'before'
+  offset.value = 0
+}
+
+// Auto-adjust indicator position when switching layouts for best visual default
+const onExampleChange = () => {
+  if (activeExample.value === 'sidebar-left') {
+    indicatorPosition.value = 'before'
+  } else {
+    indicatorPosition.value = 'after'
+  }
+}
+
+// Container refs for the different preview layouts
+const containerLeft = ref<HTMLElement | null>(null)
+const containerTop = ref<HTMLElement | null>(null)
+const containerRight = ref<HTMLElement | null>(null)
+
+// --- Installation Tabs ---
+const activeInstallTab = ref('cli')
+const activeCliTab = ref('npm')
+const cliTabs = ['npm', 'pnpm', 'yarn', 'bun']
+
+const installCommands = computed(() => {
+  let cliCmd = 'npx raya-ui@latest add scroll-spy'
+  switch(activeCliTab.value) {
+    case 'pnpm': cliCmd = 'pnpm dlx raya-ui@latest add scroll-spy'; break;
+    case 'yarn': cliCmd = 'yarn dlx raya-ui@latest add scroll-spy'; break;
+    case 'bun':  cliCmd = 'bun x --bun raya-ui@latest add scroll-spy'; break;
+  }
+
+  return {
+    cli: cliCmd,
+    manual: `npm install reka-ui @vueuse/core clsx tailwind-merge`,
+    css: `/* Inherits seamlessly from your main.css theme variables */`
+  }
+})
+
+// --- Dynamic Source Code ---
+const codeString = computed(() => {
+  const rootProps = [
+    `    :container="scrollContainer"`,
+    activeExample.value === 'navbar-top' ? `    orientation="horizontal"` : `    orientation="vertical"`,
+    offset.value !== 0 ? `    :offset="${offset.value}"` : ``
+  ].filter(Boolean).join('\n')
+
+  const navProps = [
+    showIndicator.value ? ` indicator` : ``,
+    showIndicator.value && indicatorPosition.value !== 'before' ? ` indicator-position="${indicatorPosition.value}"` : ``
+  ].join('')
+
+  if (activeExample.value === 'navbar-top') {
+    return `<script setup lang="ts">
+import { ref } from 'vue'
+import { ScrollSpy, ScrollSpyNav, ScrollSpyLink, ScrollSpyViewport, ScrollSpySection } from '@/components/ui/scroll-spy'
+
+const scrollContainer = ref<HTMLElement | null>(null)
+<\/script>
+
+<template>
+  <ScrollSpy
+${rootProps}
+    class="flex flex-col h-[400px] border border-border rounded-lg bg-background overflow-hidden"
+  >
+    <div class="border-b border-border p-4 bg-muted/30 flex justify-between items-center shrink-0">
+      <span class="font-bold text-foreground">Logo</span>
+      <ScrollSpyNav${navProps} class="gap-6">
+        <ScrollSpyLink value="n-1" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Concept</ScrollSpyLink>
+        <ScrollSpyLink value="n-2" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Design</ScrollSpyLink>
+        <ScrollSpyLink value="n-3" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Code</ScrollSpyLink>
+      </ScrollSpyNav>
+    </div>
+
+    <div ref="scrollContainer" class="flex-1 overflow-y-auto p-8 scroll-smooth">
+      <ScrollSpyViewport class="space-y-24 pb-20">
+        <ScrollSpySection value="n-1" class="space-y-4">
+          <h3 class="text-lg font-bold text-foreground">Concept</h3>
+          <div class="h-40 bg-muted/50 border border-border border-dashed rounded" />
+        </ScrollSpySection>
+        <ScrollSpySection value="n-2" class="space-y-4">
+          <h3 class="text-lg font-bold text-foreground">Design</h3>
+          <div class="h-40 bg-muted/50 border border-border border-dashed rounded" />
+        </ScrollSpySection>
+        <ScrollSpySection value="n-3" class="space-y-4">
+          <h3 class="text-lg font-bold text-foreground">Code</h3>
+          <div class="h-40 bg-muted/50 border border-border border-dashed rounded" />
+        </ScrollSpySection>
+      </ScrollSpyViewport>
+    </div>
+  </ScrollSpy>
+</template>`
+  }
+
+  if (activeExample.value === 'sidebar-right') {
+    return `<script setup lang="ts">
+import { ref } from 'vue'
+import { ScrollSpy, ScrollSpyNav, ScrollSpyLink, ScrollSpyViewport, ScrollSpySection } from '@/components/ui/scroll-spy'
+
+const scrollContainer = ref<HTMLElement | null>(null)
+<\/script>
+
+<template>
+  <ScrollSpy
+${rootProps}
+    class="flex w-full h-[400px] border border-border rounded-lg bg-background overflow-hidden"
+  >
+    <div ref="scrollContainer" class="flex-1 overflow-y-auto p-8 scroll-smooth relative">
+      <ScrollSpyViewport class="space-y-24 pb-20">
+        <ScrollSpySection value="r-1" class="space-y-4">
+          <h3 class="text-lg font-bold text-foreground">Overview</h3>
+          <div class="h-32 bg-muted/50 border border-border border-dashed rounded" />
+        </ScrollSpySection>
+        <ScrollSpySection value="r-2" class="space-y-4">
+          <h3 class="text-lg font-bold text-foreground">Features</h3>
+          <div class="h-32 bg-muted/50 border border-border border-dashed rounded" />
+        </ScrollSpySection>
+        <ScrollSpySection value="r-3" class="space-y-4">
+          <h3 class="text-lg font-bold text-foreground">Pricing</h3>
+          <div class="h-32 bg-muted/50 border border-border border-dashed rounded" />
+        </ScrollSpySection>
+      </ScrollSpyViewport>
+    </div>
+
+    <div class="w-48 border-l border-border p-6 bg-muted/30">
+      <h4 class="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">On this page</h4>
+      <ScrollSpyNav${navProps} class="items-end">
+        <ScrollSpyLink value="r-1" class="block py-2 text-sm text-right text-muted-foreground hover:text-foreground transition-colors no-underline">Overview</ScrollSpyLink>
+        <ScrollSpyLink value="r-2" class="block py-2 text-sm text-right text-muted-foreground hover:text-foreground transition-colors no-underline">Features</ScrollSpyLink>
+        <ScrollSpyLink value="r-3" class="block py-2 text-sm text-right text-muted-foreground hover:text-foreground transition-colors no-underline">Pricing</ScrollSpyLink>
+      </ScrollSpyNav>
+    </div>
+  </ScrollSpy>
+</template>`
+  }
+
+  // Default: Left Sidebar
+  return `<script setup lang="ts">
+import { ref } from 'vue'
+import { ScrollSpy, ScrollSpyNav, ScrollSpyLink, ScrollSpyViewport, ScrollSpySection } from '@/components/ui/scroll-spy'
+
+const scrollContainer = ref<HTMLElement | null>(null)
+<\/script>
+
+<template>
+  <ScrollSpy
+${rootProps}
+    class="flex w-full h-[400px] border border-border rounded-lg bg-background overflow-hidden"
+  >
+    <div class="w-48 border-r border-border p-6 bg-muted/30">
+      <h4 class="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Docs</h4>
+      <ScrollSpyNav${navProps}>
+        <ScrollSpyLink value="s1-intro" class="block py-2 text-sm text-muted-foreground hover:text-foreground transition-colors no-underline">Introduction</ScrollSpyLink>
+        <ScrollSpyLink value="s1-install" class="block py-2 text-sm text-muted-foreground hover:text-foreground transition-colors no-underline">Installation</ScrollSpyLink>
+        <ScrollSpyLink value="s1-config" class="block py-2 text-sm text-muted-foreground hover:text-foreground transition-colors no-underline">Configuration</ScrollSpyLink>
+      </ScrollSpyNav>
+    </div>
+
+    <div ref="scrollContainer" class="flex-1 overflow-y-auto p-8 scroll-smooth relative">
+      <ScrollSpyViewport class="space-y-16 pb-32">
+        <ScrollSpySection value="s1-intro" class="space-y-2">
+          <h2 class="text-2xl font-bold text-foreground">Introduction</h2>
+          <p class="text-muted-foreground">Sidebar layout active.</p>
+          <div class="h-32 bg-muted/50 border border-border border-dashed rounded" />
+        </ScrollSpySection>
+        <ScrollSpySection value="s1-install" class="space-y-2">
+          <h2 class="text-2xl font-bold text-foreground">Installation</h2>
+          <p class="text-muted-foreground">Scroll down to see it move.</p>
+          <div class="h-32 bg-muted/50 border border-border border-dashed rounded" />
+        </ScrollSpySection>
+        <ScrollSpySection value="s1-config" class="space-y-2">
+          <h2 class="text-2xl font-bold text-foreground">Configuration</h2>
+          <p class="text-muted-foreground">Customize offsets and behavior.</p>
+          <div class="h-32 bg-muted/50 border border-border border-dashed rounded" />
+        </ScrollSpySection>
+      </ScrollSpyViewport>
+    </div>
+  </ScrollSpy>
+</template>`
+})
 </script>
 
 <template>
-  <div class="pb-10">
-    <PageTitle
-        title="Scroll Spy"
-        description="A utility that automatically highlights navigation items based on scroll position."
-    />
-    <Divider/>
+  <NuxtLayout name="docs">
+    <!-- Breadcrumb Title -->
+    <template #breadcrumb-title>
+      <span class="text-foreground text-sm font-medium">Scroll Spy</span>
+    </template>
 
-    <div class="mt-4">
-      <h2 class="scroll-m-20 text-xl font-semibold tracking-tight mb-4">Sidebar Layout (Main)</h2>
-      <Tabs default-value="preview">
-        <TabsList>
-          <TabsTrigger value="preview">Preview</TabsTrigger>
-          <TabsTrigger value="code">Code</TabsTrigger>
-        </TabsList>
-        <TabsContent value="preview">
-          <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 flex flex-col items-center justify-center p-4 md:p-10">
-            <ScrollSpy
-                :container="container1"
-                orientation="vertical"
-                class="flex w-full max-w-3xl h-[400px] border border-zinc-800 rounded-lg overflow-hidden bg-zinc-950 shadow-xl"
+    <!-- ========================================== -->
+    <!-- LEFT PANE: Full Documentation              -->
+    <!-- ========================================== -->
+    <div class="flex flex-col gap-1.5">
+      <h1 class="text-3xl sm:text-4xl md:text-5xl font-base tracking-tighter text-foreground">Scroll Spy</h1>
+      <p class="text-base md:text-lg text-muted-foreground mt-1 leading-relaxed">
+        A utility component that automatically tracks the active section within a scrolling container and highlights the corresponding navigation items.
+      </p>
+    </div>
+
+    <!-- Installation -->
+    <div class="flex flex-col mt-4">
+      <h2 class="text-4xl mt-8 mb-5 tracking-tight text-foreground">Installation</h2>
+
+      <!-- Main Install Tabs -->
+      <div class="flex items-center gap-2 mb-4 border-b border-border pb-2">
+        <button
+            v-for="tab in ['cli', 'manual', 'css']"
+            :key="tab"
+            @click="activeInstallTab = tab"
+            class="px-4 py-1.5 rounded-full text-sm font-medium transition-colors capitalize"
+            :class="activeInstallTab === tab ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground'"
+        >
+          {{ tab }}
+        </button>
+      </div>
+
+      <!-- CLI Install -->
+      <div v-if="activeInstallTab === 'cli'" class="w-full gap-0 rounded-xl overflow-hidden border border-border bg-background">
+        <div class="flex items-center px-3 h-10 border-b border-border">
+          <div class="flex items-center gap-0.5 relative">
+            <button
+                v-for="tab in cliTabs"
+                :key="tab"
+                @click="activeCliTab = tab"
+                class="relative z-10 px-3 h-7 rounded-md text-sm transition-colors"
+                :class="activeCliTab === tab ? 'text-foreground bg-muted' : 'text-muted-foreground hover:text-foreground'"
             >
-              <div class="w-48 border-r border-zinc-800 p-6 bg-zinc-900/30 hidden sm:block">
-                <h4 class="mb-4 text-xs font-semibold uppercase tracking-wider text-zinc-500">Docs</h4>
-                <ScrollSpyNav>
-                  <ScrollSpyLink value="s1-intro" class="block py-2 text-sm text-zinc-500 hover:text-white transition-colors no-underline">
-                    Introduction
-                  </ScrollSpyLink>
-                  <ScrollSpyLink value="s1-install" class="block py-2 text-sm text-zinc-500 hover:text-white transition-colors no-underline">
-                    Installation
-                  </ScrollSpyLink>
-                  <ScrollSpyLink value="s1-config" class="block py-2 text-sm text-zinc-500 hover:text-white transition-colors no-underline">
-                    Configuration
-                  </ScrollSpyLink>
-                </ScrollSpyNav>
-              </div>
-              <div ref="container1" class="flex-1 overflow-y-auto p-8 scroll-smooth relative">
-                <ScrollSpyViewport class="space-y-16 pb-32">
-                  <ScrollSpySection value="s1-intro" class="space-y-2">
-                    <h2 class="text-2xl font-bold">Introduction</h2>
-                    <p class="text-zinc-400">Sidebar layout uses <code>orientation="vertical"</code>.</p>
-                    <div class="h-32 bg-zinc-900/50 border border-zinc-800 border-dashed rounded"/>
-                  </ScrollSpySection>
-                  <ScrollSpySection value="s1-install" class="space-y-2">
-                    <h2 class="text-2xl font-bold">Installation</h2>
-                    <p class="text-zinc-400">The indicator uses <code>indicator="before"</code>.</p>
-                    <div class="h-32 bg-zinc-900/50 border border-zinc-800 border-dashed rounded"/>
-                  </ScrollSpySection>
-                  <ScrollSpySection value="s1-config" class="space-y-2">
-                    <h2 class="text-2xl font-bold">Configuration</h2>
-                    <p class="text-zinc-400">Customize offsets and behavior easily.</p>
-                    <div class="h-32 bg-zinc-900/50 border border-zinc-800 border-dashed rounded"/>
-                  </ScrollSpySection>
-                </ScrollSpyViewport>
-              </div>
-            </ScrollSpy>
+              {{ tab }}
+            </button>
           </div>
-        </TabsContent>
-        <TabsContent value="code">
-          <CodeBlock :code="sidebarCode" lang="html"/>
-        </TabsContent>
-      </Tabs>
-    </div>
+        </div>
+        <div class="p-1.5">
+          <CodeBlock language="bash" :code="installCommands.cli" class="border-0 m-0 bg-transparent" />
+        </div>
+      </div>
 
-    <div class="h-g"/>
-    <Divider/>
+      <!-- Manual Install -->
+      <div v-if="activeInstallTab === 'manual'" class="flex flex-col gap-4">
+        <p class="text-sm text-muted-foreground">1. Install dependencies:</p>
+        <div class="rounded-xl overflow-hidden border border-border bg-background p-1.5">
+          <CodeBlock language="bash" :code="installCommands.manual" class="border-0 m-0 bg-transparent" />
+        </div>
+        <p class="text-sm text-muted-foreground mt-2">2. Copy the component code into <code>components/ui/scroll-spy</code>.</p>
+      </div>
 
-    <div class="space-y-6 mt-4">
-      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
-      <div class="space-y-4">
-        <CodeBlock :code="installCommands.npm"/>
-        <p class="text-sm text-zinc-400">Or manually:</p>
-        <CodeBlock :code="installCommands.manual"/>
+      <!-- CSS Install -->
+      <div v-if="activeInstallTab === 'css'" class="flex flex-col gap-4">
+        <div class="rounded-lg border border-info/20 bg-info/10 p-4 text-sm text-info mb-2">
+          <strong class="font-semibold">Ready to go:</strong> This component inherits your typography, structural layout colors, and dynamic interactive states natively from your <code>main.css</code> theme variables.
+        </div>
       </div>
     </div>
 
-    <div class="h-g"/>
-    <Divider/>
-
-    <div class="mt-4 space-y-12">
-      <h2 class="scroll-m-20 text-3xl font-bold tracking-tight">More Examples</h2>
-
-      <div class="space-y-4">
-        <h3 class="text-xl font-semibold">Navbar Layout (Horizontal)</h3>
-        <p class="text-zinc-400 text-sm">
-          Nav on top, content below. Use <code>orientation="horizontal"</code> and <code>indicator-position="after"</code> for the bottom line.
-        </p>
-
-        <AnimatedTabs :items="PREVIEW_TABS" class="space-y-4">
-          <template #preview>
-            <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 flex flex-col items-center justify-center p-4 md:p-10">
-              <ScrollSpy
-                  :container="container2"
-                  orientation="horizontal"
-                  class="flex flex-col w-full max-w-3xl h-[400px] border border-zinc-800 rounded-lg overflow-hidden bg-zinc-950 shadow-xl"
-              >
-                <div class="border-b border-zinc-800 p-4 bg-zinc-900/30 flex justify-between items-center shrink-0">
-                  <span class="text-sm font-bold text-zinc-300">Logo</span>
-                  <ScrollSpyNav indicator indicator-position="after" class="gap-6">
-                    <ScrollSpyLink value="n-1" class="text-sm font-medium text-zinc-400 hover:text-white transition-colors">Concept</ScrollSpyLink>
-                    <ScrollSpyLink value="n-2" class="text-sm font-medium text-zinc-400 hover:text-white transition-colors">Design</ScrollSpyLink>
-                    <ScrollSpyLink value="n-3" class="text-sm font-medium text-zinc-400 hover:text-white transition-colors">Code</ScrollSpyLink>
-                  </ScrollSpyNav>
-                </div>
-                <div ref="container2" class="flex-1 overflow-y-auto p-8 scroll-smooth">
-                  <ScrollSpyViewport class="space-y-24 pb-20">
-                    <ScrollSpySection value="n-1" class="space-y-4">
-                      <h3 class="text-lg font-bold">Concept</h3>
-                      <div class="h-40 bg-zinc-900/50 border border-zinc-800 border-dashed rounded"/>
-                    </ScrollSpySection>
-                    <ScrollSpySection value="n-2" class="space-y-4">
-                      <h3 class="text-lg font-bold">Design</h3>
-                      <div class="h-40 bg-zinc-900/50 border border-zinc-800 border-dashed rounded"/>
-                    </ScrollSpySection>
-                    <ScrollSpySection value="n-3" class="space-y-4">
-                      <h3 class="text-lg font-bold">Code</h3>
-                      <div class="h-40 bg-zinc-900/50 border border-zinc-800 border-dashed rounded"/>
-                    </ScrollSpySection>
-                  </ScrollSpyViewport>
-                </div>
-              </ScrollSpy>
+    <!-- File Structure -->
+    <div class="flex flex-col mt-4">
+      <h2 class="text-4xl mt-8 mb-5 tracking-tight text-foreground">File Structure</h2>
+      <div class="my-4 rounded-xl border border-border overflow-hidden bg-background">
+        <div class="p-4 w-full relative font-mono text-sm text-muted-foreground">
+          <div class="flex items-center gap-2 text-foreground">
+            <svg class="size-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+            your-project
+          </div>
+          <div class="relative ml-6 before:absolute before:-left-2 before:inset-y-0 before:w-px before:bg-border">
+            <div class="flex items-center gap-2 py-2">
+              <svg class="size-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+              components
             </div>
-          </template>
-          <template #code>
-            <div class="mt-4">
-              <CodeBlock :code="navbarCode" lang="html"/>
-            </div>
-          </template>
-        </AnimatedTabs>
-      </div>
-
-      <div class="space-y-4">
-        <h3 class="text-xl font-semibold">Table of Contents (Right Side)</h3>
-        <p class="text-zinc-400 text-sm">
-          Nav on the right. Use <code>indicator-position="after"</code> to show the line on the right edge.
-        </p>
-
-        <AnimatedTabs :items="PREVIEW_TABS" class="space-y-4">
-          <template #preview>
-            <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 flex flex-col items-center justify-center p-4 md:p-10">
-              <ScrollSpy
-                  :container="container3"
-                  orientation="vertical"
-                  class="flex w-full max-w-3xl h-[400px] border border-zinc-800 rounded-lg overflow-hidden bg-zinc-950 shadow-xl"
-              >
-                <div ref="container3" class="flex-1 overflow-y-auto p-8 scroll-smooth relative">
-                  <ScrollSpyViewport class="space-y-24 pb-20">
-                    <ScrollSpySection value="r-1" class="space-y-4">
-                      <h3 class="text-lg font-bold">Overview</h3>
-                      <div class="h-32 bg-zinc-900/50 border border-zinc-800 border-dashed rounded"/>
-                    </ScrollSpySection>
-                    <ScrollSpySection value="r-2" class="space-y-4">
-                      <h3 class="text-lg font-bold">Features</h3>
-                      <div class="h-32 bg-zinc-900/50 border border-zinc-800 border-dashed rounded"/>
-                    </ScrollSpySection>
-                    <ScrollSpySection value="r-3" class="space-y-4">
-                      <h3 class="text-lg font-bold">Pricing</h3>
-                      <div class="h-32 bg-zinc-900/50 border border-zinc-800 border-dashed rounded"/>
-                    </ScrollSpySection>
-                  </ScrollSpyViewport>
+            <div class="relative ml-6 before:absolute before:-left-2 before:inset-y-0 before:w-px before:bg-border">
+              <div class="flex items-center gap-2 py-2">
+                <svg class="size-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+                ui
+              </div>
+              <div class="relative ml-6 before:absolute before:-left-2 before:inset-y-0 before:w-px before:bg-border">
+                <div class="flex items-center gap-2 py-2 text-pink-500">
+                  <svg class="size-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                  scroll-spy
                 </div>
-
-                <div class="w-40 border-l border-zinc-800 p-6 bg-zinc-900/30 hidden sm:block">
-                  <h4 class="mb-4 text-xs font-semibold uppercase tracking-wider text-zinc-500 text-right">On this page</h4>
-                  <ScrollSpyNav indicator indicator-position="after" class="items-end">
-                    <ScrollSpyLink value="r-1" class="block py-2 text-sm text-right text-zinc-500 hover:text-white transition-colors no-underline">Overview</ScrollSpyLink>
-                    <ScrollSpyLink value="r-2" class="block py-2 text-sm text-right text-zinc-500 hover:text-white transition-colors no-underline">Features</ScrollSpyLink>
-                    <ScrollSpyLink value="r-3" class="block py-2 text-sm text-right text-zinc-500 hover:text-white transition-colors no-underline">Pricing</ScrollSpyLink>
-                  </ScrollSpyNav>
+                <div class="relative ml-6 before:absolute before:-left-2 before:inset-y-0 before:w-px before:bg-border">
+                  <div class="flex items-center gap-2 py-1 text-muted-foreground"><div class="w-4 border-t border-border mr-2"></div>ScrollSpy.vue</div>
+                  <div class="flex items-center gap-2 py-1 text-muted-foreground"><div class="w-4 border-t border-border mr-2"></div>ScrollSpyNav.vue</div>
+                  <div class="flex items-center gap-2 py-1 text-muted-foreground"><div class="w-4 border-t border-border mr-2"></div>ScrollSpyLink.vue</div>
+                  <div class="flex items-center gap-2 py-1 text-muted-foreground"><div class="w-4 border-t border-border mr-2"></div>ScrollSpyViewport.vue</div>
+                  <div class="flex items-center gap-2 py-1 text-muted-foreground"><div class="w-4 border-t border-border mr-2"></div>ScrollSpySection.vue</div>
                 </div>
-              </ScrollSpy>
+              </div>
             </div>
-          </template>
-          <template #code>
-            <div class="mt-4">
-              <CodeBlock :code="rightNavCode" lang="html"/>
-            </div>
-          </template>
-        </AnimatedTabs>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="h-g"/>
-    <Divider/>
+    <!-- API Reference -->
+    <div class="flex flex-col mt-4">
+      <h2 class="text-4xl mt-8 mb-5 tracking-tight text-foreground">API Reference</h2>
 
-    <div class="space-y-6 mt-4">
-      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
+      <h3 class="text-2xl mt-7 mb-3 text-foreground">ScrollSpy (Root)</h3>
+      <div class="rounded-none border-t border-border mt-4 overflow-hidden">
 
-      <h3 class="text-lg font-semibold mt-4">ScrollSpyNav</h3>
-      <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
-        <table class="w-full text-sm text-left">
-          <thead class="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400">
-          <tr>
-            <th class="px-4 py-3 font-medium">Prop</th>
-            <th class="px-4 py-3 font-medium">Type</th>
-            <th class="px-4 py-3 font-medium">Default</th>
-            <th class="px-4 py-3 font-medium">Description</th>
-          </tr>
-          </thead>
-          <tbody class="divide-y divide-zinc-800 text-zinc-300">
-          <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">indicator</td>
-            <td class="px-4 py-3 font-mono text-xs">boolean</td>
-            <td class="px-4 py-3 font-mono text-xs">false</td>
-            <td class="px-4 py-3">Enables the moving active line indicator.</td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">indicatorPosition</td>
-            <td class="px-4 py-3 font-mono text-xs">'before' | 'after'</td>
-            <td class="px-4 py-3 font-mono text-xs">'before'</td>
-            <td class="px-4 py-3">
-              Controls line position relative to the link.<br/>
-              Vertical: <code>before</code> (Left), <code>after</code> (Right).<br/>
-              Horizontal: <code>before</code> (Top), <code>after</code> (Bottom).
-            </td>
-          </tr>
-          </tbody>
-        </table>
+        <div class="flex items-start gap-4 px-5 py-4 border-b border-border">
+          <div class="w-44 shrink-0">
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg">container</code>
+          </div>
+          <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <code class="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">HTMLElement | null</code>
+              <div class="flex-1"></div>
+              <code class="text-sm font-mono text-foreground bg-muted px-2 py-0.5 rounded-md">window</code>
+            </div>
+            <p class="text-sm text-muted-foreground leading-relaxed mt-2"><strong>Crucial:</strong> A reference to the scrolling element that contains your viewport. If omitted, it defaults to tracking the browser's window scroll.</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-4 px-5 py-4 border-b border-border">
+          <div class="w-44 shrink-0">
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg">orientation</code>
+          </div>
+          <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <code class="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">enum</code>
+              <div class="flex-1"></div>
+              <code class="text-sm font-mono text-foreground bg-muted px-2 py-0.5 rounded-md">"vertical"</code>
+            </div>
+            <p class="text-sm text-muted-foreground leading-relaxed mt-2">Defines layout flow context. <code>vertical</code> implies a side-by-side flex-row. <code>horizontal</code> implies stacked flex-col.</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-4 px-5 py-4 border-b border-border">
+          <div class="w-44 shrink-0">
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg">offset</code>
+          </div>
+          <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <code class="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">number</code>
+              <div class="flex-1"></div>
+              <code class="text-sm font-mono text-foreground bg-muted px-2 py-0.5 rounded-md">0</code>
+            </div>
+            <p class="text-sm text-muted-foreground leading-relaxed mt-2">Top margin offset (in pixels) for triggering section activation.</p>
+          </div>
+        </div>
+
       </div>
 
-      <h3 class="text-lg font-semibold mt-8">ScrollSpy (Root)</h3>
-      <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
-        <table class="w-full text-sm text-left">
-          <thead class="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400">
-          <tr>
-            <th class="px-4 py-3 font-medium">Prop</th>
-            <th class="px-4 py-3 font-medium">Type</th>
-            <th class="px-4 py-3 font-medium">Default</th>
-            <th class="px-4 py-3 font-medium">Description</th>
-          </tr>
-          </thead>
-          <tbody class="divide-y divide-zinc-800 text-zinc-300">
-          <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">container</td>
-            <td class="px-4 py-3 font-mono text-xs">HTMLElement | null</td>
-            <td class="px-4 py-3 font-mono text-xs">window</td>
-            <td class="px-4 py-3">
-              <strong>Crucial:</strong> A reference to the element that has <code>overflow-y: auto</code>. If omitted, it tracks the window scroll.
-            </td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">orientation</td>
-            <td class="px-4 py-3 font-mono text-xs">'vertical' | 'horizontal'</td>
-            <td class="px-4 py-3 font-mono text-xs">'vertical'</td>
-            <td class="px-4 py-3">
-              Controls the flex direction.<br/>
-              <code>vertical</code> = Side-by-side (flex-row).<br/>
-              <code>horizontal</code> = Stacked (flex-col).
-            </td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">offset</td>
-            <td class="px-4 py-3 font-mono text-xs">number</td>
-            <td class="px-4 py-3 font-mono text-xs">0</td>
-            <td class="px-4 py-3">Offset from the top when scrolling/detecting.</td>
-          </tr>
-          </tbody>
-        </table>
+      <h3 class="text-2xl mt-8 mb-3 text-foreground">ScrollSpyNav</h3>
+      <div class="rounded-none border-t border-border mt-4 overflow-hidden">
+
+        <div class="flex items-start gap-4 px-5 py-4 border-b border-border">
+          <div class="w-44 shrink-0">
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg">indicator</code>
+          </div>
+          <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <code class="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">boolean</code>
+              <div class="flex-1"></div>
+              <code class="text-sm font-mono text-foreground bg-muted px-2 py-0.5 rounded-md">false</code>
+            </div>
+            <p class="text-sm text-muted-foreground leading-relaxed mt-2">Enables the animated moving line indicator underneath or beside the active navigation item.</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-4 px-5 py-4 border-b border-border">
+          <div class="w-44 shrink-0">
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg">indicatorPosition</code>
+          </div>
+          <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <code class="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">enum</code>
+              <div class="flex-1"></div>
+              <code class="text-sm font-mono text-foreground bg-muted px-2 py-0.5 rounded-md">"before"</code>
+            </div>
+            <p class="text-sm text-muted-foreground leading-relaxed mt-2">Position of the animated line. Accepts 'before' (Left/Top) or 'after' (Right/Bottom).</p>
+          </div>
+        </div>
+
       </div>
     </div>
-  </div>
+
+    <!-- ========================================== -->
+    <!-- RIGHT PANE: Visual Preview Slot            -->
+    <!-- ========================================== -->
+    <template #preview>
+      <div class="w-full h-full flex flex-col items-center justify-center p-4 md:p-8 min-h-[500px]">
+
+        <!-- Left Sidebar Preview -->
+        <ScrollSpy
+            v-if="activeExample === 'sidebar-left'"
+            :container="containerLeft"
+            orientation="vertical"
+            :offset="offset"
+            class="flex w-full max-w-3xl h-[400px] border border-border rounded-xl overflow-hidden bg-background shadow-lg"
+        >
+          <div class="w-48 border-r border-border p-6 bg-muted/20 hidden sm:block shrink-0">
+            <h4 class="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Docs</h4>
+            <ScrollSpyNav :indicator="showIndicator" :indicator-position="indicatorPosition">
+              <ScrollSpyLink value="s1-intro" class="block py-2 text-sm text-muted-foreground hover:text-foreground transition-colors no-underline">
+                Introduction
+              </ScrollSpyLink>
+              <ScrollSpyLink value="s1-install" class="block py-2 text-sm text-muted-foreground hover:text-foreground transition-colors no-underline">
+                Installation
+              </ScrollSpyLink>
+              <ScrollSpyLink value="s1-config" class="block py-2 text-sm text-muted-foreground hover:text-foreground transition-colors no-underline">
+                Configuration
+              </ScrollSpyLink>
+            </ScrollSpyNav>
+          </div>
+          <div ref="containerLeft" class="flex-1 overflow-y-auto p-8 scroll-smooth relative custom-scrollbar">
+            <ScrollSpyViewport class="space-y-16 pb-32">
+              <ScrollSpySection value="s1-intro" class="space-y-2">
+                <h2 class="text-2xl font-bold text-foreground">Introduction</h2>
+                <p class="text-muted-foreground">Sidebar layout uses <code>orientation="vertical"</code>.</p>
+                <div class="h-32 bg-muted/30 border border-border border-dashed rounded mt-4" />
+              </ScrollSpySection>
+              <ScrollSpySection value="s1-install" class="space-y-2">
+                <h2 class="text-2xl font-bold text-foreground">Installation</h2>
+                <p class="text-muted-foreground">The indicator tracks section boundaries.</p>
+                <div class="h-32 bg-muted/30 border border-border border-dashed rounded mt-4" />
+              </ScrollSpySection>
+              <ScrollSpySection value="s1-config" class="space-y-2">
+                <h2 class="text-2xl font-bold text-foreground">Configuration</h2>
+                <p class="text-muted-foreground">Customize offsets and behavior easily.</p>
+                <div class="h-32 bg-muted/30 border border-border border-dashed rounded mt-4" />
+              </ScrollSpySection>
+            </ScrollSpyViewport>
+          </div>
+        </ScrollSpy>
+
+        <!-- Top Navbar Preview -->
+        <ScrollSpy
+            v-else-if="activeExample === 'navbar-top'"
+            :container="containerTop"
+            orientation="horizontal"
+            :offset="offset"
+            class="flex flex-col w-full max-w-3xl h-[400px] border border-border rounded-xl overflow-hidden bg-background shadow-lg"
+        >
+          <div class="border-b border-border p-4 bg-muted/20 flex justify-between items-center shrink-0">
+            <span class="text-sm font-bold text-foreground">Logo</span>
+            <ScrollSpyNav :indicator="showIndicator" :indicator-position="indicatorPosition" class="gap-6">
+              <ScrollSpyLink value="n-1" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Concept</ScrollSpyLink>
+              <ScrollSpyLink value="n-2" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Design</ScrollSpyLink>
+              <ScrollSpyLink value="n-3" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Code</ScrollSpyLink>
+            </ScrollSpyNav>
+          </div>
+          <div ref="containerTop" class="flex-1 overflow-y-auto p-8 scroll-smooth custom-scrollbar">
+            <ScrollSpyViewport class="space-y-24 pb-20">
+              <ScrollSpySection value="n-1" class="space-y-4">
+                <h3 class="text-lg font-bold text-foreground">Concept</h3>
+                <div class="h-40 bg-muted/30 border border-border border-dashed rounded" />
+              </ScrollSpySection>
+              <ScrollSpySection value="n-2" class="space-y-4">
+                <h3 class="text-lg font-bold text-foreground">Design</h3>
+                <div class="h-40 bg-muted/30 border border-border border-dashed rounded" />
+              </ScrollSpySection>
+              <ScrollSpySection value="n-3" class="space-y-4">
+                <h3 class="text-lg font-bold text-foreground">Code</h3>
+                <div class="h-40 bg-muted/30 border border-border border-dashed rounded" />
+              </ScrollSpySection>
+            </ScrollSpyViewport>
+          </div>
+        </ScrollSpy>
+
+        <!-- Right Sidebar Preview -->
+        <ScrollSpy
+            v-else-if="activeExample === 'sidebar-right'"
+            :container="containerRight"
+            orientation="vertical"
+            :offset="offset"
+            class="flex w-full max-w-3xl h-[400px] border border-border rounded-xl overflow-hidden bg-background shadow-lg"
+        >
+          <div ref="containerRight" class="flex-1 overflow-y-auto p-8 scroll-smooth relative custom-scrollbar">
+            <ScrollSpyViewport class="space-y-24 pb-20">
+              <ScrollSpySection value="r-1" class="space-y-4">
+                <h3 class="text-lg font-bold text-foreground">Overview</h3>
+                <div class="h-32 bg-muted/30 border border-border border-dashed rounded" />
+              </ScrollSpySection>
+              <ScrollSpySection value="r-2" class="space-y-4">
+                <h3 class="text-lg font-bold text-foreground">Features</h3>
+                <div class="h-32 bg-muted/30 border border-border border-dashed rounded" />
+              </ScrollSpySection>
+              <ScrollSpySection value="r-3" class="space-y-4">
+                <h3 class="text-lg font-bold text-foreground">Pricing</h3>
+                <div class="h-32 bg-muted/30 border border-border border-dashed rounded" />
+              </ScrollSpySection>
+            </ScrollSpyViewport>
+          </div>
+
+          <div class="w-48 border-l border-border p-6 bg-muted/20 hidden sm:block shrink-0">
+            <h4 class="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">On this page</h4>
+            <ScrollSpyNav :indicator="showIndicator" :indicator-position="indicatorPosition" class="items-end">
+              <ScrollSpyLink value="r-1" class="block py-2 text-sm text-right text-muted-foreground hover:text-foreground transition-colors no-underline">Overview</ScrollSpyLink>
+              <ScrollSpyLink value="r-2" class="block py-2 text-sm text-right text-muted-foreground hover:text-foreground transition-colors no-underline">Features</ScrollSpyLink>
+              <ScrollSpyLink value="r-3" class="block py-2 text-sm text-right text-muted-foreground hover:text-foreground transition-colors no-underline">Pricing</ScrollSpyLink>
+            </ScrollSpyNav>
+          </div>
+        </ScrollSpy>
+
+      </div>
+    </template>
+
+    <!-- ========================================== -->
+    <!-- RIGHT PANE: Source Code Slot               -->
+    <!-- ========================================== -->
+    <template #code>
+      <CodeBlock language="vue" :code="codeString" class="border-0 bg-transparent m-0 p-0" />
+    </template>
+
+    <!-- ========================================== -->
+    <!-- RIGHT PANE: Settings Panel Slot            -->
+    <!-- ========================================== -->
+    <template #settings>
+      <!-- Panel Header & Reset -->
+      <div class="flex items-center justify-between mb-8">
+        <span class="font-semibold text-base text-foreground tracking-tight">Settings</span>
+        <button @click="resetSettings" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Reset</button>
+      </div>
+
+      <!-- Layout Switcher -->
+      <div class="flex flex-col gap-2 mb-6 border-b border-border pb-6">
+        <label class="text-sm font-medium text-foreground">Component Layout</label>
+        <div class="relative">
+          <select v-model="activeExample" @change="onExampleChange" class="w-full appearance-none bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-muted-foreground transition-all">
+            <option value="sidebar-left">Sidebar (Left)</option>
+            <option value="navbar-top">Navbar (Top)</option>
+            <option value="sidebar-right">Sidebar (Right)</option>
+          </select>
+          <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-muted-foreground">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7"></path></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Offset Slider -->
+      <div class="flex flex-col gap-3 mb-6">
+        <div class="flex justify-between items-center">
+          <label class="text-sm font-medium text-foreground">Scroll Offset</label>
+          <span class="text-xs font-mono text-muted-foreground">{{ offset }}px</span>
+        </div>
+        <input
+            type="range"
+            v-model.number="offset"
+            min="-50"
+            max="50"
+            step="5"
+            class="w-full accent-foreground"
+        />
+      </div>
+
+      <!-- Show Indicator Toggle -->
+      <div class="flex items-center justify-between mb-6">
+        <label class="text-sm font-medium text-foreground cursor-pointer select-none" @click="showIndicator = !showIndicator">Show Indicator</label>
+        <button @click="showIndicator = !showIndicator" :class="['w-10 h-6 rounded-full transition-colors duration-300 relative', showIndicator ? 'bg-foreground' : 'bg-muted']">
+          <div :class="['w-4 h-4 rounded-full absolute top-[4px] transition-transform duration-300', showIndicator ? 'translate-x-[20px] bg-background' : 'translate-x-[4px] bg-muted-foreground shadow-sm']"></div>
+        </button>
+      </div>
+
+      <!-- Indicator Position Select (Disabled if indicator is off) -->
+      <div class="flex flex-col gap-2 mb-2" :class="{ 'opacity-50 pointer-events-none': !showIndicator }">
+        <label class="text-sm font-medium text-foreground">Indicator Position</label>
+        <div class="relative">
+          <select v-model="indicatorPosition" :disabled="!showIndicator" class="w-full appearance-none bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-muted-foreground transition-all">
+            <option value="before">Before (Top/Left)</option>
+            <option value="after">After (Bottom/Right)</option>
+          </select>
+          <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-muted-foreground">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7"></path></svg>
+          </div>
+        </div>
+      </div>
+
+    </template>
+  </NuxtLayout>
 </template>

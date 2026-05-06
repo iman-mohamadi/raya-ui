@@ -1,201 +1,180 @@
-<script setup lang="ts">
-import { ArrowRight, Zap, Layers, Accessibility, Rocket } from 'lucide-vue-next'
-import { BackgroundBeams } from "~/components/ui/background-beams"
+<script lang="ts" setup>
+import {Plus} from 'lucide-vue-next'
+import {Motion} from 'motion-v'
+import {GravityStars} from '@/components/ui/gravity-stars'
 import MorphingText from '@/components/ui/morphing-text/MorphingText.vue'
 import RayaButton from '@/components/ui/raya-button/RayaButton.vue'
-import GravityStars from '@/components/ui/gravity-stars/GravityStars.vue'
 import FaqSection from "~/components/landing/FaqSection.vue"
-import Divider from "~/components/Divider.vue"
 
-// --- Configuration & Metadata ---
-definePageMeta({
-  layout: 'default'
-})
+definePageMeta({layout: 'default'})
 
 const appConfig = useAppConfig()
-const version = appConfig.raya?.version || '0.0.0'
+const version = appConfig.raya?.version || '1.0.0'
 
-const heroWords = [
-  "Raya UI",
-  "Limitless",
-  "Visionary"
-]
+const heroWords = ["RAYA", "ENGINE", "VISION", "OWNED"]
 
 const features = [
-  {
-    title: 'Instant Speed',
-    description: 'Zero runtime overhead with optimized compile-time macros.',
-    icon: Zap,
-    color: 'text-yellow-400'
-  },
-  {
-    title: 'Modular Core',
-    description: 'Drop-in components that adapt seamlessly to your design system.',
-    icon: Layers,
-    color: 'text-blue-400'
-  },
-  {
-    title: 'Accessibility',
-    description: 'Built on WCAG standards ensuring the web is for everyone.',
-    icon: Accessibility,
-    color: 'text-green-400'
-  }
+  {id: '01', title: 'LATENCY', desc: 'Zero runtime overhead. Optimized Nuxt 4 macros.'},
+  {id: '02', title: 'ATOMIC', desc: 'Modular core for high-density dashboards.'},
+  {id: '03', title: 'ACCESS', desc: 'WAI-ARIA compliance via Reka UI primitives.'}
 ]
-
-// --- SEO Setup ---
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'SoftwareApplication',
-  'name': 'Raya UI',
-  'operatingSystem': 'Web',
-  'applicationCategory': 'DeveloperApplication',
-  'offers': {
-    '@type': 'Offer',
-    'price': '0',
-    'priceCurrency': 'USD'
-  },
-  'description': 'A collection of accessible, reusable, and composable Vue components built with Tailwind CSS.',
-  'author': {
-    '@type': 'Person',
-    'name': 'Iman Mohamadi'
-  },
-  'keywords': 'Vue, Nuxt, UI Library, Shadcn, Tailwind CSS, Components'
-}
-
-useHead({
-  script: [
-    {
-      type: 'application/ld+json',
-      children: JSON.stringify(jsonLd)
-    }
-  ]
-})
-
-useSeoMeta({
-  title: 'Raya UI - Open Source Vue & Nuxt UI Library',
-  description: 'Raya UI is a comprehensive Vue and Nuxt UI library based on Shadcn and Tailwind CSS. Accessible, copy-paste components for modern web development.',
-  ogTitle: 'Raya UI - The Ultimate Vue & Nuxt UI Library',
-  ogDescription: 'Stop reinventing the wheel. Copy beautiful, accessible components directly into your Nuxt app with Raya UI.',
-  ogImage: 'https://raya-ui.com/og-image.png',
-  twitterCard: 'summary_large_image',
-})
 </script>
 
 <template>
-  <div class="flex flex-col">
+  <div class="relative text-foreground overflow-x-hidden">
 
-    <div class="relative w-full flex flex-col items-center justify-center py-20 md:py-32 overflow-hidden">
-      <BackgroundBeams class="absolute inset-0 z-0 opacity-80 pointer-events-none" />
+    <!-- --- ARCHITECT HERO --- -->
+    <section class="relative min-h-screen flex flex-col lg:flex-row border-b border-border">
 
-      <div class="relative z-10 flex flex-col items-center text-center space-y-8 px-4">
+      <!-- Left Side: Sharp Typography -->
+      <div class="flex-1 flex flex-col justify-center p-8 md:p-16 lg:border-r border-border relative z-10">
+        <ClientOnly>
+          <Motion
+              :animate="{ opacity: 1, x: 0 }"
+              :initial="{ opacity: 0, x: -50 }"
+              :transition="{ duration: 1, ease: [0.19, 1, 0.22, 1] }"
+              class="space-y-12"
+          >
+            <div class="flex items-center gap-4">
+              <div
+                  class="size-12 bg-foreground flex items-center justify-center text-background font-black text-xl italic">
+                R
+              </div>
+              <div class="text-[10px] font-black tracking-[0.4em] uppercase opacity-50">Build.v{{ version }}</div>
+            </div>
 
-        <div class="inline-flex items-center px-3 py-1 rounded-full border border-primary/20 bg-background/50 backdrop-blur-md text-xs font-medium text-foreground/80 animate-in fade-in slide-in-from-top-4 duration-1000">
-          <span class="flex h-2 w-2 rounded-full bg-primary mr-2 animate-pulse"></span>
-          v{{ version }} System Online
-        </div>
+            <div class="space-y-2">
+              <h1 class="text-[12vw] lg:text-[8vw] font-black leading-[0.8] tracking-tighter uppercase italic">
+                Atomic <br/>
+                <span class="text-primary italic">Design</span>
+              </h1>
+              <div class="h-24 flex items-center">
+                <MorphingText :texts="heroWords"
+                              class="text-4xl font-bold tracking-widest text-muted-foreground uppercase"/>
+              </div>
+            </div>
 
-        <div class="h-20 sm:h-24 md:h-32 w-full flex items-center justify-center">
-          <MorphingText
-              :texts="heroWords"
-              class="text-6xl sm:text-7xl md:text-8xl font-black tracking-tighter drop-shadow-2xl text-primary"
-          />
-        </div>
-
-        <p class="text-lg md:text-xl text-muted-foreground max-w-[60ch] leading-relaxed animate-in slide-in-from-bottom-4 fade-in duration-1000 delay-300">
-          A collection of accessible, reusable, and composable Vue components.
-          <br class="hidden md:block" />
-          Styled with Tailwind CSS. Open Source.
-        </p>
-
-        <div class="flex flex-col sm:flex-row gap-4 items-center pt-4 animate-in slide-in-from-bottom-8 fade-in duration-1000 delay-500">
-          <NuxtLink to="/components">
-            <RayaButton
-                size="lg"
-                class="rounded-full px-8 h-12 text-base shadow-[0_0_30px_-10px_rgba(var(--primary),0.5)] hover:shadow-[0_0_50px_-10px_rgba(var(--primary),0.7)] transition-all hover:scale-105"
-            >
-              Browse Components
-              <ArrowRight class="ml-2 h-4 w-4" />
-            </RayaButton>
-          </NuxtLink>
-
-          <NuxtLink to="/docs/installation">
-            <RayaButton
-                variant="outline"
-                size="lg"
-                class="rounded-full px-8 h-12 text-base bg-background/20 backdrop-blur-sm border-primary/20 hover:bg-background/40 transition-all"
-            >
-              Documentation
-            </RayaButton>
-          </NuxtLink>
-        </div>
-      </div>
-    </div>
-
-    <Divider />
-
-    <div class="grid relative row-line before:hidden">
-      <div class="h-g"/>
-
-      <div class="grid relative grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-g">
-        <div
-            v-for="(feature, index) in features"
-            :key="index"
-            class="group border-x border-dashed border-edge"
-        >
-          <div class="row-line bg-primary-50/5 dark:bg-primary-50/10 aspect-390/200 overflow-hidden relative flex items-center justify-center">
-            <component
-                :is="feature.icon"
-                :class="['w-12 h-12 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3 drop-shadow-lg', feature.color]"
-            />
-          </div>
-
-          <div class="pl-m py-4 row-line before:hidden pb-8 block">
-            <p class="text-base text-foreground font-semibold mb-2 group-hover:text-primary transition-colors">
-              {{ feature.title }}
+            <p class="max-w-md text-lg text-muted-foreground leading-tight font-medium">
+              A specialized collection of copy-paste components for the modern engineer. Built with Vue, Nuxt, and
+              absolute precision.
             </p>
-            <p class="text-sm text-muted-foreground font-mono leading-relaxed pr-4">
-              {{ feature.description }}
-            </p>
-          </div>
-        </div>
+
+            <div class="flex flex-wrap gap-4 pt-8">
+              <NuxtLink to="/docs/installation">
+                <RayaButton
+                    class="h-16 px-12 rounded-none bg-foreground text-background font-black uppercase tracking-widest hover:translate-y-[-4px] transition-transform">
+                  Get Started
+                </RayaButton>
+              </NuxtLink>
+              <NuxtLink to="/docs/components/tree">
+                <RayaButton class="h-16 px-12 rounded-none border-foreground font-black uppercase tracking-widest hover:bg-foreground hover:text-background transition-colors"
+                            variant="outline">
+                  Library
+                </RayaButton>
+              </NuxtLink>
+            </div>
+          </Motion>
+        </ClientOnly>
       </div>
-      <div class="h-g"></div>
-    </div>
 
-    <section class="mt-20 mb-20 relative h-[400px] w-full rounded-3xl overflow-hidden border border-border/50 mx-auto max-w-[95%]">
-      <GravityStars
-          class="absolute inset-0 z-0 bg-black/5 dark:bg-black/40"
-          :starsCount="100"
-          :movementSpeed="0.5"
-          mouseGravity="attract"
-          glowAnimation="spring"
-          :glowIntensity="15"
-      />
-
-      <div class="relative z-10 h-full flex flex-col items-center justify-center pointer-events-none p-4 text-center">
-        <h2 class="text-4xl md:text-5xl font-bold text-foreground mb-6 tracking-tighter">
-          Ready to build?
-        </h2>
-
-        <div class="pointer-events-auto">
-          <NuxtLink to="/docs/installation">
-            <RayaButton
-                size="lg"
-                class="rounded-full px-10 py-6 text-lg font-bold shadow-xl"
-            >
-              <Rocket class="mr-2 h-5 w-5" />
-              Get Started Now
-            </RayaButton>
-          </NuxtLink>
+      <!-- Right Side: The Simulation Container -->
+      <div class="flex-1 relative min-h-[400px] lg:min-h-screen bg-muted/5">
+        <GravityStars
+            :gravity-strength="40"
+            :mouse-influence="200"
+            :stars-count="80"
+            class="absolute inset-0 z-0"
+            mouse-gravity="attract"
+        />
+        <!-- Overlay Stats -->
+        <div class="absolute bottom-8 left-8 right-8 flex justify-between items-end z-10 pointer-events-none">
+          <div class="font-mono text-[10px] space-y-1 opacity-40 uppercase tracking-widest">
+            <div>Phys_Engine: Active</div>
+            <div>Context: Vue_3.5_Stable</div>
+            <div>Primitives: Reka_UI</div>
+          </div>
+          <div
+              class="size-32 border border-foreground/10 rounded-full flex items-center justify-center animate-spin-slow">
+            <Plus class="size-4 opacity-20"/>
+          </div>
         </div>
       </div>
     </section>
 
-    <Divider />
+    <!-- --- THE SPECIFICATION (Features) --- -->
+    <section class="py-0 border-b border-border">
+      <div class="grid grid-cols-1 md:grid-cols-3">
+        <div
+            v-for="(feature, index) in features"
+            :key="index"
+            class="p-12 border-b md:border-b-0 md:border-r border-border group hover:bg-foreground hover:text-background transition-colors duration-700"
+        >
+          <div class="flex flex-col gap-12">
+            <span class="font-mono text-xs opacity-50">{{ feature.id }}</span>
+            <div class="space-y-4">
+              <h3 class="text-3xl font-black italic tracking-tighter uppercase">{{ feature.title }}</h3>
+              <p class="text-sm font-medium leading-relaxed opacity-60 group-hover:opacity-100 transition-opacity">
+                {{ feature.desc }}
+              </p>
+            </div>
+            <Plus class="size-5 opacity-20 group-hover:rotate-90 transition-transform"/>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <section>
-      <FaqSection />
+    <!-- --- FULL WIDTH CTA --- -->
+    <section class="relative py-40 flex flex-col items-center justify-center text-center px-6 overflow-hidden">
+      <div class="absolute inset-0 z-0 opacity-10 pointer-events-none skew-y-12 scale-150">
+        <div class="grid grid-cols-10 gap-4 w-full h-full">
+          <div v-for="i in 100" :key="i" class="aspect-square border border-foreground/20"/>
+        </div>
+      </div>
+
+      <Motion
+          :in-view="{ opacity: 1, scale: 1 }"
+          :initial="{ opacity: 0, scale: 0.9 }"
+          class="relative z-10 space-y-12"
+      >
+        <h2 class="text-[10vw] font-black leading-none uppercase italic tracking-tighter">
+          Stop <br/> Building <br/> Junk.
+        </h2>
+        <NuxtLink to="/docs/installation">
+          <RayaButton
+              class="h-20 px-20 bg-primary text-white font-black text-xl uppercase tracking-tighter italic hover:scale-105 transition-transform">
+            Initialize Raya_UI
+          </RayaButton>
+        </NuxtLink>
+      </Motion>
+    </section>
+
+    <!-- --- FOOTER INTEL --- -->
+    <section class="p-8 md:p-16 border-t border-border bg-muted/10">
+      <div class="container max-w-4xl mx-auto">
+        <div class="flex flex-col gap-16">
+          <div class="flex justify-between items-start">
+            <h2 class="text-xs font-black tracking-[0.8em] uppercase opacity-30">Common_Inquiries</h2>
+            <div class="font-mono text-[10px] opacity-20">0X44 // 2026</div>
+          </div>
+          <FaqSection/>
+        </div>
+      </div>
     </section>
 
   </div>
 </template>
+
+<style scoped>
+.animate-spin-slow {
+  animation: spin 12s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+</style>

@@ -1,18 +1,36 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { Tree } from '@/components/ui/tree'
 import { CodeBlock } from '@/components/ui/code-block'
-import { AnimatedTabs } from '@/components/ui/animated-tabs'
-import { Folder, File, FileCode, Image, Archive } from 'lucide-vue-next'
+import { Folder, File, FileCode, Image as ImageIcon, Archive } from 'lucide-vue-next'
 
-definePageMeta({ layout: 'docs' })
-const config = useAppConfig().raya
+definePageMeta({ layout: false })
 
 useSeoMeta({
   title: 'Tree Component for Vue & Nuxt',
   description: 'A hierarchical list component for Vue and Nuxt where folders expand and items are selectable.',
   ogTitle: 'Tree Component for Vue & Nuxt',
   ogDescription: 'A hierarchical list component for Vue and Nuxt where folders expand and items are selectable.',
+})
+
+// --- Interactive Settings State ---
+const multiple = ref(false)
+const selectionBehavior = ref('toggle') // toggle, replace
+
+// --- Data State ---
+const selection = ref<any>(null)
+const expanded = ref<string[]>(['app', 'components'])
+
+const resetSettings = () => {
+  multiple.value = false
+  selectionBehavior.value = 'toggle'
+  expanded.value = ['app', 'components']
+  selection.value = null
+}
+
+// Reset selection format when switching between multiple/single to satisfy reka-ui
+watch(multiple, (isMultiple) => {
+  selection.value = isMultiple ? [] : null
 })
 
 // --- Sample Data ---
@@ -50,7 +68,7 @@ const items: FileNode[] = [
     label: 'assets',
     icon: Folder,
     children: [
-      { label: 'logo.png', icon: Image },
+      { label: 'logo.png', icon: ImageIcon },
       { label: 'main.css', icon: File }
     ]
   },
@@ -58,29 +76,38 @@ const items: FileNode[] = [
   { label: 'README.md', icon: File }
 ]
 
-// --- State ---
-// Single selection mode
-const selection = ref<FileNode | null>(null)
-const expanded = ref<string[]>(['app', 'components'])
+// --- Installation Tabs ---
+const activeInstallTab = ref('cli')
+const activeCliTab = ref('npm')
+const cliTabs = ['npm', 'pnpm', 'yarn', 'bun']
 
-// --- Tabs ---
-const previewTabs = [
-  { label: 'Preview', slot: 'preview' },
-  { label: 'Code', slot: 'code' }
-]
+const installCommands = computed(() => {
+  let cliCmd = 'npx raya-ui@latest add tree'
+  switch(activeCliTab.value) {
+    case 'pnpm': cliCmd = 'pnpm dlx raya-ui@latest add tree'; break;
+    case 'yarn': cliCmd = 'yarn dlx raya-ui@latest add tree'; break;
+    case 'bun':  cliCmd = 'bun x --bun raya-ui@latest add tree'; break;
+  }
 
-const installTabs = [
-  { label: 'CLI', slot: 'cli' },
-  { label: 'Manual', slot: 'manual' }
-]
+  return {
+    cli: cliCmd,
+    manual: `npm install reka-ui lucide-vue-next clsx tailwind-merge`,
+    css: `/* Inherits seamlessly from your main.css theme variables */`
+  }
+})
 
-// --- Code Snippets ---
-const installationCode = `npx shadcn-vue@latest add ${config.baseUrl}/tree.json`
+// --- Dynamic Source Code ---
+const codeString = computed(() => {
+  let props = ``
+  if (multiple.value) props += `\n    multiple`
+  if (selectionBehavior.value !== 'toggle') props += `\n    selection-behavior="${selectionBehavior.value}"`
 
-const usageCode = `<script setup lang="ts">
+  const selInit = multiple.value ? `ref([])` : `ref()`
+
+  return `<script setup lang="ts">
 import { ref } from 'vue'
 import { Tree } from '@/components/ui/tree'
-import { Folder, File, FileCode, Image, Archive } from 'lucide-vue-next'
+import { Folder, File, FileCode, Image as ImageIcon, Archive } from 'lucide-vue-next'
 
 const items = [
   {
@@ -107,8 +134,7 @@ const items = [
   { label: 'package.json', icon: Archive }
 ]
 
-// Initialize for single selection
-const selection = ref()
+const selection = ${selInit}
 const expanded = ref(['app'])
 <\/script>
 
@@ -116,304 +142,317 @@ const expanded = ref(['app'])
   <Tree
     v-model="selection"
     v-model:expanded="expanded"
-    :items="items"
-    selection-behavior="toggle"
+    :items="items"${props}
   />
 </template>`
-
-const componentCode = `<script setup lang="ts" generic="T extends Record<string, any>">
-import { computed } from 'vue'
-import { TreeRoot, TreeItem, useForwardPropsEmits, type TreeRootEmits, type TreeRootProps } from 'reka-ui'
-import { ChevronRight, ChevronDown } from 'lucide-vue-next'
-import { cn } from '@/lib/utils'
-
-const props = withDefaults(defineProps<TreeRootProps & {
-  class?: string
-  items?: T[]
-  labelKey?: string
-  childrenKey?: string
-  iconKey?: string
-}>(), {
-  items: () => [],
-  labelKey: 'label',
-  childrenKey: 'children',
-  iconKey: 'icon',
-  selectionBehavior: 'toggle',
 })
-
-const emits = defineEmits<TreeRootEmits>()
-
-const delegatedProps = computed(() => {
-  const { class: _, items, labelKey, childrenKey, iconKey, ...delegated } = props
-  return delegated
-})
-
-const forwarded = useForwardPropsEmits(delegatedProps, emits)
-
-// Helper to resolve the key for an item, matching TreeRoot's logic
-const getKeyResolver = (item: T) => {
-  if (props.getKey) return props.getKey(item)
-  return item[props.labelKey] as string
-}
-
-// Manually handle expansion toggling for parents
-const handleToggle = (item: any) => {
-  if (!item.hasChildren) return
-
-  const key = getKeyResolver(item.value)
-  const currentExpanded = props.expanded ? [...props.expanded] : []
-  const index = currentExpanded.indexOf(key)
-
-  if (index > -1) {
-    currentExpanded.splice(index, 1)
-  } else {
-    currentExpanded.push(key)
-  }
-
-  emits('update:expanded', currentExpanded)
-}
-<\/script>
-
-<template>
-  <TreeRoot
-    v-bind="forwarded"
-    :class="cn('w-full select-none list-none', props.class)"
-    :items="items"
-    :get-key="getKeyResolver"
-    :get-children="(item) => item[childrenKey]"
-    v-slot="{ flattenItems }"
-  >
-    <TreeItem
-      v-for="item in flattenItems"
-      :key="item._id"
-      v-bind="item.bind"
-      v-slot="{ isExpanded, isSelected, isIndeterminate }"
-      :class="cn(
-        'group relative flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium outline-none transition-colors',
-        'hover:bg-accent hover:text-accent-foreground',
-        'focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-accent',
-        'data-[selected]:bg-accent data-[selected]:text-accent-foreground',
-        'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
-        'cursor-pointer'
-      )"
-      :style="{ paddingLeft: \`\${item.level * 1.5}rem\` }"
-      @select="(event) => {
-        // Prevent selection for items with children (parents)
-        if (item.hasChildren) {
-            event.preventDefault()
-        }
-      }"
-      @click="handleToggle(item)"
-    >
-      <component
-        :is="isExpanded ? ChevronDown : ChevronRight"
-        v-if="item.hasChildren"
-        class="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-accent-foreground/80 transition-transform"
-      />
-      <span v-else class="h-4 w-4 shrink-0" />
-
-      <slot
-        name="item"
-        :item="item.value"
-        :expanded="isExpanded"
-        :selected="isSelected"
-        :indeterminate="isIndeterminate"
-      >
-        <component
-          :is="item.value[iconKey]"
-          v-if="item.value[iconKey]"
-          class="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-accent-foreground"
-          :class="{ 'text-accent-foreground': isSelected }"
-        />
-
-        <span class="truncate">
-          {{ item.value[labelKey] }}
-        </span>
-      </slot>
-    </TreeItem>
-  </TreeRoot>
-</template>`
 </script>
 
 <template>
-  <div class="pb-5">
-    <PageTitle
-        title="Tree"
-        description="A hierarchical list component where folders expand and only files are selectable."
-    />
-    <Divider/>
-    <div class="mt-4">
-      <Tabs default-value="preview">
-        <TabsList>
-          <TabsTrigger value="preview">
-            Preview
-          </TabsTrigger>
-          <TabsTrigger value="code">
-            Code
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="preview">
-          <div class="rounded-xl border border-edge bg-background p-10 min-h-[350px] flex items-start justify-center">
-            <div class="w-full max-w-sm rounded-lg border border-edge bg-background p-2">
-              <Tree
-                  v-model="selection"
-                  v-model:expanded="expanded"
-                  :items="items"
-                  class="w-full"
-                  selection-behavior="toggle"
-              />
-            </div>
-          </div>
-          <div class="mt-4 text-sm text-zinc-500 bg-zinc-900/30 p-4 rounded-md font-mono">
-            <p>Expanded: {{ expanded }}</p>
-            <p class="mt-1">Selected Label: {{ selection ? selection.label : 'None' }}</p>
-          </div>
-        </TabsContent>
-        <TabsContent value="code">
-          <CodeBlock :code="usageCode" lang="html"/>
-        </TabsContent>
-      </Tabs>
+  <NuxtLayout name="docs">
+    <!-- Breadcrumb Title -->
+    <template #breadcrumb-title>
+      <span class="text-foreground text-sm font-medium">Tree</span>
+    </template>
+
+    <!-- ========================================== -->
+    <!-- LEFT PANE: Full Documentation              -->
+    <!-- ========================================== -->
+    <div class="flex flex-col gap-1.5">
+      <h1 class="text-3xl sm:text-4xl md:text-5xl font-base tracking-tighter text-foreground">Tree</h1>
+      <p class="text-base md:text-lg text-muted-foreground mt-1 leading-relaxed">
+        A recursive, hierarchical list component powered by Reka UI where folders expand and leaf items are selectable.
+      </p>
     </div>
 
-    <div class="h-g"/>
+    <!-- Installation -->
+    <div class="flex flex-col mt-4">
+      <h2 class="text-4xl mt-8 mb-5 tracking-tight text-foreground">Installation</h2>
 
-    <Divider/>
+      <!-- Main Install Tabs -->
+      <div class="flex items-center gap-2 mb-4 border-b border-border pb-2">
+        <button
+            v-for="tab in ['cli', 'manual', 'css']"
+            :key="tab"
+            @click="activeInstallTab = tab"
+            class="px-4 py-1.5 rounded-full text-sm font-medium transition-colors capitalize"
+            :class="activeInstallTab === tab ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground'"
+        >
+          {{ tab }}
+        </button>
+      </div>
 
-    <div class="space-y-6 mt-4">
-      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
-      <AnimatedTabs :items="installTabs" class="space-y-6">
-        <template #cli>
-          <CodeBlock :code="installationCode" file-name="Terminal" />
-        </template>
-        <template #manual>
-          <div class="space-y-6 mt-4">
-            <div class="space-y-2">
-              <h3 class="text-base font-medium">1. Install Dependencies</h3>
-              <CodeBlock code="npm install reka-ui lucide-vue-next" file-name="Terminal" />
-            </div>
-            <div class="space-y-2">
-              <h3 class="text-base font-medium">2. Create Component</h3>
-              <p class="text-sm text-zinc-400 dark:text-zinc-600">
-                Copy the code below into <code class="bg-zinc-900 px-1 py-0.5 rounded">components/ui/tree/Tree.vue</code>
-              </p>
-              <CodeBlock :code="componentCode" file-name="components/ui/tree/Tree.vue" />
-            </div>
+      <!-- CLI Install -->
+      <div v-if="activeInstallTab === 'cli'" class="w-full gap-0 rounded-xl overflow-hidden border border-border bg-background">
+        <div class="flex items-center px-3 h-10 border-b border-border">
+          <div class="flex items-center gap-0.5 relative">
+            <button
+                v-for="tab in cliTabs"
+                :key="tab"
+                @click="activeCliTab = tab"
+                class="relative z-10 px-3 h-7 rounded-md text-sm transition-colors"
+                :class="activeCliTab === tab ? 'text-foreground bg-muted' : 'text-muted-foreground hover:text-foreground'"
+            >
+              {{ tab }}
+            </button>
           </div>
-        </template>
-      </AnimatedTabs>
-    </div>
+        </div>
+        <div class="p-1.5">
+          <CodeBlock language="bash" :code="installCommands.cli" class="border-0 m-0 bg-transparent" />
+        </div>
+      </div>
 
-    <div class="h-g"/>
+      <!-- Manual Install -->
+      <div v-if="activeInstallTab === 'manual'" class="flex flex-col gap-4">
+        <p class="text-sm text-muted-foreground">1. Install dependencies:</p>
+        <div class="rounded-xl overflow-hidden border border-border bg-background p-1.5">
+          <CodeBlock language="bash" :code="installCommands.manual" class="border-0 m-0 bg-transparent" />
+        </div>
+        <p class="text-sm text-muted-foreground mt-2">2. Copy the component code into <code>components/ui/tree</code>.</p>
+      </div>
 
-    <Divider/>
-
-    <div class="space-y-6 mt-4">
-      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
-      <div class="overflow-x-auto rounded-lg border border-edge bg-background">
-        <table class="w-full text-sm text-left">
-          <thead class="border-b border-edge bg-background text-zinc-400 dark:text-zinc-600">
-          <tr>
-            <th class="px-4 py-3 font-medium">Prop</th>
-            <th class="px-4 py-3 font-medium">Type</th>
-            <th class="px-4 py-3 font-medium">Default</th>
-            <th class="px-4 py-3 font-medium">Description</th>
-          </tr>
-          </thead>
-          <tbody class="divide-y divide-edge text-zinc-700 dark:text-zinc-300">
-          <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">items</td>
-            <td class="px-4 py-3 font-mono text-xs">Array</td>
-            <td class="px-4 py-3 font-mono text-xs">[]</td>
-            <td class="px-4 py-3">The hierarchical data to render.</td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">modelValue</td>
-            <td class="px-4 py-3 font-mono text-xs">any</td>
-            <td class="px-4 py-3 font-mono text-xs">undefined</td>
-            <td class="px-4 py-3">The currently selected item. Use <code>v-model</code>.</td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">labelKey</td>
-            <td class="px-4 py-3 font-mono text-xs">string</td>
-            <td class="px-4 py-3 font-mono text-xs">'label'</td>
-            <td class="px-4 py-3">The property key to use for the item label.</td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">childrenKey</td>
-            <td class="px-4 py-3 font-mono text-xs">string</td>
-            <td class="px-4 py-3 font-mono text-xs">'children'</td>
-            <td class="px-4 py-3">The property key to use for nested children.</td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">iconKey</td>
-            <td class="px-4 py-3 font-mono text-xs">string</td>
-            <td class="px-4 py-3 font-mono text-xs">'icon'</td>
-            <td class="px-4 py-3">The property key to use for the item icon component/name.</td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">selectionBehavior</td>
-            <td class="px-4 py-3 font-mono text-xs">'toggle' | 'replace'</td>
-            <td class="px-4 py-3 font-mono text-xs">'toggle'</td>
-            <td class="px-4 py-3">Controls selection behavior. 'replace' deselects others on click (unless modifier key). 'toggle' adds/removes.</td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">expanded</td>
-            <td class="px-4 py-3 font-mono text-xs">string[]</td>
-            <td class="px-4 py-3 font-mono text-xs">[]</td>
-            <td class="px-4 py-3">Keys of expanded items. Use <code>v-model:expanded</code>.</td>
-          </tr>
-          </tbody>
-        </table>
+      <!-- CSS Install -->
+      <div v-if="activeInstallTab === 'css'" class="flex flex-col gap-4">
+        <div class="rounded-lg border border-info/20 bg-info/10 p-4 text-sm text-info mb-2">
+          <strong class="font-semibold">Ready to go:</strong> This component inherits your typography, structural layout colors, and dynamic interactive states natively from your <code>main.css</code> theme variables.
+        </div>
       </div>
     </div>
 
-    <div class="space-y-6 mt-4">
-      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Emits</h2>
-      <div class="overflow-x-auto rounded-lg border border-edge bg-background">
-        <table class="w-full text-sm text-left">
-          <thead class="border-b border-edge bg-background text-zinc-400 dark:text-zinc-600">
-          <tr>
-            <th class="px-4 py-3 font-medium">Event</th>
-            <th class="px-4 py-3 font-medium">Payload</th>
-            <th class="px-4 py-3 font-medium">Description</th>
-          </tr>
-          </thead>
-          <tbody class="divide-y divide-edge text-zinc-700 dark:text-zinc-300">
-          <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">update:modelValue</td>
-            <td class="px-4 py-3 font-mono text-xs">any</td>
-            <td class="px-4 py-3">Fired when selection changes.</td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">update:expanded</td>
-            <td class="px-4 py-3 font-mono text-xs">string[]</td>
-            <td class="px-4 py-3">Fired when items are expanded or collapsed.</td>
-          </tr>
-          </tbody>
-        </table>
+    <!-- File Structure -->
+    <div class="flex flex-col mt-4">
+      <h2 class="text-4xl mt-8 mb-5 tracking-tight text-foreground">File Structure</h2>
+      <div class="my-4 rounded-xl border border-border overflow-hidden bg-background">
+        <div class="p-4 w-full relative font-mono text-sm text-muted-foreground">
+          <div class="flex items-center gap-2 text-foreground">
+            <svg class="size-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+            your-project
+          </div>
+          <div class="relative ml-6 before:absolute before:-left-2 before:inset-y-0 before:w-px before:bg-border">
+            <div class="flex items-center gap-2 py-2">
+              <svg class="size-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+              components
+            </div>
+            <div class="relative ml-6 before:absolute before:-left-2 before:inset-y-0 before:w-px before:bg-border">
+              <div class="flex items-center gap-2 py-2">
+                <svg class="size-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+                ui
+              </div>
+              <div class="relative ml-6 before:absolute before:-left-2 before:inset-y-0 before:w-px before:bg-border">
+                <div class="flex items-center gap-2 py-2 text-pink-500">
+                  <svg class="size-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                  tree
+                </div>
+                <div class="relative ml-6 before:absolute before:-left-2 before:inset-y-0 before:w-px before:bg-border">
+                  <div class="flex items-center gap-2 py-1 text-muted-foreground"><div class="w-4 border-t border-border mr-2"></div>Tree.vue</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="space-y-6 mt-4">
-      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Slots</h2>
-      <div class="overflow-x-auto rounded-lg border border-edge bg-background">
-        <table class="w-full text-sm text-left">
-          <thead class="border-b border-edge bg-background text-zinc-400 dark:text-zinc-600">
-          <tr>
-            <th class="px-4 py-3 font-medium">Slot</th>
-            <th class="px-4 py-3 font-medium">Props</th>
-            <th class="px-4 py-3 font-medium">Description</th>
-          </tr>
-          </thead>
-          <tbody class="divide-y divide-edge text-zinc-700 dark:text-zinc-300">
-          <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">#item</td>
-            <td class="px-4 py-3 font-mono text-xs">{ item, expanded, selected, indeterminate }</td>
-            <td class="px-4 py-3">Custom content for each tree item.</td>
-          </tr>
-          </tbody>
-        </table>
+    <!-- API Reference -->
+    <div class="flex flex-col mt-4">
+      <h2 class="text-4xl mt-8 mb-5 tracking-tight text-foreground">API Reference</h2>
+
+      <h3 class="text-2xl mt-7 mb-3 text-foreground">Props</h3>
+      <div class="rounded-none border-t border-border mt-4 overflow-hidden">
+
+        <div class="flex items-start gap-4 px-5 py-4 border-b border-border">
+          <div class="w-44 shrink-0">
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg">items</code>
+          </div>
+          <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <code class="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">Array</code>
+              <div class="flex-1"></div>
+              <code class="text-sm font-mono text-foreground bg-muted px-2 py-0.5 rounded-md">[]</code>
+            </div>
+            <p class="text-sm text-muted-foreground leading-relaxed mt-2">The hierarchical recursive data array to render.</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-4 px-5 py-4 border-b border-border">
+          <div class="w-44 shrink-0">
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg">modelValue</code>
+          </div>
+          <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <code class="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">any | any[]</code>
+            </div>
+            <p class="text-sm text-muted-foreground leading-relaxed mt-2">The currently selected item(s). Use standard <code>v-model</code> binding.</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-4 px-5 py-4 border-b border-border">
+          <div class="w-44 shrink-0">
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg">multiple</code>
+          </div>
+          <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <code class="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">boolean</code>
+              <div class="flex-1"></div>
+              <code class="text-sm font-mono text-foreground bg-muted px-2 py-0.5 rounded-md">false</code>
+            </div>
+            <p class="text-sm text-muted-foreground leading-relaxed mt-2">Allows multiple selections. When true, <code>modelValue</code> must be an array.</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-4 px-5 py-4 border-b border-border">
+          <div class="w-44 shrink-0">
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg">expanded</code>
+          </div>
+          <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <code class="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">string[]</code>
+              <div class="flex-1"></div>
+              <code class="text-sm font-mono text-foreground bg-muted px-2 py-0.5 rounded-md">[]</code>
+            </div>
+            <p class="text-sm text-muted-foreground leading-relaxed mt-2">An array of the currently expanded folder keys. Use <code>v-model:expanded</code> binding.</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-4 px-5 py-4 border-b border-border">
+          <div class="w-44 shrink-0">
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg">selectionBehavior</code>
+          </div>
+          <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <code class="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">enum</code>
+              <div class="flex-1"></div>
+              <code class="text-sm font-mono text-foreground bg-muted px-2 py-0.5 rounded-md">"toggle"</code>
+            </div>
+            <p class="text-sm text-muted-foreground leading-relaxed mt-2">Controls selection behavior. <code>replace</code> deselects others on click (unless modifier key is held). <code>toggle</code> naturally adds/removes.</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-4 px-5 py-4 border-b border-border">
+          <div class="w-44 shrink-0">
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg">labelKey</code>
+          </div>
+          <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <code class="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">string</code>
+              <div class="flex-1"></div>
+              <code class="text-sm font-mono text-foreground bg-muted px-2 py-0.5 rounded-md">"label"</code>
+            </div>
+            <p class="text-sm text-muted-foreground leading-relaxed mt-2">The object property key to use for the item's label text.</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-4 px-5 py-4 border-b border-border">
+          <div class="w-44 shrink-0">
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg">childrenKey</code>
+          </div>
+          <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <code class="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">string</code>
+              <div class="flex-1"></div>
+              <code class="text-sm font-mono text-foreground bg-muted px-2 py-0.5 rounded-md">"children"</code>
+            </div>
+            <p class="text-sm text-muted-foreground leading-relaxed mt-2">The object property key to use to identify nested children arrays.</p>
+          </div>
+        </div>
+
       </div>
+
+      <h3 class="text-2xl mt-8 mb-3 text-foreground">Slots</h3>
+      <div class="rounded-none border-t border-border mt-4 overflow-hidden">
+        <div class="flex items-start gap-4 px-5 py-4 border-b border-border">
+          <div class="w-44 shrink-0">
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg">#item</code>
+          </div>
+          <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+            <p class="text-sm text-muted-foreground leading-relaxed mt-2">Overrides the default rendering for each tree item. Provides <code>{ item, expanded, selected, indeterminate }</code> in the slot scope.</p>
+          </div>
+        </div>
+      </div>
+
     </div>
-  </div>
+
+    <!-- ========================================== -->
+    <!-- RIGHT PANE: Visual Preview Slot            -->
+    <!-- ========================================== -->
+    <template #preview>
+      <div class="w-full flex flex-col gap-6 items-center justify-center p-6 h-full min-h-[400px]">
+
+        <div class="w-full max-w-sm rounded-lg border border-border bg-background shadow-sm p-4 overflow-x-auto">
+          <Tree
+              v-model="selection"
+              v-model:expanded="expanded"
+              :items="items"
+              :multiple="multiple"
+              :selection-behavior="selectionBehavior"
+              class="w-full"
+          />
+        </div>
+
+        <!-- Live Value Feedback Box -->
+        <div class="w-full max-w-sm p-4 bg-muted/30 border border-border rounded-lg flex flex-col gap-3 font-mono text-sm">
+          <div>
+            <span class="text-xs text-muted-foreground uppercase tracking-wider font-semibold block mb-1">Expanded Folders</span>
+            <code class="text-foreground break-all">{{ expanded }}</code>
+          </div>
+          <div class="border-t border-border/50 pt-2">
+            <span class="text-xs text-muted-foreground uppercase tracking-wider font-semibold block mb-1">Active Selection</span>
+            <code class="text-foreground break-all">
+              <template v-if="multiple">
+                {{ selection ? selection.map((s: any) => s.label) : '[]' }}
+              </template>
+              <template v-else>
+                {{ selection ? selection.label : 'null' }}
+              </template>
+            </code>
+          </div>
+        </div>
+
+      </div>
+    </template>
+
+    <!-- ========================================== -->
+    <!-- RIGHT PANE: Source Code Slot               -->
+    <!-- ========================================== -->
+    <template #code>
+      <CodeBlock language="vue" :code="codeString" class="border-0 bg-transparent m-0 p-0" />
+    </template>
+
+    <!-- ========================================== -->
+    <!-- RIGHT PANE: Settings Panel Slot            -->
+    <!-- ========================================== -->
+    <template #settings>
+      <!-- Panel Header & Reset -->
+      <div class="flex items-center justify-between mb-8">
+        <span class="font-semibold text-base text-foreground tracking-tight">Settings</span>
+        <button @click="resetSettings" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Reset</button>
+      </div>
+
+      <!-- Multiple Selection Toggle -->
+      <div class="flex items-center justify-between mb-6 border-b border-border pb-6">
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-foreground cursor-pointer select-none" @click="multiple = !multiple">Multiple Selection</label>
+          <span class="text-xs text-muted-foreground">Allow selecting multiple files.</span>
+        </div>
+        <button @click="multiple = !multiple" :class="['w-10 h-6 rounded-full transition-colors duration-300 relative shrink-0', multiple ? 'bg-foreground' : 'bg-muted']">
+          <div :class="['w-4 h-4 rounded-full absolute top-[4px] transition-transform duration-300', multiple ? 'translate-x-[20px] bg-background' : 'translate-x-[4px] bg-muted-foreground shadow-sm']"></div>
+        </button>
+      </div>
+
+      <!-- Selection Behavior Select -->
+      <div class="flex flex-col gap-2 mb-2">
+        <label class="text-sm font-medium text-foreground">Selection Behavior</label>
+        <div class="relative">
+          <select v-model="selectionBehavior" class="w-full appearance-none bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-muted-foreground transition-all">
+            <option value="toggle">Toggle (Add/Remove on click)</option>
+            <option value="replace">Replace (Deselects others)</option>
+          </select>
+          <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-muted-foreground">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7"></path></svg>
+          </div>
+        </div>
+      </div>
+
+    </template>
+  </NuxtLayout>
 </template>
