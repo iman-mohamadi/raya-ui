@@ -7,8 +7,7 @@ const isOpen = ref(false)
 const navLinks = [
   { name: 'Introduction', href: '/docs/introduction' },
   { name: 'Installation', href: '/docs/installation' },
-  { name: 'Components', href: '/docs/components/glowing-effect' },
-  { name: 'Showcase', href: '/showcase' },
+  { name: 'Components', href: '/docs/components/glowing-effect' }
 ]
 </script>
 
@@ -47,6 +46,7 @@ const navLinks = [
         <a href="https://github.com/imanmohammadi/raya-ui" target="_blank" class="p-2 text-muted-foreground hover:text-foreground transition-colors">
           <Github class="size-5" />
         </a>
+        <ThemeSwitcher />
         <button class="md:hidden p-2 text-foreground" @click="isOpen = !isOpen">
           <Menu v-if="!isOpen" class="size-6" />
           <X v-else class="size-6" />
