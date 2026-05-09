@@ -41,10 +41,10 @@ Built on top of **[Shadcn Vue](https://www.shadcn-vue.com/)** (powered by **[Rek
 
 ## ⚡ Quick Start
 
-Use the CLI to add components directly into your Nuxt or Vue project without bloating your `node_modules`.
+Use the Shadcn Vue CLI to add components directly into your Nuxt or Vue project via the Raya UI registry:
 
 ```bash
-npx shadcn-vue@latest add https://raya-ui.com/registry/pixelated-button.json
+npx shadcn-vue@latest add [https://raya-ui.com/registry/pixelated-button.json](https://raya-ui.com/registry/pixelated-button.json)
 ```
 
 Import and use it immediately with full TypeScript support:
@@ -69,7 +69,7 @@ import { PixelatedButton } from '@/components/ui/pixelated-button'
 
 ## 📂 Architecture Overview
 
-When you add a component via the CLI, Raya UI places it systematically into your project tree, ensuring your codebase remains pristine and modular.
+When you add a component via the registry, Raya UI places it systematically into your project tree, ensuring your codebase remains pristine and modular.
 
 ```text
 your-project/
