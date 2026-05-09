@@ -7,6 +7,7 @@ const navigation = [
   {
     title: 'Getting Started',
     items: [
+      { title: 'Home', path: '/' },
       { title: 'Introduction', path: '/docs/introduction' },
       { title: 'Installation', path: '/docs/installation' },
     ]

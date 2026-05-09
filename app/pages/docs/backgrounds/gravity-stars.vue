@@ -4,7 +4,7 @@ import { GravityStars } from '@/components/ui/gravity-stars'
 import { LiquidGlass } from '@/components/ui/liquid-glass'
 import { CodeBlock } from '@/components/ui/code-block'
 
-definePageMeta({ layout: false })
+definePageMeta({ layout: 'docs' })
 
 useSeoMeta({
   title: 'Gravity Stars Component for Vue & Nuxt',
@@ -73,7 +73,7 @@ import { GravityStars } from '@/components/ui/gravity-stars'
 </script>
 
 <template>
-  <NuxtLayout name="docs">
+  <DocContent>
     <!-- Breadcrumb Title -->
     <template #breadcrumb-title>
       <span class="text-foreground text-sm font-medium">Gravity Stars</span>
@@ -319,5 +319,5 @@ import { GravityStars } from '@/components/ui/gravity-stars'
       </div>
 
     </template>
-  </NuxtLayout>
+  </DocContent>
 </template>

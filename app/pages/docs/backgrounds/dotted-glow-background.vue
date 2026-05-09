@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import DottedGlowBackground from '@/components/ui/dotted-glow-background/DottedGlowBackground.vue'
 import { CodeBlock } from '@/components/ui/code-block'
 
-definePageMeta({ layout: false })
+definePageMeta({ layout: 'docs' })
 
 useSeoMeta({
   title: 'Dotted Glow Background Component for Vue & Nuxt',
@@ -75,7 +75,7 @@ import { DottedGlowBackground } from '@/components/ui/dotted-glow-background'
 </script>
 
 <template>
-  <NuxtLayout name="docs">
+  <DocContent>
     <!-- Breadcrumb Title -->
     <template #breadcrumb-title>
       <span class="text-foreground text-sm font-medium">Dotted Glow Background</span>
@@ -320,5 +320,5 @@ import { DottedGlowBackground } from '@/components/ui/dotted-glow-background'
       </div>
 
     </template>
-  </NuxtLayout>
+  </DocContent>
 </template>

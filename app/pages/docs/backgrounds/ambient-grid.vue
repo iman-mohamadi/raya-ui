@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { AmbientGrid } from '@/components/ui/ambient-grid'
 import { CodeBlock } from '@/components/ui/code-block'
 
-definePageMeta({ layout: false })
+definePageMeta({ layout: 'docs' })
 
 useSeoMeta({
   title: 'Ambient Grid Component for Vue & Nuxt',
@@ -71,7 +71,7 @@ import { AmbientGrid } from '@/components/ui/ambient-grid'
 </script>
 
 <template>
-  <NuxtLayout name="docs">
+  <DocContent>
     <!-- Breadcrumb Title -->
     <template #breadcrumb-title>
       <span class="text-foreground text-sm font-medium">Ambient Grid</span>
@@ -337,5 +337,5 @@ import { AmbientGrid } from '@/components/ui/ambient-grid'
       </div>
 
     </template>
-  </NuxtLayout>
+  </DocContent>
 </template>
