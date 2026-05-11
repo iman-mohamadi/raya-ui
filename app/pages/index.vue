@@ -49,7 +49,7 @@ const arsenalItems = [
     id: '03',
     category: 'Sound',
     title: 'Bar Visualizer',
-    link: '/docs/backgrounds/bar-visualizer',
+    link: '/docs/components/bar-visualizer',
     bgClass: 'bg-card/60'
   },
   {
