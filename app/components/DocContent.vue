@@ -15,7 +15,7 @@ const refreshPreview = () => {
 </script>
 
 <template>
-  <div class="flex h-screen w-full bg-muted text-foreground overflow-hidden font-sans transition-colors duration-300">
+  <div class="flex h-screen w-full bg-background text-foreground overflow-hidden font-sans transition-colors duration-300">
 
     <!-- HOVER SIDEBAR OVERLAY -->
     <div
@@ -46,8 +46,8 @@ const refreshPreview = () => {
       <div class="relative flex flex-col lg:flex-row h-[calc(100vh)] overflow-hidden w-full bg-transparent">
 
         <!-- Top Header & Breadcrumb -->
-        <div :class="isSidebarOpen ? 'z-[1000]' : 'z-[60]'" class="absolute top-0 left-0 right-0 h-12 flex items-center pointer-events-none select-none w-fit">
-          <div aria-hidden="true" class="pointer-events-none absolute inset-0 z-50 bg-gradient-to-b from-muted from-80% to-transparent" style="height: 106px; width: 100%; top: 0px; left: 0px; mask-image: linear-gradient(black 50%, transparent 100%); backdrop-filter: blur(4px);"></div>
+        <div :class="isSidebarOpen ? 'z-[1000]' : 'z-[60]'" class="absolute top-0 left-0 right-0 h-12 flex items-center pointer-events-none select-none w-1/2">
+          <div aria-hidden="true" class="pointer-events-none absolute inset-0 z-50 bg-transparent" style="height: 106px; width: 100%; top: 0px; left: 0px; mask-image: linear-gradient(black 50%, transparent 100%); backdrop-filter: blur(4px);"></div>
 
           <div class="relative flex items-center z-[150] gap-3 pt-6 px-6 pointer-events-auto">
             <button @click="isSidebarOpen = true" class="inline-flex shrink-0 items-center justify-center gap-2 text-sm font-medium transition-all text-muted-foreground hover:bg-background hover:text-foreground size-8 rounded-full">
@@ -76,7 +76,7 @@ const refreshPreview = () => {
         </div>
 
         <!-- Bottom Blur Mask -->
-        <div aria-hidden="true" class="pointer-events-none absolute z-50 bottom-0 left-0 w-full bg-gradient-to-t from-muted to-transparent" style="height: 92px; mask-image: linear-gradient(to top, black 50%, transparent 100%); backdrop-filter: blur(2px);"></div>
+        <div aria-hidden="true" class="pointer-events-none absolute z-50 bottom-0 left-0 w-full bg-gradient-to-t from-background to-transparent" style="height: 92px; mask-image: linear-gradient(to top, black 50%, transparent 100%); backdrop-filter: blur(2px);"></div>
 
         <!-- LEFT PANE: Documentation Text -->
         <div
@@ -100,7 +100,7 @@ const refreshPreview = () => {
           <div class="flex flex-col h-full z-20">
 
             <!-- Preview Block -->
-            <div class="relative flex-1 min-h-0 flex flex-col rounded-[32px] overflow-hidden bg-background border border-border transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]">
+            <div class="relative flex-1 min-h-0 flex flex-col rounded-[32px] overflow-hidden bg-pane-background border border-border transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]">
 
               <div :key="previewKey" class="relative flex-1 min-h-0 flex overflow-hidden items-center justify-center w-full h-full pb-20">
                 <slot name="preview" />

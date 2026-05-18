@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { TabsRoot, TabsList, TabsTrigger, TabsContent } from 'reka-ui'
 import { cn } from '@/lib/utils'
 
 export interface TabItem {
+  id?: string | number
   label: string
   icon?: any
   slot?: string
@@ -16,33 +17,26 @@ export interface TabItem {
 interface Props {
   modelValue?: string | number
   items?: TabItem[]
-  defaultIndex?: number
+  defaultTab?: string | number
+  variant?: 'underline' | 'pill' | 'segment'
   orientation?: 'horizontal' | 'vertical'
-  variant?: 'pill' | 'link'
   content?: boolean
   class?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   items: () => [],
-  defaultIndex: 0,
+  variant: 'underline',
   orientation: 'horizontal',
-  variant: 'pill',
   content: true
 })
 
 const emit = defineEmits(['update:modelValue', 'change'])
 
-// State
-const activeIndex = ref(props.defaultIndex)
+// States
+const internalActiveTab = ref<string | number>(props.defaultTab ?? props.items[0]?.id ?? props.items[0]?.value ?? 0)
 const tabRefs = ref<HTMLElement[]>([])
 const containerRef = ref<HTMLElement | null>(null)
-
-// Drag State
-const isDown = ref(false)
-const startX = ref(0)
-const scrollLeft = ref(0)
-const isDragging = ref(false)
 
 const markerStyle = ref({
   width: '0px',
@@ -54,13 +48,13 @@ const markerStyle = ref({
 const selected = computed({
   get() {
     if (props.modelValue !== undefined) return props.modelValue
-    return activeIndex.value
+    return internalActiveTab.value
   },
   set(val) {
     if (props.modelValue !== undefined) {
       emit('update:modelValue', val)
     } else {
-      activeIndex.value = Number(val)
+      internalActiveTab.value = val
     }
     emit('change', val)
   }
@@ -68,15 +62,16 @@ const selected = computed({
 
 const currentNumericIndex = computed(() => {
   if (props.items && props.items.length > 0) {
-    const idx = props.items.findIndex((item, i) =>
-        (item.value ?? i) === selected.value
-    )
+    const idx = props.items.findIndex((item, i) => {
+      const itemVal = item.id ?? item.value ?? i
+      return itemVal === selected.value
+    })
     return idx !== -1 ? idx : 0
   }
-  return typeof selected.value === 'number' ? selected.value : 0
+  return 0
 })
 
-// Update Marker Position
+// Update indicator position using absolute geometric coordinates
 const updateMarker = () => {
   const el = tabRefs.value[currentNumericIndex.value]
   if (!el || !containerRef.value) {
@@ -89,12 +84,21 @@ const updateMarker = () => {
   const width = el.offsetWidth
   const height = el.offsetHeight
 
-  if (props.variant === 'link') {
-    markerStyle.value = {
-      width: `${width}px`,
-      height: '2px',
-      transform: `translate(${left}px, ${height - 2}px)`,
-      opacity: 1
+  if (props.variant === 'underline') {
+    if (props.orientation === 'vertical') {
+      markerStyle.value = {
+        width: 'var(--raya-tabs-underline-height, 2px)',
+        height: `${height}px`,
+        transform: `translate(${left}px, ${top}px)`,
+        opacity: 1
+      }
+    } else {
+      markerStyle.value = {
+        width: `${width}px`,
+        height: 'var(--raya-tabs-underline-height, 2px)',
+        transform: `translate(${left}px, ${top + height - 2}px)`,
+        opacity: 1
+      }
     }
   } else {
     markerStyle.value = {
@@ -114,44 +118,8 @@ const setContainerRef = (el: any) => {
   if (el) containerRef.value = el.$el || el
 }
 
-// --- Optimized Drag Logic ---
-const startDrag = (e: MouseEvent) => {
-  if (!containerRef.value) return
-  isDown.value = true
-  isDragging.value = false
-
-  startX.value = e.pageX
-  scrollLeft.value = containerRef.value.scrollLeft
-}
-
-const stopDrag = () => {
-  isDown.value = false
-  // Delay clearing dragging state to ensure click events are blocked
-  setTimeout(() => isDragging.value = false, 100)
-}
-
-const doDrag = (e: MouseEvent) => {
-  if (!isDown.value || !containerRef.value) return
-  e.preventDefault()
-
-  const x = e.pageX
-  const walk = (x - startX.value) * 1
-
-  if (Math.abs(walk) > 5) isDragging.value = true
-
-  containerRef.value.scrollLeft = scrollLeft.value - walk
-}
-
-const handleTriggerClick = (e: MouseEvent) => {
-  // Backup prevention in case pointer-events trick misses something
-  if (isDragging.value) {
-    e.preventDefault()
-    e.stopPropagation()
-  }
-}
-
 watch(
-    () => [currentNumericIndex.value, props.variant, props.orientation, props.items],
+    () => [selected.value, props.variant, props.orientation, props.items],
     async () => {
       await nextTick()
       updateMarker()
@@ -159,10 +127,20 @@ watch(
     { deep: true }
 )
 
+let resizeObserver: ResizeObserver | null = null
+
 onMounted(async () => {
   await nextTick()
   updateMarker()
-  window.addEventListener('resize', updateMarker)
+
+  if (containerRef.value) {
+    resizeObserver = new ResizeObserver(() => updateMarker())
+    resizeObserver.observe(containerRef.value)
+  }
+})
+
+onBeforeUnmount(() => {
+  if (resizeObserver) resizeObserver.disconnect()
 })
 </script>
 
@@ -170,71 +148,70 @@ onMounted(async () => {
   <TabsRoot
       v-model="selected"
       :orientation="orientation"
-      :class="cn('w-full flex flex-col', props.class)"
+      :class="cn(
+      'w-full flex',
+      orientation === 'vertical' ? 'flex-row gap-8 items-start' : 'flex-col',
+      props.class
+    )"
+      style="
+      --raya-tabs-curve: cubic-bezier(0.25, 1, 0.2, 1);
+      --raya-tabs-duration: 300ms;
+    "
   >
     <TabsList
         :ref="setContainerRef"
-        class="relative flex items-center gap-1 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing select-none bg-transparent"
+        class="relative inline-flex select-none bg-card shrink-0"
         :class="[
-        orientation === 'vertical' ? 'flex-col items-stretch' : 'flex-row',
-        variant === 'pill' ? 'p-1' : 'p-0'
+        orientation === 'vertical' ? 'flex-col items-stretch' : 'flex-row items-center',
+        variant === 'underline' && (orientation === 'vertical' ? 'border-r border-border pr-px bg-transparent' : 'border-b border-border pb-px bg-transparent'),
+        variant === 'pill' && 'gap-1 rounded-xl bg-muted border border-border/50 p-1 w-fit',
+        variant === 'segment' && (orientation === 'vertical' ? 'gap-0 rounded-xl bg-muted border border-border/50 p-1 w-full max-w-[200px]' : 'gap-0 rounded-xl bg-muted border border-border/50 p-1 w-full')
       ]"
-        @mousedown="startDrag"
-        @mouseleave="stopDrag"
-        @mouseup="stopDrag"
-        @mousemove="doDrag"
     >
       <div
-          class="absolute top-0 left-0 transition-all duration-300 ease-[cubic-bezier(0.25,0.8,0.25,1)] pointer-events-none"
+          class="absolute top-0 left-0 opacity-0 pointer-events-none transition-all z-0"
+          style="transition-property: transform, width, height; transition-duration: var(--raya-tabs-duration); transition-timing-function: var(--raya-tabs-curve);"
           :class="[
-          variant === 'pill'
-            ? 'bg-black/10 dark:bg-white/10 shadow-sm rounded-lg border border-border/50'
-            : 'bg-primary rounded-t-sm z-20'
+          variant === 'underline' && 'bg-primary rounded-full',
+          variant === 'pill' && 'bg-background shadow-sm rounded-lg border border-border/50',
+          variant === 'segment' && 'bg-background shadow-sm rounded-lg border border-border/50'
         ]"
           :style="markerStyle"
       ></div>
 
       <TabsTrigger
           v-for="(item, index) in items"
-          :key="index"
-          :value="item.value ?? index"
+          :key="item.id ?? item.value ?? index"
+          :value="item.id ?? item.value ?? index"
           :ref="(el) => setTabRef(el, index)"
           :disabled="item.disabled"
-          @click.capture="handleTriggerClick"
-          class="relative z-10 flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-medium transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-ring whitespace-nowrap flex-shrink-0 data-[state=inactive]:text-muted-foreground data-[state=active]:text-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+          class="relative z-10 flex items-center gap-2 px-4 py-2 text-sm font-medium outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 whitespace-nowrap transition-colors duration-300 disabled:opacity-40 disabled:cursor-not-allowed bg-transparent border-0"
           :class="[
-          variant === 'pill' ? 'rounded-lg' : 'rounded-none hover:bg-muted/50',
-          isDragging ? 'pointer-events-none' : ''
+          variant === 'segment' || orientation === 'vertical' ? 'w-full' : '',
+          orientation === 'vertical' ? 'justify-start' : 'justify-center',
+          selected === (item.id ?? item.value ?? index)
+            ? 'text-foreground font-semibold'
+            : 'text-muted-foreground hover:text-foreground'
         ]"
       >
-        <slot name="default" :item="item" :index="index" :selected="selected === (item.value ?? index)">
-          <component :is="item.icon" v-if="item.icon" class="h-4 w-4" />
+        <slot name="default" :item="item" :index="index" :selected="selected === (item.id ?? item.value ?? index)">
+          <component :is="item.icon" v-if="item.icon" class="h-4 w-4 opacity-70" />
           <span>{{ item.label }}</span>
         </slot>
       </TabsTrigger>
     </TabsList>
 
-    <div v-if="content" class="mt-4">
+    <div v-if="content" :class="orientation === 'vertical' ? 'flex-1 mt-0 pt-1' : 'mt-4'">
       <TabsContent
           v-for="(item, index) in items"
-          :key="index"
-          :value="item.value ?? index"
-          class="focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md"
+          :key="item.id ?? item.value ?? index"
+          :value="item.id ?? item.value ?? index"
+          class="focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl data-[state=inactive]:hidden data-[state=active]:animate-in data-[state=active]:fade-in-50 data-[state=active]:slide-in-from-bottom-1 duration-200"
       >
-        <slot :name="item.slot || 'item'" :item="item" :index="index" :selected="selected === (item.value ?? index)">
-          <div v-if="item.content" v-html="item.content"></div>
+        <slot :name="item.slot || 'item'" :item="item" :index="index" :selected="selected === (item.id ?? item.value ?? index)">
+          <div v-if="item.content" v-html="item.content" class="text-sm text-muted-foreground leading-relaxed"></div>
         </slot>
       </TabsContent>
     </div>
   </TabsRoot>
 </template>
-
-<style scoped>
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-</style>
