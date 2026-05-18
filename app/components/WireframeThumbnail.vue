@@ -139,6 +139,88 @@ defineProps<{
       </div>
     </div>
 
+    <div v-else-if="component === 'Animated Input'" class="flex h-10 w-40 items-center justify-between rounded-full border border-black/10 bg-black/5 p-1 pl-3 dark:border-white/10 dark:bg-white/5">
+      <div class="block h-1.5 w-1/2 rounded-full bg-black/20 dark:bg-white/20"></div>
+      <div class="size-6 shrink-0 rounded-full bg-primary/80"></div>
+    </div>
+
+    <div v-else-if="component === 'Animated Theme Toggler'" class="relative flex h-24 w-32 items-center justify-center overflow-hidden rounded-xl border border-black/10 bg-background dark:border-white/10 shadow-sm">
+      <div class="absolute size-28 rounded-full bg-black/5 dark:bg-white/5"></div>
+      <div class="absolute size-16 rounded-full bg-black/10 dark:bg-white/10"></div>
+      <div class="absolute size-8 rounded-full bg-black/20 dark:bg-white/20"></div>
+
+      <div class="relative z-10 size-4 rounded-full bg-black/80 dark:bg-white/80 shadow-md ring-2 ring-background dark:ring-background"></div>
+    </div>
+
+    <div v-else-if="component === 'Encrypted Text'" class="flex w-32 items-center justify-center gap-0.5 font-mono">
+      <div class="h-3 w-2 rounded-sm bg-black/30 dark:bg-white/30"></div>
+      <div class="h-3 w-3 rounded-sm bg-black/10 dark:bg-white/10"></div>
+      <div class="h-3 w-2 rounded-sm bg-black/40 dark:bg-white/40"></div>
+      <div class="h-3 w-4 rounded-sm bg-black/20 dark:bg-white/20"></div>
+      <div class="h-3 w-2 rounded-sm bg-primary/50"></div>
+      <div class="h-3 w-3 rounded-sm bg-black/20 dark:bg-white/20"></div>
+    </div>
+
+    <div v-else-if="component === 'Glowing Effect'" class="relative flex size-20 items-center justify-center">
+      <div class="absolute inset-0 rounded-xl bg-primary/40 blur-xl"></div>
+      <div class="relative flex h-16 w-16 items-center justify-center rounded-xl border border-white/20 bg-white/10 backdrop-blur-md shadow-lg dark:border-white/10 dark:bg-black/10">
+        <div class="size-4 rounded-full bg-white/60 dark:bg-white/30"></div>
+      </div>
+    </div>
+
+    <div v-else-if="component === 'Magnetic'" class="relative flex size-24 items-center justify-center rounded-2xl border border-dashed border-black/10 dark:border-white/10">
+      <div class="absolute bottom-5 right-5 size-2.5 rounded-full bg-black/30 dark:bg-white/30 shadow-sm"></div>
+      <div class="flex h-10 w-14 translate-x-2 translate-y-2 items-center justify-center rounded-lg bg-black/10 dark:bg-white/10 shadow-sm">
+        <div class="h-1.5 w-6 rounded-full bg-black/20 dark:bg-white/20"></div>
+      </div>
+    </div>
+
+    <div v-else-if="component === 'Morphing Text'" class="relative flex w-32 flex-col items-center justify-center">
+      <div class="absolute block h-3 w-20 scale-110 rounded-full bg-black/10 opacity-40 blur-[2px] dark:bg-white/10"></div>
+      <div class="relative block h-2.5 w-16 rounded-full bg-black/30 dark:bg-white/30"></div>
+    </div>
+
+    <div v-else-if="component === 'Persian Datepicker'" class="flex w-32 flex-col gap-2 rounded-lg border border-black/10 bg-background p-2 shadow-sm dark:border-white/10">
+      <div class="flex items-center justify-between px-1">
+        <div class="size-2 rounded-sm bg-black/10 dark:bg-white/10"></div>
+        <div class="h-1 w-10 rounded-full bg-black/20 dark:bg-white/20"></div>
+        <div class="size-2 rounded-sm bg-black/10 dark:bg-white/10"></div>
+      </div>
+      <div class="grid grid-cols-7 gap-1">
+        <div v-for="i in 21" :key="i" class="aspect-square w-full rounded-[2px] bg-black/5 dark:bg-white/5" :class="{ 'bg-primary/80 dark:bg-primary/80': i === 12 }"></div>
+      </div>
+    </div>
+
+    <div v-else-if="component === 'Pixelated Button'" class="relative flex h-8 w-24 items-center justify-center border-2 border-dotted border-black/20 bg-black/5 dark:border-white/20 dark:bg-white/5">
+      <div class="h-1.5 w-8 bg-black/30 dark:bg-white/30"></div>
+    </div>
+
+    <div v-else-if="component === 'Raya Button'" class="flex h-9 w-28 items-center justify-center gap-2 rounded-md bg-primary shadow-md">
+      <div class="size-3 rounded-full bg-white/40"></div>
+      <div class="h-1.5 w-10 rounded-full bg-white/80"></div>
+    </div>
+
+    <div v-else-if="component === 'Scroll Spy'" class="flex w-24 flex-col gap-2.5 border-l-2 border-black/10 pl-3 dark:border-white/10">
+      <div class="h-1.5 w-8 rounded-full bg-black/10 dark:bg-white/10"></div>
+      <div class="relative flex items-center">
+        <div class="absolute -left-[14px] h-3 w-0.5 rounded-full bg-primary"></div>
+        <div class="h-1.5 w-12 rounded-full bg-primary/80"></div>
+      </div>
+      <div class="h-1.5 w-10 rounded-full bg-black/10 dark:bg-white/10"></div>
+      <div class="h-1.5 w-6 rounded-full bg-black/10 dark:bg-white/10"></div>
+    </div>
+
+    <div v-else-if="component === 'Wheel Picker'" class="relative flex h-24 w-16 flex-col items-center justify-center overflow-hidden rounded-lg border border-black/5 bg-black/5 dark:border-white/5 dark:bg-white/5 shadow-inner">
+      <div class="absolute inset-x-0 top-1/2 h-7 -translate-y-1/2 border-y border-black/10 bg-black/5 dark:border-white/10 dark:bg-white/5"></div>
+      <div class="z-10 flex flex-col items-center gap-2.5">
+        <div class="h-1 w-6 scale-75 rounded-full bg-black/10 opacity-40 dark:bg-white/10 pt-1"></div>
+        <div class="h-1.5 w-8 scale-90 rounded-full bg-black/20 opacity-60 dark:bg-white/20"></div>
+        <div class="h-2 w-10 rounded-full bg-primary"></div>
+        <div class="h-1.5 w-8 scale-90 rounded-full bg-black/20 opacity-60 dark:bg-white/20"></div>
+        <div class="h-1 w-6 scale-75 rounded-full bg-black/10 opacity-40 dark:bg-white/10 pb-1"></div>
+      </div>
+    </div>
+
     <div v-else class="text-[10px] font-mono text-muted-foreground/40 uppercase tracking-widest">
       No Preview
     </div>

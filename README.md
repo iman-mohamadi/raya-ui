@@ -44,7 +44,7 @@ Built on top of **[Shadcn Vue](https://www.shadcn-vue.com/)** (powered by **[Rek
 Use the Shadcn Vue CLI to add components directly into your Nuxt or Vue project via the Raya UI registry:
 
 ```bash
-npx shadcn-vue@latest add [https://raya-ui.com/registry/pixelated-button.json](https://raya-ui.com/registry/pixelated-button.json)
+npx raya-ui@latest add wheel-picker
 ```
 
 Import and use it immediately with full TypeScript support:

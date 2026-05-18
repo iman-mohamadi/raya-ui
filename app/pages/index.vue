@@ -288,10 +288,10 @@ onBeforeUnmount(() => {
 
           <div class="hero-load-anim pt-12 flex justify-center">
             <div class="flex items-center justify-between px-6 py-4 bg-card/80 backdrop-blur-2xl border border-border shadow-md rounded-full hover:border-foreground/30 hover:shadow-lg transition-all duration-500 cursor-pointer group transform-gpu active:scale-95"
-                 @click="copyCommand('npx shadcn-vue@latest add https://raya-ui.com/registry/pixelated-button.json')">
+                 @click="copyCommand('npx raya-ui@latest add wheel-picker')">
               <div class="flex items-center gap-4">
                 <Terminal class="size-4 text-muted-foreground shrink-0 group-hover:text-foreground transition-colors" />
-                <code class="font-mono text-xs md:text-sm text-foreground truncate max-w-[200px] md:max-w-none">npx shadcn-vue@latest add https://raya-ui.com/registry/pixelated-button.json</code>
+                <code class="font-mono text-xs md:text-sm text-foreground truncate max-w-[200px] md:max-w-none">npx raya-ui@latest add wheel-picker</code>
               </div>
               <button class="ml-6 shrink-0 transition-transform duration-300" :class="copied ? 'scale-110' : 'scale-100'">
                 <Check v-if="copied" class="size-4 text-success" />
@@ -353,7 +353,7 @@ onBeforeUnmount(() => {
               <div class="font-mono text-xs md:text-[13px] text-foreground leading-loose break-all">
 
                 <div class="term-group hidden">
-                  <div class="term-line"><span class="text-primary">~/app</span> $ npx shadcn-vue@latest add https://raya-ui.com/registry/pixelated-button.json</div>
+                  <div class="term-line"><span class="text-primary">~/app</span>$ npx raya-ui@latest add wheel-picker</div>
                   <div class="term-line text-muted-foreground mt-4 animate-pulse">Fetching registry data...</div>
                 </div>
 

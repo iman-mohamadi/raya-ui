@@ -12,7 +12,7 @@ useSeoMeta({
 
 <template>
   <div>
-    <div class="max-w-4xl mx-auto">
+    <div class="container mx-auto">
 
       <!-- Hero Header -->
       <header class="mb-16">

@@ -16,17 +16,17 @@ const frameworkCommands = {
   vite: {
     create: 'npm create vite@latest my-app -- --template vue-ts',
     init: 'npx shadcn-vue@latest init',
-    add: `npx shadcn-vue@latest add ${config.baseUrl}/tree.json`
+    add: `npx raya-ui@latest add tree`
   },
   nuxt: {
     create: 'npx nuxi@latest init my-app',
     init: 'npx shadcn-vue@latest init',
-    add: `npx shadcn-vue@latest add ${config.baseUrl}/tree.json`
+    add: `npx raya-ui@latest add tree`
   },
   astro: {
     create: 'npm create astro@latest',
     init: 'npx shadcn-vue@latest init',
-    add: `npx shadcn-vue@latest add ${config.baseUrl}/tree.json`
+    add: `npx raya-ui@latest add tree`
   },
   manual: {
     deps: 'npm install tailwindcss-animate class-variance-authority clsx tailwind-merge lucide-vue-next reka-ui @vueuse/core',
@@ -48,7 +48,7 @@ const frameworkTabs = [
 </script>
 
 <template>
-    <div class="max-w-4xl mx-auto">
+    <div class="container mx-auto">
 
       <!-- Header Section -->
       <header class="mb-16">
