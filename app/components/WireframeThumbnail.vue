@@ -221,6 +221,18 @@ defineProps<{
       </div>
     </div>
 
+    <div v-else-if="component === 'Scroll Reveal'" class="flex w-32 flex-wrap justify-center gap-x-1.5 gap-y-1 select-none">
+      <div class="h-2 w-8 rounded-full bg-foreground"></div>
+      <div class="h-2 w-6 rounded-full bg-foreground"></div>
+
+      <div class="h-2 w-10 rounded-full bg-foreground/60"></div>
+      <div class="h-2 w-7 rounded-full bg-foreground/40"></div>
+
+      <div class="h-2 w-5 rounded-full bg-foreground/15"></div>
+      <div class="h-2 w-9 rounded-full bg-foreground/15"></div>
+      <div class="h-2 w-6 rounded-full bg-foreground/15"></div>
+    </div>
+
     <div v-else class="text-[10px] font-mono text-muted-foreground/40 uppercase tracking-widest">
       No Preview
     </div>

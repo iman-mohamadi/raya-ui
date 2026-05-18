@@ -127,6 +127,11 @@ export const useNavigationStore = defineStore('navigation', () => {
                     img: '/components/scroll-spy.png'
                 },
                 {
+                    label: 'Scroll Reveal',
+                    to: '/docs/components/scroll-reveal',
+                    description: 'Typographic viewport scroll-bound progressive reveal wrapper.'
+                },
+                {
                     label: 'Tree',
                     to: '/docs/components/tree',
                     description: 'Hierarchical tree view for file structures or nested data.',
