@@ -233,6 +233,22 @@ defineProps<{
       <div class="h-2 w-6 rounded-full bg-foreground/15"></div>
     </div>
 
+    <div v-else-if="component === 'Scrubber'" class="relative flex w-32 items-center justify-center h-12 select-none">
+      <div class="absolute w-full h-3.5 bg-foreground/10 rounded-full overflow-hidden">
+        <div class="w-[65%] h-full bg-foreground/30"></div>
+      </div>
+
+      <div class="absolute w-full flex justify-between px-2.5 z-0 pointer-events-none">
+        <div class="h-2 w-px bg-foreground/20 rounded-full"></div>
+        <div class="h-2 w-px bg-foreground/20 rounded-full"></div>
+        <div class="h-2 w-px bg-foreground/20 rounded-full"></div>
+        <div class="h-2 w-px bg-foreground/20 rounded-full"></div>
+        <div class="h-2 w-px bg-foreground/20 rounded-full"></div>
+      </div>
+
+      <div class="absolute left-[65%] -translate-x-1/2 w-1.5 h-6 bg-foreground rounded-full shadow-sm z-10"></div>
+    </div>
+
     <div v-else class="text-[10px] font-mono text-muted-foreground/40 uppercase tracking-widest">
       No Preview
     </div>

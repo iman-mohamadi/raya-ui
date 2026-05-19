@@ -132,6 +132,11 @@ export const useNavigationStore = defineStore('navigation', () => {
                     description: 'Typographic viewport scroll-bound progressive reveal wrapper.'
                 },
                 {
+                    label: 'Scrubber',
+                    to: '/docs/components/scrubber',
+                    description: 'Interactive, physics-based range slider with pointer capture.'
+                },
+                {
                     label: 'Tree',
                     to: '/docs/components/tree',
                     description: 'Hierarchical tree view for file structures or nested data.',

@@ -3,7 +3,7 @@ import { ref, computed, provide, type HTMLAttributes } from 'vue'
 import { cn } from '@/lib/utils'
 import { cva, type VariantProps } from 'class-variance-authority'
 
-const partitionBarVariants = cva("flex flex-row bg-background", {
+const partitionBarVariants = cva("flex flex-row", {
   variants: {
     size: {
       sm: "text-xs",
