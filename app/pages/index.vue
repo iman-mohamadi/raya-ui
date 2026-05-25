@@ -295,7 +295,7 @@ onBeforeUnmount(() => {
     <div class="size-1 rounded-full bg-white/20"></div>
     <NuxtLink to="/docs/introduction" class="hover-trigger text-[11px] uppercase tracking-[0.2em] font-bold text-white hover:text-[#C3FF00] transition-colors">Docs</NuxtLink>
     <div class="size-1 rounded-full bg-white/20"></div>
-    <a href="https://github.com/raya-ui" target="_blank" class="hover-trigger text-[11px] uppercase tracking-[0.2em] font-bold text-white hover:text-[#C3FF00] transition-colors flex items-center gap-2"><Github class="size-3"/> GitHub</a>
+    <a href="https://github.com/iman-mohamadi/raya-ui" target="_blank" class="hover-trigger text-[11px] uppercase tracking-[0.2em] font-bold text-white hover:text-[#C3FF00] transition-colors flex items-center gap-2"><Github class="size-3"/> GitHub</a>
   </nav>
 
   <div class="relative bg-transparent text-white font-sans overflow-hidden cursor-none">
@@ -472,7 +472,7 @@ onBeforeUnmount(() => {
             </div>
             <div class="flex flex-col gap-6">
               <span class="text-white/30">Network</span>
-              <a href="https://github.com/raya-ui" target="_blank" class="text-white hover:text-[#C3FF00] transition-colors hover-trigger flex items-center gap-3"><Github class="size-4"/> GitHub</a>
+              <a href="https://github.com/iman-mohamadi/raya-ui" target="_blank" class="text-white hover:text-[#C3FF00] transition-colors hover-trigger flex items-center gap-3"><Github class="size-4"/> GitHub</a>
               <a href="#" class="text-white hover:text-[#C3FF00] transition-colors hover-trigger">Twitter / X</a>
             </div>
           </div>
