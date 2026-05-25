@@ -1,498 +1,510 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-import {
-  Copy,
-  Check,
-  Terminal,
-  ArrowRight,
-  Layers,
-  Code2,
-  Sparkles,
-  Box, Settings, Lock, Search
-} from 'lucide-vue-next'
-import DefaulAppNav from '@/components/DefaulAppNav.vue'
-import AppFooter from '@/components/AppFooter.vue'
-import Marquee from '@/components/ui/marquee/Marquee.vue'
-import { GlowingEffect } from '@/components/ui/glowing-effect'
-
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ArrowRight, ArrowDownRight, Github, Plus, Minus, CheckCircle2 } from 'lucide-vue-next'
+import Lenis from 'lenis'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import * as THREE from 'three'
 
 definePageMeta({ layout: false })
-useSeoMeta({ title: 'Raya UI | Premium Registry', description: 'Titanium-grade UI primitives for modern engineering.' })
+useSeoMeta({
+  title: 'Raya UI | Uncompromising Digital Craft',
+  description: 'The cinematic, titanium-grade UI component library for ambitious engineering teams.'
+})
 
-const copied = ref(false)
-const copyCommand = async (text: string) => {
-  await navigator.clipboard.writeText(text)
-  copied.value = true
-  setTimeout(() => copied.value = false, 2000)
+// --- STATE ---
+const canvasRef = ref<HTMLCanvasElement | null>(null)
+let renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera
+let terrainMesh: THREE.Points
+let lenis: Lenis
+let mouseX = 0, mouseY = 0
+let animationId: number
+
+const loadingProgress = ref(0)
+const isLoaded = ref(false)
+const activeFeature = ref<number | null>(null)
+
+// --- 1. PRELOADER ---
+const initPreloader = () => {
+  gsap.to(loadingProgress, {
+    value: 100,
+    duration: 2,
+    ease: 'power3.inOut',
+    onUpdate: () => { loadingProgress.value = Math.round(loadingProgress.value) },
+    onComplete: () => {
+      gsap.to('#preloader', {
+        yPercent: -100,
+        duration: 1.2,
+        ease: 'expo.inOut',
+        onComplete: () => { isLoaded.value = true }
+      })
+      initGSAP()
+    }
+  })
 }
 
-// --- THE ARSENAL DATA ARRAY (Semantic Colors) ---
-const arsenalItems = [
-  {
-    id: '01',
-    category: 'Shader',
-    title: 'Liquid Glass',
-    link: '/docs/components/liquid-glass',
-    bgClass: 'bg-card'
-  },
-  {
-    id: '02',
-    category: 'Physics',
-    title: 'Gravity Stars',
-    link: '/docs/backgrounds/gravity-stars',
-    bgClass: 'bg-card/80'
-  },
-  {
-    id: '03',
-    category: 'Sound',
-    title: 'Bar Visualizer',
-    link: '/docs/components/bar-visualizer',
-    bgClass: 'bg-card/60'
-  },
-  {
-    id: '04',
-    category: 'Interaction',
-    title: 'Magnetic',
-    link: '/docs/components/magnetic',
-    bgClass: 'bg-card/50'
-  },
-  {
-    id: '05',
-    category: 'Backgrounds',
-    title: 'Background Beams',
-    link: '/docs/backgrounds/background-beams',
-    bgClass: 'bg-card/40'
-  }
-]
+// --- 2. SOTD CUSTOM CURSOR & FOLLOWER ---
+const initCursorAndFollower = () => {
+  const cursor = document.querySelector('.sotd-cursor') as HTMLElement
+  const follower = document.querySelector('.hover-follower-preview') as HTMLElement
 
-const gridItems = [
-  {
-    area: 'md:[grid-area:1/1/2/7] xl:[grid-area:1/1/2/5]',
-    icon: Box,
-    title: 'Raya UI Core',
-    description: "The foundation of modern Vue interfaces, architected by Iman Mohammadi."
-  },
-  {
-    area: 'md:[grid-area:1/7/2/13] xl:[grid-area:2/1/3/5]',
-    icon: Settings,
-    title: 'Battle Tested',
-    description: "Powering complex production environments like Woodcoder.com."
-  },
-  {
-    area: 'md:[grid-area:2/1/3/7] xl:[grid-area:1/5/3/8]',
-    icon: Lock,
-    title: 'Enterprise Reliability',
-    description: "Trusted by industry leaders including Hotelyar.com for mission-critical UIs."
-  },
-  {
-    area: 'md:[grid-area:2/7/3/13] xl:[grid-area:1/8/2/13]',
-    icon: Sparkles,
-    title: 'Modern Aesthetics',
-    description: "Crafted with the latest design trends and OKLCH color spaces."
-  },
-  {
-    area: 'md:[grid-area:3/1/4/13] xl:[grid-area:2/8/3/13]',
-    icon: Search,
-    title: 'Nuxt 4 Ready',
-    description: "Built for the future of the Vue ecosystem with best-in-class performance."
-  },
-]
+  let cursorX = window.innerWidth / 2, cursorY = window.innerHeight / 2
+  let followerX = window.innerWidth / 2, followerY = window.innerHeight / 2
 
-// --- MAGNETIC TILT LOGIC ---
-const initMagneticCards = () => {
-  const cards = document.querySelectorAll('.magnetic-card') as NodeListOf<HTMLElement>
-  cards.forEach(card => {
-    card.addEventListener('mousemove', (e: MouseEvent) => {
-      const rect = card.getBoundingClientRect()
-      const rotateX = (((e.clientY - rect.top) - (rect.height / 2)) / (rect.height / 2)) * -4
-      const rotateY = (((e.clientX - rect.left) - (rect.width / 2)) / (rect.width / 2)) * 4
-      gsap.to(card, { rotateX, rotateY, duration: 0.5, ease: 'power2.out', transformPerspective: 1200 })
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX; mouseY = e.clientY
+  })
+
+  gsap.ticker.add(() => {
+    // Cursor Physics (Fast)
+    cursorX += (mouseX - cursorX) * 0.2
+    cursorY += (mouseY - cursorY) * 0.2
+    gsap.set(cursor, { x: cursorX, y: cursorY })
+
+    // Follower Physics (Slightly delayed, springy)
+    followerX += (mouseX - followerX) * 0.08
+    followerY += (mouseY - followerY) * 0.08
+
+    // Tilt the phone based on velocity/position
+    const tiltX = ((followerY - mouseY) * 0.05)
+    const tiltY = ((mouseX - followerX) * 0.05)
+
+    gsap.set(follower, {
+      x: followerX,
+      y: followerY,
+      rotateX: tiltX,
+      rotateY: tiltY
     })
-    card.addEventListener('mouseleave', () => {
-      gsap.to(card, { rotateX: 0, rotateY: 0, duration: 1.2, ease: 'elastic.out(1, 0.4)' })
+  })
+
+  // Cursor interactions
+  document.querySelectorAll('a, button, .hover-trigger').forEach(el => {
+    el.addEventListener('mouseenter', () => gsap.to(cursor, { scale: 4, duration: 0.4, ease: 'expo.out', mixBlendMode: 'difference' }))
+    el.addEventListener('mouseleave', () => gsap.to(cursor, { scale: 1, duration: 0.4, ease: 'expo.out', mixBlendMode: 'difference' }))
+  })
+
+  // Magic Follower Triggers (Made In Evolve style)
+  const features = document.querySelectorAll('.feature-row')
+  features.forEach((el, index) => {
+    el.addEventListener('mouseenter', () => {
+      activeFeature.value = index
+      gsap.to(follower, { opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.2)' })
+      gsap.to(cursor, { opacity: 0, duration: 0.2 }) // Hide dot when phone shows
+    })
+    el.addEventListener('mouseleave', () => {
+      activeFeature.value = null
+      gsap.to(follower, { opacity: 0, scale: 0.8, duration: 0.4, ease: 'power2.in' })
+      gsap.to(cursor, { opacity: 1, duration: 0.2 })
     })
   })
 }
 
-// --- THREE.JS: THEME-ADAPTIVE PARTICLE DUST ---
-const canvasRef = ref<HTMLCanvasElement | null>(null)
-let renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera
-let particlesMesh: THREE.Points
-let animationId: number
-
+// --- 3. THREE.JS SPATIAL TOPOGRAPHY ---
 const initThreeJS = () => {
   if (!canvasRef.value) return
-
   scene = new THREE.Scene()
   camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100)
-  camera.position.z = 5
+  camera.position.set(0, 2, 8)
 
   renderer = new THREE.WebGLRenderer({ canvas: canvasRef.value, alpha: true, antialias: true })
   renderer.setSize(window.innerWidth, window.innerHeight)
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
-  const particlesGeometry = new THREE.BufferGeometry()
-  const particlesCount = 4000
-  const posArray = new Float32Array(particlesCount * 3)
-
-  for(let i = 0; i < particlesCount * 3; i++) posArray[i] = (Math.random() - 0.5) * 12
-
-  particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3))
-
-  // Neutral gray works beautifully as ambient dust in both light and dark modes
-  const particlesMaterial = new THREE.PointsMaterial({
-    size: 0.003, color: 0x888888, transparent: true, opacity: 0.4,
+  const geometry = new THREE.PlaneGeometry(40, 40, 90, 90)
+  const material = new THREE.PointsMaterial({
+    size: 0.025, color: 0x8892b0, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending
   })
+  terrainMesh = new THREE.Points(geometry, material)
+  terrainMesh.rotation.x = -Math.PI / 2
+  terrainMesh.position.y = -2
+  scene.add(terrainMesh)
 
-  particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial)
-  scene.add(particlesMesh)
-
+  const clock = new THREE.Clock()
   let scrollY = 0
   window.addEventListener('scroll', () => scrollY = window.scrollY, { passive: true })
-  const clock = new THREE.Clock()
 
   const animate = () => {
     animationId = requestAnimationFrame(animate)
-    const t = clock.getElapsedTime()
-    particlesMesh.rotation.y = t * 0.015
-    particlesMesh.rotation.x = t * 0.01
-    particlesMesh.position.y = scrollY * 0.0008
+    const t = clock.getElapsedTime() * 0.4
+
+    const pos = geometry.attributes.position
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i)
+      const y = pos.getY(i)
+      // Complex wave math
+      const z = Math.sin(x * 0.3 + t) * Math.cos(y * 0.3 + t) * 1.2
+      pos.setZ(i, z)
+    }
+    pos.needsUpdate = true
+
+    // Parallax
+    camera.position.x += ((mouseX / window.innerWidth - 0.5) * 4 - camera.position.x) * 0.02
+    camera.position.y += (2 + (mouseY / window.innerHeight - 0.5) * -2 + (scrollY * 0.001) - camera.position.y) * 0.02
+    camera.lookAt(0, 0, 0)
+
     renderer.render(scene, camera)
   }
   animate()
-
-  window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight
-    camera.updateProjectionMatrix()
-    renderer.setSize(window.innerWidth, window.innerHeight)
-  })
 }
 
-// --- GSAP ANIMATIONS ---
-const initGSAP = () => {
+// --- 4. STRICT LENIS ---
+const initLenis = () => {
   gsap.registerPlugin(ScrollTrigger)
+  gsap.ticker.lagSmoothing(0)
 
-  gsap.fromTo('.hero-load-anim',
-      { y: 40, opacity: 0, filter: 'blur(10px)' },
-      { y: 0, opacity: 1, filter: 'blur(0px)', duration: 1.2, stagger: 0.15, ease: 'power3.out', delay: 0.2 }
+  lenis = new Lenis({
+    duration: 1.2, smoothWheel: true, wheelMultiplier: 0.9, touchMultiplier: 1.5,
+  })
+
+  lenis.on('scroll', ScrollTrigger.update)
+
+  const raf = (time: number) => {
+    lenis.raf(time)
+    requestAnimationFrame(raf)
+  }
+  requestAnimationFrame(raf)
+}
+
+// --- 5. CHOREOGRAPHY ---
+const initGSAP = () => {
+
+  // A. HERO EDITORIAL REVEAL (The "Old One" brought back to glory)
+  const heroTl = gsap.timeline()
+  heroTl.fromTo('.hero-badge', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 1.2, ease: 'expo.out' })
+      .fromTo('.hero-line', { y: '120%', rotateX: -40, opacity: 0 }, { y: '0%', rotateX: 0, opacity: 1, duration: 1.5, stagger: 0.1, ease: 'expo.out' }, "-=0.8")
+      .fromTo('.hero-desc', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 1.5, ease: 'expo.out' }, "-=1")
+
+  // Shrink hero on scroll
+  gsap.to('.hero-content', { y: 150, opacity: 0, scale: 0.95, filter: 'blur(10px)', scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true } })
+
+  // LOGO MORPH
+  gsap.fromTo('.dynamic-logo',
+      { top: '45%', left: '50%', xPercent: -50, yPercent: -50, fontSize: '25vw', fontWeight: 900, color: '#ffffff' },
+      { top: '32px', left: '40px', xPercent: 0, yPercent: 0, fontSize: '24px', fontWeight: 700, color: '#ffffff', ease: 'power3.out', scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: 1 } }
   )
 
-  gsap.to('.hero-text', {
-    y: -100, opacity: 0, scale: 0.95,
-    scrollTrigger: { trigger: '.hero-section', start: 'top top', end: 'bottom top', scrub: true }
+  // B. PARALLAX
+  document.querySelectorAll('[data-speed]').forEach(el => {
+    const speed = parseFloat(el.getAttribute('data-speed') || '0.5')
+    gsap.to(el, { y: () => -100 * speed, ease: 'none', scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true } })
   })
 
-  // Fade to full opacity (handles both light/dark theme natively)
-  const revealWords = gsap.utils.toArray('.reveal-word')
-  gsap.to(revealWords, {
-    opacity: 1, stagger: 1,
-    scrollTrigger: { trigger: '.statement-section', start: 'top 75%', end: 'bottom 65%', scrub: true }
+  // C. THE MASSIVE BRUTALIST SCROLL (Ashley Brooke Inspiration)
+  const brutalTl = gsap.timeline({ scrollTrigger: { trigger: '#brutalist-section', start: 'top top', end: '+=2000', pin: true, scrub: 1 } })
+  brutALTextSplits.forEach((line, i) => {
+    brutalTl.fromTo(line, { opacity: 0.1, y: 50, filter: 'blur(10px)' }, { opacity: 1, y: 0, filter: 'blur(0px)', duration: 1 })
+        .to(line, { scale: 1.1, opacity: i === brutALTextSplits.length - 1 ? 1 : 0.3, duration: 1 })
   })
 
-  // PINNED TERMINAL SECTION
+  // D. THE COMPARE STACK (Oryzo/Evolve Split Sticky)
   ScrollTrigger.create({
-    trigger: '.dx-section',
-    start: 'top 120px',
+    trigger: '#compare-wrapper',
+    start: 'top top',
     end: 'bottom bottom',
-    pin: '.terminal-box',
-    pinSpacing: false
+    pin: '.compare-left-sticky',
   })
 
-  const steps = gsap.utils.toArray('.dx-step')
-  const termGroups = gsap.utils.toArray('.term-group') as HTMLElement[]
-
-  const showTermGroup = (index: number) => {
-    termGroups.forEach((group, i) => {
-      gsap.killTweensOf(group)
-      const lines = group.querySelectorAll('.term-line')
-      gsap.killTweensOf(lines)
-
-      if (i === index) {
-        gsap.set(group, { display: 'block', opacity: 1 })
-        gsap.fromTo(lines, { opacity: 0, x: -10 }, { opacity: 1, x: 0, stagger: 0.15, duration: 0.4, ease: 'power2.out' })
-      } else {
-        gsap.set(group, { display: 'none', opacity: 0 })
-      }
-    })
-  }
-  showTermGroup(0)
-
-  steps.forEach((step: any, i) => {
-    ScrollTrigger.create({
-      trigger: step, start: 'top 50%', end: 'bottom 50%',
-      onEnter: () => showTermGroup(i),
-      onEnterBack: () => showTermGroup(i),
-    })
-  })
-
-  // APPLE HORIZONTAL SCROLL FOR ARSENAL
+  // E. HORIZONTAL SCROLL
   const track = document.querySelector('.horizontal-track') as HTMLElement
   if (track) {
-    const scrollWidth = track.scrollWidth - window.innerWidth + 120
-    gsap.to(track, {
-      x: -scrollWidth, ease: 'none',
-      scrollTrigger: {
-        trigger: '.horizontal-section',
-        start: 'top top',
-        end: () => `+=${scrollWidth}`,
-        pin: true,
-        scrub: 1
-      }
-    })
+    const scrollWidth = track.scrollWidth - window.innerWidth + 200
+    gsap.to(track, { x: -scrollWidth, ease: 'none', scrollTrigger: { trigger: '#horizontal-wrapper', start: 'top top', end: () => `+=${scrollWidth}`, pin: true, scrub: 1 } })
   }
+
+  // F. FOOTER CURTAIN
+  gsap.fromTo('.footer-inner', { yPercent: -50 }, { yPercent: 0, ease: 'none', scrollTrigger: { trigger: 'footer', start: 'top bottom', end: 'bottom bottom', scrub: true } })
+
+  // DOCK REVEAL
+  gsap.fromTo('.bottom-dock', { y: 100, opacity: 0 }, { y: 0, opacity: 1, duration: 1, ease: 'expo.out', scrollTrigger: { trigger: '#hero', start: '40% top', toggleActions: 'play none none reverse' } })
 }
 
+let brutALTextSplits: Element[] = []
+
 onMounted(() => {
+  initCursorAndFollower()
+  initLenis()
   initThreeJS()
-  initMagneticCards()
-  setTimeout(initGSAP, 100)
+
+  // Setup elements for Brutalist Scroll
+  brutALTextSplits = Array.from(document.querySelectorAll('.brutal-line'))
+
+  initPreloader()
 })
 
 onBeforeUnmount(() => {
   if (animationId) cancelAnimationFrame(animationId)
   if (renderer) renderer.dispose()
+  lenis?.destroy()
   ScrollTrigger.getAll().forEach(t => t.kill())
 })
 </script>
 
 <template>
-  <div class="relative bg-background text-foreground selection:bg-primary/30 selection:text-primary font-sans custom-scroll overflow-hidden transition-colors duration-500">
+  <div id="preloader" class="fixed inset-0 bg-[#020202] z-[999] flex flex-col items-center justify-center">
+    <div class="text-[12vw] font-black tracking-tighter text-white leading-none mix-blend-difference">{{ loadingProgress }}</div>
+    <div class="text-white/40 font-mono uppercase tracking-[0.4em] text-[10px] mt-6">Initializing Architecture</div>
+  </div>
 
-    <DefaulAppNav />
+  <div class="sotd-cursor hidden md:flex fixed top-0 left-0 size-3 bg-white rounded-full pointer-events-none z-[110] mix-blend-difference transform -translate-x-1/2 -translate-y-1/2"></div>
 
-    <canvas ref="canvasRef" class="fixed inset-0 w-full h-full pointer-events-none z-0 transform-gpu will-change-transform"></canvas>
+  <div class="hover-follower-preview hidden lg:flex fixed top-0 left-0 pointer-events-none z-[100] transform -translate-x-1/2 -translate-y-1/2 opacity-0 scale-75 perspective-1000">
+    <div class="w-[320px] h-[680px] rounded-[50px] border-[12px] border-[#1f1f1f] bg-black shadow-[0_40px_100px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col ring-1 ring-white/20 transform-gpu">
+      <div class="absolute top-4 left-1/2 -translate-x-1/2 w-28 h-8 bg-black rounded-full z-50 shadow-[inset_0_-2px_10px_rgba(255,255,255,0.15)]"></div>
 
-    <div class="fixed inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,var(--color-background)_150%)] pointer-events-none z-0"></div>
-    <div class="fixed top-[-10%] left-1/2 -translate-x-1/2 w-[80vw] h-[60vh] bg-primary/5 blur-3xl rounded-full pointer-events-none z-0"></div>
+      <div class="flex-1 w-full bg-[#050505] p-6 pt-24 relative flex flex-col gap-4">
+        <div class="text-[10px] font-mono text-[#C3FF00] uppercase tracking-widest mb-4">Live Render</div>
 
-    <main class="relative z-10 w-full">
+        <div class="absolute inset-0 p-6 pt-24 flex flex-col gap-4 transition-opacity duration-300" :class="activeFeature === 0 ? 'opacity-100' : 'opacity-0'">
+          <div class="w-full bg-[#111] rounded-2xl p-6 border border-white/5 animate-pulse">
+            <div class="w-full h-4 bg-white/10 rounded mb-2"></div>
+            <div class="w-2/3 h-4 bg-white/10 rounded"></div>
+          </div>
+          <div class="w-full bg-[#111] rounded-2xl p-6 border border-white/5 animate-pulse delay-75">
+            <div class="w-3/4 h-4 bg-white/10 rounded mb-2"></div>
+            <div class="w-1/2 h-4 bg-white/10 rounded"></div>
+          </div>
+        </div>
 
-      <section class="hero-section h-screen flex flex-col items-center justify-center px-6 relative border-b border-border">
-        <div class="hero-text text-center space-y-8 mt-10 w-full max-w-5xl transform-gpu will-change-transform">
+        <div class="absolute inset-0 p-6 pt-24 flex flex-col justify-center items-center transition-opacity duration-300" :class="activeFeature === 1 ? 'opacity-100' : 'opacity-0'">
+          <div class="size-32 rounded-full border border-[#C3FF00]/50 flex items-center justify-center relative">
+            <div class="absolute inset-0 bg-[#C3FF00]/10 rounded-full animate-ping"></div>
+            <div class="size-16 rounded-full bg-[#C3FF00] shadow-[0_0_40px_rgba(195,255,0,0.5)]"></div>
+          </div>
+        </div>
 
-          <div class="hero-load-anim inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-border bg-muted/50 backdrop-blur-md text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground mx-auto shadow-sm">
-            <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-foreground opacity-40"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-foreground"></span></span>
-            Vue 3.5 & Nuxt 4 Architecture
+        <div class="absolute inset-0 p-6 pt-24 flex flex-col gap-4 transition-opacity duration-300" :class="activeFeature === 2 ? 'opacity-100' : 'opacity-0'">
+          <div class="w-full bg-white text-black p-4 rounded-xl flex justify-between items-center ring-2 ring-[#C3FF00] ring-offset-2 ring-offset-black">
+            <span class="font-bold">Focused Element</span>
+            <CheckCircle2 class="size-5 text-black" />
+          </div>
+          <div class="w-full bg-[#111] text-white/50 p-4 rounded-xl flex justify-between items-center border border-white/10">
+            <span>Standard Element</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="fixed inset-0 z-[110] pointer-events-none opacity-[0.04] mix-blend-overlay" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+
+  <div class="dynamic-logo fixed z-[90] pointer-events-none mix-blend-difference tracking-tighter select-none">RAYA</div>
+
+  <nav class="bottom-dock fixed bottom-8 left-1/2 -translate-x-1/2 z-[90] flex items-center gap-6 px-8 py-4 rounded-full bg-white/5 backdrop-blur-2xl border border-white/10 shadow-[0_20px_40px_rgba(0,0,0,0.5)] mix-blend-difference opacity-0">
+    <NuxtLink to="/docs/components/tree" class="hover-trigger text-[11px] uppercase tracking-[0.2em] font-bold text-white hover:text-[#C3FF00] transition-colors">Registry</NuxtLink>
+    <div class="size-1 rounded-full bg-white/20"></div>
+    <NuxtLink to="/docs/introduction" class="hover-trigger text-[11px] uppercase tracking-[0.2em] font-bold text-white hover:text-[#C3FF00] transition-colors">Docs</NuxtLink>
+    <div class="size-1 rounded-full bg-white/20"></div>
+    <a href="https://github.com/raya-ui" target="_blank" class="hover-trigger text-[11px] uppercase tracking-[0.2em] font-bold text-white hover:text-[#C3FF00] transition-colors flex items-center gap-2"><Github class="size-3"/> GitHub</a>
+  </nav>
+
+  <div class="relative bg-transparent text-white font-sans overflow-hidden cursor-none">
+
+    <canvas ref="canvasRef" class="fixed inset-0 w-full h-full pointer-events-none z-0"></canvas>
+
+    <main class="relative z-10 bg-transparent shadow-[0_40px_100px_rgba(0,0,0,1)] rounded-b-[40px] md:rounded-b-[80px] mb-[100vh]">
+
+      <section id="hero" class="h-[100svh] w-full relative flex flex-col items-center justify-center px-6 border-b border-white/5 bg-transparent">
+        <div class="hero-content flex flex-col items-center text-center max-w-7xl z-10 perspective-1000 mt-20">
+
+          <div class="hero-badge flex items-center gap-3 px-5 py-2 rounded-full border border-white/10 bg-white/[0.02] backdrop-blur-md text-[10px] font-mono tracking-[0.2em] uppercase text-white/60 mb-12 shadow-2xl">
+            <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#C3FF00] opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-[#C3FF00]"></span></span>
+            The Modern Vue OS
           </div>
 
-          <h1 class="hero-load-anim text-[13vw] md:text-[140px] font-bold tracking-[-0.03em] leading-none text-transparent bg-clip-text animate-gradient bg-[linear-gradient(to_right,var(--color-foreground),var(--color-muted-foreground),var(--color-foreground))] pb-2">
-            Raya.
+          <h1 class="text-[12vw] md:text-[9vw] font-bold tracking-[-0.04em] leading-[0.85] uppercase flex flex-col items-center select-none">
+            <div class="overflow-hidden pb-2"><div class="hero-line origin-bottom text-white">Design Interfaces</div></div>
+            <div class="overflow-hidden pb-4 flex items-center gap-4 md:gap-8">
+              <div class="hero-line origin-bottom text-transparent bg-clip-text bg-gradient-to-r from-white/90 to-white/30">That feel</div>
+              <div class="hero-line origin-bottom font-serif italic text-[#C3FF00] lowercase tracking-normal -mt-2">alive.</div>
+            </div>
           </h1>
 
-          <p class="hero-load-anim text-xl md:text-2xl font-medium text-muted-foreground tracking-tight max-w-2xl mx-auto leading-relaxed">
-            A highly disciplined registry of UI primitives. <br class="hidden md:block" /> Built for modern engineering.
+          <p class="hero-desc mt-12 text-lg md:text-2xl font-medium text-white/40 tracking-tight max-w-2xl leading-relaxed">
+            Highly disciplined primitives. Fluid motion logic.<br class="hidden md:block"/> Built for developers who refuse to compromise on craft.
           </p>
-
-          <div class="hero-load-anim pt-12 flex justify-center">
-            <div class="flex items-center justify-between px-6 py-4 bg-card/80 backdrop-blur-2xl border border-border shadow-md rounded-full hover:border-foreground/30 hover:shadow-lg transition-all duration-500 cursor-pointer group transform-gpu active:scale-95"
-                 @click="copyCommand('npx raya-ui@latest add wheel-picker')">
-              <div class="flex items-center gap-4">
-                <Terminal class="size-4 text-muted-foreground shrink-0 group-hover:text-foreground transition-colors" />
-                <code class="font-mono text-xs md:text-sm text-foreground truncate max-w-[200px] md:max-w-none">npx raya-ui@latest add wheel-picker</code>
-              </div>
-              <button class="ml-6 shrink-0 transition-transform duration-300" :class="copied ? 'scale-110' : 'scale-100'">
-                <Check v-if="copied" class="size-4 text-success" />
-                <Copy v-else class="size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="hero-load-anim absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-40">
-          <span class="font-mono text-[9px] uppercase tracking-widest text-foreground">Scroll</span>
-          <div class="w-[1px] h-10 bg-gradient-to-b from-foreground to-transparent"></div>
         </div>
       </section>
 
-      <div class="py-5 border-b border-border bg-muted/30 backdrop-blur-md">
-        <Marquee class="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-          <span class="mx-8">Zero NPM Dependencies</span><span class="mx-8">•</span>
-          <span class="mx-8">Tailwind Native</span><span class="mx-8">•</span>
-          <span class="mx-8">Reka UI Core</span><span class="mx-8">•</span>
-          <span class="mx-8">WAI-ARIA Compliant</span><span class="mx-8">•</span>
-          <span class="mx-8">GSAP & Three.js Ready</span><span class="mx-8">•</span>
-        </Marquee>
+      <div class="bg-[#030303] relative z-10 border-t border-white/5">
+
+        <section id="brutalist-section" class="h-screen w-full relative overflow-hidden flex flex-col justify-center px-6 md:px-20 border-b border-white/5 bg-[#030303] z-20">
+          <div class="max-w-7xl w-full mx-auto">
+            <h2 class="text-[6vw] md:text-[5vw] font-black tracking-tighter uppercase leading-[0.9] text-white">
+              <div class="brutal-line">We take pride in</div>
+              <div class="brutal-line text-white/40">challenging norms,</div>
+              <div class="brutal-line">building primitives that</div>
+              <div class="brutal-line text-[#C3FF00] font-serif italic lowercase tracking-normal">refuse to behave.</div>
+            </h2>
+          </div>
+        </section>
+
+        <section class="py-32 px-6 max-w-7xl mx-auto border-b border-white/5 relative z-20">
+          <div class="mb-20">
+            <div class="text-[#C3FF00] font-mono text-xs uppercase tracking-widest mb-4">( The Architecture )</div>
+            <h2 class="text-5xl md:text-7xl font-bold tracking-tighter uppercase">Premium <br> <span class="font-serif italic text-white/40 lowercase tracking-normal">primitives.</span></h2>
+          </div>
+
+          <div class="flex flex-col border-t border-white/10">
+
+            <div class="feature-row group border-b border-white/10 py-10 flex flex-col md:flex-row md:items-center justify-between hover-trigger cursor-none">
+              <div class="flex items-center gap-8">
+                <span class="font-mono text-sm text-white/40 group-hover:text-[#C3FF00] transition-colors">( 01 )</span>
+                <h3 class="text-3xl md:text-5xl font-bold tracking-tighter uppercase group-hover:translate-x-4 transition-transform duration-500">Component Scanning</h3>
+              </div>
+              <div class="mt-4 md:mt-0 max-w-sm text-white/40 font-medium text-sm md:text-base leading-relaxed md:text-right group-hover:text-white/80 transition-colors">
+                No bloated lock-ins. We rely on Nuxt's automated local bundling logic.
+              </div>
+            </div>
+
+            <div class="feature-row group border-b border-white/10 py-10 flex flex-col md:flex-row md:items-center justify-between hover-trigger cursor-none">
+              <div class="flex items-center gap-8">
+                <span class="font-mono text-sm text-white/40 group-hover:text-[#C3FF00] transition-colors">( 02 )</span>
+                <h3 class="text-3xl md:text-5xl font-bold tracking-tighter uppercase group-hover:translate-x-4 transition-transform duration-500">Spatial Physics</h3>
+              </div>
+              <div class="mt-4 md:mt-0 max-w-sm text-white/40 font-medium text-sm md:text-base leading-relaxed md:text-right group-hover:text-white/80 transition-colors">
+                Deep integration with GSAP for organic, velocity-based hardware motion.
+              </div>
+            </div>
+
+            <div class="feature-row group border-b border-white/10 py-10 flex flex-col md:flex-row md:items-center justify-between hover-trigger cursor-none">
+              <div class="flex items-center gap-8">
+                <span class="font-mono text-sm text-white/40 group-hover:text-[#C3FF00] transition-colors">( 03 )</span>
+                <h3 class="text-3xl md:text-5xl font-bold tracking-tighter uppercase group-hover:translate-x-4 transition-transform duration-500">WAI-ARIA Core</h3>
+              </div>
+              <div class="mt-4 md:mt-0 max-w-sm text-white/40 font-medium text-sm md:text-base leading-relaxed md:text-right group-hover:text-white/80 transition-colors">
+                Uncompromising accessibility standards powered underneath by Reka UI.
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <section id="compare-wrapper" class="min-h-[150vh] relative bg-[#030303] border-b border-white/5">
+          <div class="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 relative h-full">
+
+            <div class="compare-left-sticky hidden lg:flex flex-col justify-center h-screen p-12 lg:pr-24 border-r border-white/10">
+              <h5 class="text-[#C3FF00] font-mono text-xs uppercase tracking-widest mb-6">( The Alternative )</h5>
+              <h2 class="text-6xl font-black tracking-tighter uppercase text-white/20 mb-8 leading-[0.9]">Traditional <br> Libraries.</h2>
+              <ul class="space-y-6 text-white/30 font-medium text-xl">
+                <li class="flex items-center gap-4"><div class="w-2 h-px bg-white/20"></div> Bloated `node_modules`</li>
+                <li class="flex items-center gap-4"><div class="w-2 h-px bg-white/20"></div> Generic SaaS aesthetics</li>
+                <li class="flex items-center gap-4"><div class="w-2 h-px bg-white/20"></div> CSS-only basic transitions</li>
+                <li class="flex items-center gap-4"><div class="w-2 h-px bg-white/20"></div> Poor accessibility routing</li>
+              </ul>
+            </div>
+
+            <div class="flex flex-col py-32 px-6 lg:px-24">
+              <div class="lg:hidden mb-20">
+                <h5 class="text-[#C3FF00] font-mono text-xs uppercase tracking-widest mb-6">( The Matchup )</h5>
+                <h2 class="text-5xl font-black tracking-tighter uppercase text-white mb-8">Compare <br> Stacks.</h2>
+              </div>
+
+              <div class="space-y-40">
+                <div class="flex flex-col gap-6" data-speed="0.8">
+                  <div class="text-[#C3FF00] font-mono text-sm uppercase tracking-widest">Installation</div>
+                  <h3 class="text-4xl md:text-5xl font-bold uppercase tracking-tighter">Total Ownership</h3>
+                  <p class="text-xl text-white/50 leading-relaxed">Raya acts as a raw registry. You pull components directly into your local directory. You own the code, eliminating black boxes.</p>
+                </div>
+
+                <div class="flex flex-col gap-6" data-speed="1.1">
+                  <div class="text-[#C3FF00] font-mono text-sm uppercase tracking-widest">Aesthetics</div>
+                  <h3 class="text-4xl md:text-5xl font-bold uppercase tracking-tighter">Studio Grade</h3>
+                  <p class="text-xl text-white/50 leading-relaxed">Say goodbye to generic dashboards. We implement hardware-accelerated shaders, deep blurs, and liquid glass out of the box.</p>
+                </div>
+
+                <div class="flex flex-col gap-6" data-speed="0.9">
+                  <div class="text-[#C3FF00] font-mono text-sm uppercase tracking-widest">Motion Logic</div>
+                  <h3 class="text-4xl md:text-5xl font-bold uppercase tracking-tighter">Physics First</h3>
+                  <p class="text-xl text-white/50 leading-relaxed">Powered by GSAP and Framer Motion for Vue. Elements don't just fade; they react organically to spatial intent and velocity.</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <section id="horizontal-wrapper" class="h-screen bg-[#050505] flex flex-col justify-center overflow-hidden border-b border-white/5 relative z-10">
+          <div class="pl-6 md:pl-20 mb-16 relative z-20 max-w-4xl">
+            <h2 class="text-5xl md:text-7xl font-black tracking-tighter text-white uppercase leading-[0.9]">
+              Engineered for <br/> <span class="font-serif italic text-white/40 font-normal lowercase tracking-normal">immersion.</span>
+            </h2>
+          </div>
+
+          <div class="horizontal-track flex gap-10 px-6 md:px-20 w-max perspective-1000">
+            <div v-for="i in 4" :key="i" class="w-[85vw] md:w-[700px] h-[550px] shrink-0 rounded-[40px] border border-white/10 bg-[#0a0a0a] flex flex-col justify-between relative overflow-hidden group hover-trigger cursor-none p-12 transform-gpu">
+
+              <div class="absolute inset-0 bg-[#C3FF00] translate-y-[100%] group-hover:translate-y-0 transition-transform duration-700 ease-expo z-0"></div>
+              <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10 group-hover:opacity-0 transition-opacity duration-500"></div>
+
+              <div class="relative z-20 flex justify-between items-start text-white group-hover:text-black transition-colors duration-500">
+                <span class="font-mono text-[12px] uppercase tracking-[0.2em] border border-current rounded-full px-4 py-2">Layout Concept 0{{i}}</span>
+                <ArrowRight class="size-8 opacity-0 group-hover:opacity-100 transition-opacity -rotate-45" />
+              </div>
+
+              <div class="relative z-20 text-white group-hover:text-black transition-colors duration-500">
+                <h3 class="text-5xl font-black uppercase tracking-tighter mb-4">Cinematic Dashboards</h3>
+                <p class="font-medium text-base opacity-50 max-w-md">Combining raw Nuxt performance with WebGL aesthetics to create software that feels like a physical experience.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
       </div>
-
-      <section class="statement-section min-h-[120vh] flex items-center justify-center px-6 md:px-20 max-w-7xl mx-auto py-32">
-        <p class="text-4xl md:text-6xl lg:text-7xl font-bold tracking-[-0.02em] leading-[1.15] text-foreground text-center max-w-5xl">
-          <span class="reveal-word opacity-20 transition-opacity duration-300">Raya</span>
-          <span class="reveal-word opacity-20 transition-opacity duration-300"> bypasses</span>
-          <span class="reveal-word opacity-20 transition-opacity duration-300"> the</span>
-          <span class="reveal-word opacity-20 transition-opacity duration-300"> bloat.</span><br/><br/>
-          <span class="reveal-word opacity-20 transition-opacity duration-300">You</span>
-          <span class="reveal-word opacity-20 transition-opacity duration-300"> fetch</span>
-          <span class="reveal-word opacity-20 transition-opacity duration-300"> highly</span>
-          <span class="reveal-word opacity-20 transition-opacity duration-300"> engineered</span>
-          <span class="reveal-word opacity-20 transition-opacity duration-300"> Vue</span>
-          <span class="reveal-word opacity-20 transition-opacity duration-300"> components</span>
-          <span class="reveal-word opacity-20 transition-opacity duration-300"> directly</span>
-          <span class="reveal-word opacity-20 transition-opacity duration-300"> into</span>
-          <span class="reveal-word opacity-20 transition-opacity duration-300"> your</span>
-          <span class="reveal-word opacity-20 transition-opacity duration-300"> codebase.</span>
-          <span class="reveal-word opacity-20 transition-opacity duration-300"> Complete</span>
-          <span class="reveal-word opacity-20 transition-opacity duration-300"> control.</span>
-          <span class="reveal-word opacity-20 transition-opacity duration-300"> Total</span>
-          <span class="reveal-word opacity-20 transition-opacity duration-300"> ownership.</span>
-        </p>
-      </section>
-
-      <section class="dx-section max-w-7xl mx-auto px-6 py-32 relative border-t border-border">
-        <div class="flex flex-col lg:flex-row gap-16 relative items-start">
-
-          <div class="w-full lg:w-[45%] z-20">
-            <div class="terminal-box bg-card border border-border shadow-xl rounded-[28px] p-8 h-[450px] overflow-hidden relative">
-              <div class="flex gap-2 mb-8">
-                <div class="size-3 rounded-full bg-border"></div>
-                <div class="size-3 rounded-full bg-border"></div>
-                <div class="size-3 rounded-full bg-border"></div>
-              </div>
-              <div class="font-mono text-xs md:text-[13px] text-foreground leading-loose break-all">
-
-                <div class="term-group hidden">
-                  <div class="term-line"><span class="text-primary">~/app</span>$ npx raya-ui@latest add wheel-picker</div>
-                  <div class="term-line text-muted-foreground mt-4 animate-pulse">Fetching registry data...</div>
-                </div>
-
-                <div class="term-group hidden">
-                  <div class="term-line"><span class="text-success">✔</span> Component configuration mapped.</div>
-                  <div class="term-line"><span class="text-success">✔</span> Installing dependencies <span class="text-muted-foreground">(motion-v)</span>...</div>
-                  <div class="term-line text-success mt-4">✔ Created components/ui/pixelated-button.vue</div>
-                  <div class="term-line text-success">✔ Created components/ui/index.ts</div>
-                </div>
-
-                <div class="term-group hidden text-muted-foreground">
-                  <div class="term-line"><span class="text-primary">&lt;script setup lang="ts"&gt;</span></div>
-                  <div class="term-line">import { PixelatedButton } from '@/components/ui/pixelated-button'</div>
-                  <div class="term-line"><span class="text-primary">&lt;/script&gt;</span><br/><br/></div>
-                  <div class="term-line"><span class="text-primary">&lt;template&gt;</span></div>
-                  <div class="term-line">&nbsp;&nbsp;&lt;<span class="text-foreground">PixelatedButton</span>&gt;</div>
-                  <div class="term-line">&nbsp;&nbsp;&nbsp;&nbsp;Initialize Engine</div>
-                  <div class="term-line">&nbsp;&nbsp;&lt;/<span class="text-foreground">PixelatedButton</span>&gt;</div>
-                  <div class="term-line"><span class="text-primary">&lt;/template&gt;</span></div>
-                </div>
-
-              </div>
-            </div>
-          </div>
-
-          <div class="w-full lg:w-[55%] pb-[20vh] dx-steps-wrapper">
-            <div class="dx-step h-[80vh] flex flex-col justify-center space-y-6 pr-4">
-              <div class="size-12 rounded-2xl bg-muted border border-border flex items-center justify-center shadow-sm"><Code2 class="size-5 text-foreground" /></div>
-              <h3 class="text-3xl md:text-4xl font-bold tracking-tight">CLI Integration.</h3>
-              <p class="text-lg md:text-xl text-muted-foreground leading-relaxed font-medium">Raya acts as a remote Shadcn registry. A single command pulls the raw, uncompiled component directly into your project structure.</p>
-            </div>
-            <div class="dx-step h-[80vh] flex flex-col justify-center space-y-6 pr-4">
-              <div class="size-12 rounded-2xl bg-muted border border-border flex items-center justify-center shadow-sm"><Layers class="size-5 text-foreground" /></div>
-              <h3 class="text-3xl md:text-4xl font-bold tracking-tight">Zero Black Boxes.</h3>
-              <p class="text-lg md:text-xl text-muted-foreground leading-relaxed font-medium">No hidden `node_modules`. You have absolute freedom to adjust the Tailwind classes, the GSAP logic, and the Reka UI props directly in the Vue file.</p>
-            </div>
-            <div class="dx-step h-[80vh] flex flex-col justify-center space-y-6 pr-4">
-              <div class="size-12 rounded-2xl bg-muted border border-border flex items-center justify-center shadow-sm"><Sparkles class="size-5 text-foreground" /></div>
-              <h3 class="text-3xl md:text-4xl font-bold tracking-tight">Immediate Results.</h3>
-              <p class="text-lg md:text-xl text-muted-foreground leading-relaxed font-medium">Drop it into your template and it works flawlessly on the first render. Accessible, styled, and perfectly animated.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="horizontal-section h-screen bg-muted/10 flex flex-col justify-center overflow-hidden border-y border-border shadow-inner">
-        <div class="pl-6 md:pl-24 mb-12 relative z-20">
-          <h2 class="text-4xl md:text-6xl font-bold tracking-tighter text-foreground">The Arsenal.</h2>
-          <p class="text-xl text-muted-foreground mt-2 font-medium">Complex interactions, simplified.</p>
-        </div>
-
-        <div class="horizontal-track flex gap-8 px-6 md:px-24 w-max">
-
-          <NuxtLink v-for="(item, index) in arsenalItems" :key="item.id" :to="item.link"
-                    class="magnetic-card w-[85vw] md:w-[600px] h-[500px] shrink-0 rounded-[40px] border border-border p-12 flex flex-col justify-between relative overflow-hidden group hover:border-foreground/30 transition-colors cursor-pointer shadow-lg"
-                    :class="item.bgClass">
-            <div class="absolute inset-0 bg-gradient-to-br from-foreground/5 to-transparent pointer-events-none"></div>
-            <div class="relative z-10 w-full h-full flex flex-col justify-between pointer-events-none">
-              <div class="flex justify-between items-start">
-                <span class="font-mono text-sm text-muted-foreground uppercase tracking-widest">{{ item.category }}</span>
-                <ArrowRight class="size-8 text-muted-foreground group-hover:text-foreground transition-colors" />
-              </div>
-              <h3 class="text-6xl md:text-7xl font-bold tracking-[-0.03em]">{{ item.title }}.</h3>
-            </div>
-          </NuxtLink>
-
-          <div class="w-[10vw] shrink-0"></div>
-        </div>
-      </section>
-
-      <section class="max-w-7xl mx-auto px-6 py-40 border-t border-border">
-        <div class="text-center mb-24">
-          <h2 class="text-5xl md:text-7xl font-bold tracking-tighter">Radically simple.</h2>
-          <p class="text-xl text-muted-foreground mt-4 font-medium">Built on Reka UI. Styled with Tailwind.</p>
-        </div>
-
-        <ul class="grid grid-cols-1 gap-4 md:grid-cols-12 md:grid-rows-3 w-full shrink-0">
-          <li
-              v-for="(item, index) in gridItems"
-              :key="index"
-              class="min-h-[14rem] list-none"
-              :class="item.area"
-          >
-            <!-- Note: Background removed from outer div so it doesn't cover the absolute glow layer -->
-            <div class="relative h-full rounded-2xl border border-border p-2 md:rounded-3xl md:p-3">
-              <GlowingEffect
-                  :glow="true"
-                  :disabled="false"
-                  :spread="40"
-                  :proximity="64"
-                  :inactive-zone="0.01"
-                  :border-width="3"
-              />
-              <!-- Solid bg-background on inner div to mask the center and only reveal borders -->
-              <div class="relative flex h-full flex-col justify-between gap-6 overflow-hidden rounded-xl border border-border bg-background p-6 shadow-sm">
-                <div class="relative flex flex-1 flex-col justify-between gap-3">
-                  <div class="w-fit rounded-lg border border-border bg-muted/50 p-2">
-                    <component :is="item.icon" class="h-4 w-4 text-foreground" />
-                  </div>
-                  <div class="space-y-3">
-                    <h3 class="pt-0.5 font-sans text-xl/[1.375rem] font-semibold text-foreground md:text-2xl/[1.875rem]">
-                      {{ item.title }}
-                    </h3>
-                    <h2 class="font-sans text-sm/[1.125rem] text-muted-foreground md:text-base/[1.375rem]">
-                      {{ item.description }}
-                    </h2>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </li>
-        </ul>
-      </section>
-
-      <section class="py-40 flex flex-col items-center justify-center text-center relative border-t border-border bg-muted/10">
-        <h2 class="text-6xl md:text-8xl font-bold tracking-tighter mb-10 text-transparent bg-clip-text animate-gradient bg-[linear-gradient(to_right,var(--color-foreground),var(--color-muted-foreground),var(--color-foreground))]">Ready to build?</h2>
-        <NuxtLink to="/docs/components/tree">
-          <button class="h-16 px-10 bg-foreground text-background text-lg font-bold rounded-full hover:scale-105 active:scale-95 transition-transform shadow-xl will-change-transform transform-gpu">
-            Explore Registry
-          </button>
-        </NuxtLink>
-      </section>
-
     </main>
-    <AppFooter />
+
+    <footer class="relative z-0 bg-[#000000] overflow-hidden">
+      <div class="footer-inner h-screen w-full flex flex-col justify-between py-12 px-6 md:px-20">
+
+        <div class="flex flex-col lg:flex-row justify-between items-start mt-20 w-full max-w-7xl mx-auto">
+          <div class="max-w-2xl">
+            <div class="text-[#C3FF00] font-mono text-xs uppercase tracking-widest mb-6">( Initialize Engine )</div>
+            <h3 class="text-6xl md:text-[100px] font-black tracking-tighter text-white leading-[0.85] uppercase">
+              Build <br> <span class="font-serif italic text-white/40 font-normal lowercase tracking-normal">different.</span>
+            </h3>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-16 mt-16 lg:mt-0 font-mono text-sm uppercase tracking-widest">
+            <div class="flex flex-col gap-6">
+              <span class="text-white/30">Architecture</span>
+              <NuxtLink to="/docs/components/tree" class="text-white hover:text-[#C3FF00] transition-colors hover-trigger">Registry</NuxtLink>
+              <NuxtLink to="/docs/introduction" class="text-white hover:text-[#C3FF00] transition-colors hover-trigger">Documentation</NuxtLink>
+            </div>
+            <div class="flex flex-col gap-6">
+              <span class="text-white/30">Network</span>
+              <a href="https://github.com/raya-ui" target="_blank" class="text-white hover:text-[#C3FF00] transition-colors hover-trigger flex items-center gap-3"><Github class="size-4"/> GitHub</a>
+              <a href="#" class="text-white hover:text-[#C3FF00] transition-colors hover-trigger">Twitter / X</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="w-full text-center relative mt-auto pt-12">
+          <h1 class="text-[18vw] font-black tracking-tighter leading-none text-white opacity-[0.02] uppercase select-none pointer-events-none">
+            RAYA UI
+          </h1>
+          <div class="absolute bottom-4 left-0 w-full flex flex-col md:flex-row justify-between text-[10px] md:text-xs font-mono uppercase tracking-[0.2em] text-white/30 px-6 md:px-20">
+            <span>© 2026 Architected by Iman Mohammadi</span>
+            <span class="mt-2 md:mt-0 text-[#C3FF00]/50">Titanium Grade Open Source</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+
   </div>
 </template>
 
 <style>
-/* CSS RESET FOR STICKY + GSAP SCROLLING */
-html, body, #__nuxt { overflow-x: visible !important; }
+/* SOTD RESET */
+html, body, #__nuxt {
+  background-color: #030303;
+  cursor: none;
+}
 
-/* CUSTOM SCROLLBAR (Mapped to Theme) */
-.custom-scroll::-webkit-scrollbar { width: 8px; }
-.custom-scroll::-webkit-scrollbar-track { background: var(--color-background); }
-.custom-scroll::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 10px; }
-.custom-scroll::-webkit-scrollbar-thumb:hover { background: var(--color-muted-foreground); }
+::-webkit-scrollbar { display: none; }
 
-/* GRADIENT TEXT ANIMATION */
-@keyframes gradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-.animate-gradient { background-size: 200% 200%; animation: gradient 8s ease infinite; }
+.perspective-1000 { perspective: 1000px; }
+
+.ease-expo {
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
 </style>
