@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import HomeScene from '~/components/home/HomeScene.client.vue'
 import FloatingDock from '~/components/home/FloatingDock.vue'
-import WorldFooter from '~/components/home/WorldFooter.vue'
 
 import ChapterHero from '~/components/home/chapters/ChapterHero.client.vue'
 import ChapterLivingInterfaces from '~/components/home/chapters/ChapterLivingInterfaces.client.vue'
 import ChapterInfinitePossibilities from '~/components/home/chapters/ChapterInfinitePossibilities.client.vue'
+import ChapterSystemToCreation from '~/components/home/chapters/ChapterSystemToCreation.client.vue'
+
+// Import the Monument Footer
+import ChapterMonumentFooter from '~/components/home/chapters/ChapterMonumentFooter.client.vue'
 
 import { useScrollManager } from '~/composables/home/useScrollManager'
 
@@ -22,7 +24,9 @@ useScrollManager()
         <ChapterHero/>
         <ChapterLivingInterfaces />
         <ChapterInfinitePossibilities />
-        <WorldFooter/>
+        <ChapterSystemToCreation />
+
+        <ChapterMonumentFooter />
       </div>
 
     </main>

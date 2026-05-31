@@ -3,6 +3,7 @@
 
 <template>
   <main>
+    <CinematicCursor />
     <slot/>
   </main>
 </template>

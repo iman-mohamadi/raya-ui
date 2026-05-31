@@ -1,75 +1,53 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import gsap from 'gsap'
+import { gsap } from 'gsap'
 
-onMounted(() => {
-  // Bulletproof Initial Load Sequence
-  const tl = gsap.timeline()
+// Define the global GSAP cinematic transition
+const pageTransition = {
+  name: 'cinematic',
+  mode: 'out-in',
+  css: false, // Tell Vue we are doing this purely with JS for high performance
 
-  // 1. Loader text pulses briefly
-  tl.to('.loader-brand', { opacity: 1, duration: 0.5, ease: 'power2.inOut', yoyo: true, repeat: 1 })
+  onLeave: (el: Element, done: () => void) => {
+    const tl = gsap.timeline({ onComplete: done })
 
-  // 2. Curtain slides up to reveal the world
-  tl.to('#global-loader', {
-    yPercent: -100,
-    duration: 1.2,
-    ease: 'expo.inOut',
-    delay: 0.2
-  })
+    // 1. Current page scales down and fades
+    tl.to(el, { scale: 0.95, opacity: 0, duration: 0.6, ease: 'power3.inOut' }, 0)
 
-  // 3. Optional: Trigger a custom event here if you want Hero animations to wait for the loader
-})
+    // 2. Black loading screen slides UP from the bottom
+    tl.to('#global-transition-overlay', { y: '0%', duration: 0.6, ease: 'power3.inOut' }, 0)
+  },
+
+  onEnter: (el: Element, done: () => void) => {
+    const tl = gsap.timeline({ onComplete: done })
+
+    // 1. Prepare the new page (scaled down and pushed down slightly)
+    gsap.set(el, { scale: 0.9, y: 100, opacity: 0 })
+
+    // 2. Loading screen slides UP and away out of the screen
+    tl.to('#global-transition-overlay', { y: '-100%', duration: 0.6, ease: 'power3.inOut' }, 0)
+
+    // 3. New page slides up into place and scales to full size
+    tl.to(el, { scale: 1, y: 0, opacity: 1, duration: 0.8, ease: 'power3.out' }, 0.2)
+
+    // 4. Reset the loader back to the bottom hidden position for the next click
+    tl.set('#global-transition-overlay', { y: '100%' })
+  }
+}
 </script>
 
 <template>
-  <div id="app-root">
+  <div class="bg-[#050505] min-h-screen text-white overflow-hidden">
 
-    <div id="global-loader">
-      <div class="loader-brand">BOOTING DIGITAL MATTER...</div>
+    <div id="global-transition-overlay" class="fixed inset-0 w-full h-full bg-[#030305] z-[9999] translate-y-full flex items-center justify-center pointer-events-none">
+      <div class="flex items-center gap-4">
+        <span class="w-2 h-2 rounded-full bg-[#FF4A00] animate-pulse"></span>
+        <span class="text-white/50 font-mono text-sm tracking-[0.3em] uppercase">Booting Environment...</span>
+      </div>
     </div>
 
     <NuxtLayout>
-      <NuxtPage />
+      <NuxtPage :transition="pageTransition" />
     </NuxtLayout>
 
   </div>
 </template>
-
-<style>
-/* Reset */
-html, body {
-  margin: 0;
-  padding: 0;
-  background-color: #030305;
-  color: #ffffff;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-}
-
-#app-root {
-  position: relative;
-  width: 100%;
-  min-height: 100vh;
-}
-
-/* Global Loader Styles */
-#global-loader {
-  position: fixed;
-  inset: 0;
-  background-color: #030305; /* Matches the void */
-  z-index: 999999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  will-change: transform;
-}
-
-.loader-brand {
-  font-family: 'SFMono-Regular', Consolas, monospace;
-  font-size: 0.75rem;
-  letter-spacing: 0.3em;
-  color: var(--primary, #00e5ff);
-  text-transform: uppercase;
-  opacity: 0; /* Hidden initially, GSAP fades it in */
-}
-</style>

@@ -17,18 +17,20 @@ let scrollTimeline: gsap.core.Timeline | null = null
 onMounted(() => {
   raya3D.morph = 0
 
-  entryTimeline = gsap.timeline({ delay: 0.5 })
+  entryTimeline = gsap.timeline({ delay: 1.0 })
+
+  // REMOVED BLUR
   entryTimeline
       .fromTo(raya3D, { morph: 0 }, { morph: 1, duration: 2.5, ease: 'power3.inOut' }, 0)
-      .fromTo(line1Ref.value, { y: 30, opacity: 0, filter: 'blur(10px)' }, { y: 0, opacity: 1, filter: 'blur(0px)', duration: 1.5 }, 1.0)
-      .fromTo(line2Ref.value, { y: 30, opacity: 0, filter: 'blur(10px)' }, { y: 0, opacity: 1, filter: 'blur(0px)', duration: 1.5 }, 1.3)
-      .fromTo(subtextRef.value, { y: 30, opacity: 0, filter: 'blur(10px)' }, { y: 0, opacity: 0.8, filter: 'blur(0px)', duration: 1.5 }, 1.8)
+      .fromTo(line1Ref.value, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 1.5, ease: 'power3.out' }, 1.0)
+      .fromTo(line2Ref.value, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 1.5, ease: 'power3.out' }, 1.3)
+      .fromTo(subtextRef.value, { y: 30, opacity: 0 }, { y: 0, opacity: 0.8, duration: 1.5, ease: 'power2.out' }, 1.8)
 
   scrollTimeline = gsap.timeline({
     scrollTrigger: {
       trigger: heroRef.value,
       start: 'top top',
-      end: '+=200%', // INCREASED: Now takes 2 full scrolls to leave the hero
+      end: '+=100%',
       pin: true,
       pinSpacing: false,
       scrub: 1
@@ -37,8 +39,8 @@ onMounted(() => {
 
   scrollTimeline
       .fromTo([line1Ref.value, line2Ref.value, subtextRef.value],
-          { y: 0, opacity: 1, filter: 'blur(0px)' },
-          { y: -50, opacity: 0, filter: 'blur(20px)', duration: 1, stagger: 0.1 }, 0)
+          { y: 0, opacity: 1 },
+          { y: -50, opacity: 0, duration: 1, stagger: 0.1 }, 0)
       .fromTo(raya3D,
           { cameraZ: 20, turbulence: 0.05 },
           { cameraZ: 8, turbulence: 0.2, duration: 1 }, 0)

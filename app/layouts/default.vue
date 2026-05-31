@@ -5,6 +5,7 @@ import {Motion} from 'motion-v'
 <template>
   <div
       class="relative min-h-screen bg-background text-foreground antialiased selection:bg-primary/30 selection:text-primary">
+    <CinematicCursor />
 
     <!-- 2. Decorative Structural Lines (Your Signature Style) -->
     <div

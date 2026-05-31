@@ -1,7 +1,7 @@
 import { reactive } from 'vue'
 
 export const raya3D = reactive({
-    morph: 0, // 0=Chaos, 1=R, 2=Wave, 3=Civilizations, 4=Engine
+    morph: 0,
     cameraX: 0,
     cameraY: 0,
     cameraZ: 20,
@@ -9,7 +9,8 @@ export const raya3D = reactive({
     lookAtY: 0,
     lookAtZ: 0,
     turbulence: 0.05,
-    particleColor: '#FF4A00'
+    particleColor: '#FF4A00',
+    particleOpacity: 0.8
 })
 
 export const useRayaState = () => {

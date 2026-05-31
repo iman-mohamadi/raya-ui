@@ -20,30 +20,36 @@ onMounted(() => {
     scrollTrigger: {
       trigger: chapterRef.value,
       start: 'top top',
-      end: '+=500%', // INCREASED: 5 screens of scrolling for this sequence
+      end: '+=300%',
       pin: true,
       scrub: 1
     }
   })
 
-  gsap.set(textStaticRef.value, { y: 50, opacity: 0, filter: 'blur(10px)' })
-  gsap.set([textRespondRef.value, textAdaptRef.value, textBreatheRef.value], { y: 50, opacity: 0, filter: 'blur(10px)' })
+  // REMOVED BLUR: Relying strictly on high-performance opacity and transform
+  gsap.set(textStaticRef.value, { y: 50, opacity: 0 })
+  gsap.set([textRespondRef.value, textAdaptRef.value, textBreatheRef.value], { y: 50, opacity: 0 })
   gsap.set(panelsRef.value, { y: '15vh', opacity: 0, scale: 0.9 })
 
+  // 0-20: Morph to Wave
   tl.fromTo(raya3D, { morph: 1, cameraZ: 8, cameraY: 0 }, { morph: 2, cameraZ: 5, cameraY: -2, turbulence: 0.4, duration: 20 }, 0)
 
-  tl.fromTo(textStaticRef.value, { y: 50, opacity: 0, filter: 'blur(10px)' }, { y: 0, opacity: 1, filter: 'blur(0px)', duration: 5 }, 0)
-  tl.to(textStaticRef.value, { y: -50, opacity: 0, filter: 'blur(10px)', duration: 5 }, 25)
+  // TEXT 1
+  tl.fromTo(textStaticRef.value, { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 5 }, 0)
+  tl.to(textStaticRef.value, { y: -50, opacity: 0, duration: 5 }, 25)
 
-  tl.fromTo(textRespondRef.value, { y: 50, opacity: 0, filter: 'blur(10px)' }, { y: 0, opacity: 1, filter: 'blur(0px)', duration: 3 }, 30)
-  tl.fromTo(textAdaptRef.value, { y: 50, opacity: 0, filter: 'blur(10px)' }, { y: 0, opacity: 1, filter: 'blur(0px)', duration: 3 }, 32)
-  tl.fromTo(textBreatheRef.value, { y: 50, opacity: 0, filter: 'blur(10px)' }, { y: 0, opacity: 1, filter: 'blur(0px)', duration: 3 }, 34)
-  tl.to([textRespondRef.value, textAdaptRef.value, textBreatheRef.value], { y: -50, opacity: 0, filter: 'blur(10px)', duration: 5 }, 55)
+  // TEXT 2
+  tl.fromTo(textRespondRef.value, { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 3 }, 30)
+  tl.fromTo(textAdaptRef.value, { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 3 }, 32)
+  tl.fromTo(textBreatheRef.value, { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 3 }, 34)
+  tl.to([textRespondRef.value, textAdaptRef.value, textBreatheRef.value], { y: -50, opacity: 0, duration: 5 }, 55)
 
+  // 50-70: Morph to Civilizations
   tl.fromTo(raya3D, { morph: 2, cameraZ: 5, cameraY: -2 }, { morph: 3, cameraZ: 15, cameraY: 0, particleColor: '#ffffff', turbulence: 0.02, duration: 20 }, 50)
 
+  // CARDS REVEAL
   tl.fromTo(panelsRef.value, { y: '15vh', opacity: 0, scale: 0.9 }, { y: '0vh', opacity: 1, scale: 1, duration: 8 }, 65)
-  tl.to(panelsRef.value, { y: '-15vh', opacity: 0, filter: 'blur(10px)', duration: 8 }, 92)
+  tl.to(panelsRef.value, { y: '-15vh', opacity: 0, duration: 8 }, 92)
 })
 
 onUnmounted(() => tl?.kill())
