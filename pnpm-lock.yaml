@@ -92,9 +92,6 @@ importers:
       three:
         specifier: ^0.184.0
         version: 0.184.0
-      tres:
-        specifier: ^0.0.0
-        version: 0.0.0
       vue:
         specifier: ^3.5.25
         version: 3.5.34(typescript@5.9.3)
@@ -5186,9 +5183,6 @@ packages:
 
   tr46@0.0.3:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
-
-  tres@0.0.0:
-    resolution: {integrity: sha512-865CHEgX/oaga9LkMPX0t6ymVI305yJN/m4LcT6QOLu53+j3A7WstSQf5JRmcS5rXS6xf8ic08lT1R0Nkmh/Zw==}
 
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
@@ -10942,8 +10936,6 @@ snapshots:
   totalist@3.0.1: {}
 
   tr46@0.0.3: {}
-
-  tres@0.0.0: {}
 
   tslib@2.8.1: {}
 
