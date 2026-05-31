@@ -1,12 +1,21 @@
+<script setup lang="ts">
+// 1. CRITICAL: Nuxt auto-imports DO NOT WORK inside TresCanvas. You MUST explicitly import it.
+import GlobalParticleSystem from '~/components/GlobalParticleSystem.client.vue'
+</script>
+
 <template>
   <div class="layout-cinematic">
     <CinematicCursor />
 
     <div class="global-canvas-container">
-      <TresCanvas clear-color="#030305" window-size>
-        <TresPerspectiveCamera :position="[0, 0, 20]" :look-at="[0, 0, 0]" />
-        <GlobalParticleSystem />
-      </TresCanvas>
+      <ClientOnly>
+        <TresCanvas clear-color="#030305" window-size>
+          <TresPerspectiveCamera :position="[0, 0, 20]" :look-at="[0, 0, 0]" />
+
+          <GlobalParticleSystem />
+
+        </TresCanvas>
+      </ClientOnly>
     </div>
 
     <div class="global-environment">
@@ -24,12 +33,11 @@
 .global-canvas-container {
   position: fixed;
   inset: 0;
-  z-index: 1; /* Above background, behind content */
-  pointer-events: none; /* Let clicks pass through to HTML */
+  z-index: 1;
+  pointer-events: none;
 }
 .page-content {
   position: relative;
   z-index: 10;
-  /* Scroll remains native */
 }
 </style>
