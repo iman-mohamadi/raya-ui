@@ -84,7 +84,7 @@ your-project/
 │               └── index.ts
 ├── utils/
 │   └── cn.ts
-└── tailwind.config.ts
+└──
 ```
 
 ## 🔗 Links
