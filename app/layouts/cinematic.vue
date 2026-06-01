@@ -1,6 +1,6 @@
 <script setup lang="ts">
-// 1. CRITICAL: Nuxt auto-imports DO NOT WORK inside TresCanvas. You MUST explicitly import it.
 import GlobalParticleSystem from '~/components/GlobalParticleSystem.client.vue'
+import PostProcessing from '~/components/home/PostProcessing.client.vue'
 </script>
 
 <template>
@@ -14,13 +14,10 @@ import GlobalParticleSystem from '~/components/GlobalParticleSystem.client.vue'
 
           <GlobalParticleSystem />
 
+          <PostProcessing />
+
         </TresCanvas>
       </ClientOnly>
-    </div>
-
-    <div class="global-environment">
-      <div class="film-grain"></div>
-      <div ref="ambientGlowRef" class="ambient-glow"></div>
     </div>
 
     <div class="page-content">

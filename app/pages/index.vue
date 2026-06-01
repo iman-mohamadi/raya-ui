@@ -5,6 +5,7 @@ import ChapterHero from '~/components/home/chapters/ChapterHero.client.vue'
 import ChapterLivingInterfaces from '~/components/home/chapters/ChapterLivingInterfaces.client.vue'
 import ChapterInfinitePossibilities from '~/components/home/chapters/ChapterInfinitePossibilities.client.vue'
 import ChapterSystemToCreation from '~/components/home/chapters/ChapterSystemToCreation.client.vue'
+import MagneticBackToTop from '~/components/MagneticBackToTop.client.vue'
 
 // Import the Monument Footer
 import ChapterMonumentFooter from '~/components/home/chapters/ChapterMonumentFooter.client.vue'
@@ -27,6 +28,7 @@ useScrollManager()
         <ChapterSystemToCreation />
 
         <ChapterMonumentFooter />
+        <MagneticBackToTop />
       </div>
 
     </main>

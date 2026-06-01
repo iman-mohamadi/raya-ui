@@ -2,9 +2,13 @@
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { CustomEase } from 'gsap/CustomEase'
 import { raya3D } from '~/composables/home/useRayaState'
 
-gsap.registerPlugin(ScrollTrigger)
+gsap.registerPlugin(ScrollTrigger, CustomEase)
+
+// The SOTD-level cinematic ease: fast initial impact, very slow breathing tail
+CustomEase.create("cinematic", "M0,0 C0.1,0.9 0.2,1 1,1")
 
 const heroRef = ref<HTMLElement | null>(null)
 const line1Ref = ref<HTMLElement | null>(null)
@@ -18,9 +22,9 @@ onMounted(async () => {
   await nextTick()
   if (!heroRef.value) return
 
-  // Explicit reset globally
+  // Explicit reset globally - keeping moody/high-contrast colors
   raya3D.morph = 0
-  raya3D.particleColor = '#00E5FF'
+  raya3D.particleColor = '#00E5FF' // Deep cyan
   raya3D.particleOpacity = 0.8
   raya3D.cameraZ = 20
   raya3D.cameraX = 0
@@ -30,10 +34,10 @@ onMounted(async () => {
   entryTimeline = gsap.timeline({ delay: 1.0 })
 
   entryTimeline
-      .fromTo(raya3D, { morph: 0 }, { morph: 1, duration: 2.5, ease: 'power3.inOut' }, 0)
-      .fromTo(line1Ref.value, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 1.5, ease: 'power3.out' }, 1.0)
-      .fromTo(line2Ref.value, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 1.5, ease: 'power3.out' }, 1.3)
-      .fromTo(subtextRef.value, { y: 30, opacity: 0 }, { y: 0, opacity: 0.8, duration: 1.5, ease: 'power2.out' }, 1.8)
+      .fromTo(raya3D, { morph: 0 }, { morph: 1, duration: 3.5, ease: 'cinematic' }, 0)
+      .fromTo(line1Ref.value, { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 2.0, ease: 'cinematic' }, 1.0)
+      .fromTo(line2Ref.value, { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 2.0, ease: 'cinematic' }, 1.2)
+      .fromTo(subtextRef.value, { y: 30, opacity: 0 }, { y: 0, opacity: 0.8, duration: 2.0, ease: 'cinematic' }, 1.6)
 
   scrollTimeline = gsap.timeline({
     scrollTrigger: {
@@ -42,7 +46,7 @@ onMounted(async () => {
       end: '+=100%',
       pin: true,
       pinSpacing: false,
-      scrub: 1
+      scrub: true // FIX: Changed from '1' to 'true' to eliminate double-lag with Lenis
     }
   })
 

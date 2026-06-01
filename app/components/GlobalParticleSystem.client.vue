@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { shallowRef } from 'vue'
-import { AdditiveBlending, Vector3, Color, BufferAttribute } from 'three'
+import { shallowRef, onMounted, onUnmounted } from 'vue'
+import { AdditiveBlending, Vector3, Color, BufferAttribute, Raycaster, Plane, Vector2 } from 'three'
 import { useLoop, useTresContext } from '@tresjs/core'
 import { raya3D } from '~/composables/home/useRayaState'
 
@@ -233,12 +233,42 @@ const geometryRef = shallowRef<any>(null)
 const materialRef = shallowRef<any>(null)
 const rotationY = shallowRef(0)
 
-// Track buffer state
 let currentStartIndex = -1
 let currentEndIndex = -1
 
 // ==========================================
-// 2. GPU-ACCELERATED SHADERS
+// 2. MOUSE RAYCASTING SETUP
+// ==========================================
+
+const { camera } = useTresContext()
+const mouse3D = new Vector3(9999, 9999, 9999)
+const mouse2D = new Vector2(-9999, -9999)
+const raycaster = new Raycaster()
+const invisiblePlane = new Plane(new Vector3(0, 0, 1), 0)
+
+const onMouseMove = (event: MouseEvent) => {
+  mouse2D.x = (event.clientX / window.innerWidth) * 2 - 1
+  mouse2D.y = -(event.clientY / window.innerHeight) * 2 + 1
+}
+
+// FIX 1: Explicitly initialize the geometry to Chaos (shapes[0]) the instant the component mounts
+onMounted(() => {
+  window.addEventListener('mousemove', onMouseMove)
+
+  if (geometryRef.value) {
+    geometryRef.value.setAttribute('position', new BufferAttribute(shapes[0], 3))
+    geometryRef.value.setAttribute('aTargetPosition', new BufferAttribute(shapes[1], 3))
+    currentStartIndex = 0
+    currentEndIndex = 1
+  }
+})
+
+onUnmounted(() => {
+  window.removeEventListener('mousemove', onMouseMove)
+})
+
+// ==========================================
+// 3. GPU-ACCELERATED SHADERS
 // ==========================================
 
 const vertexShader = `
@@ -246,21 +276,48 @@ const vertexShader = `
   uniform float uTime;
   uniform float uTurbulence;
   uniform float uPixelRatio;
+
+  uniform vec3 uMousePos;
+  uniform float uMouseRadius;
+  uniform float uMouseForce;
+
   attribute vec3 aTargetPosition;
 
   void main() {
+    // Basic morph interpolation
     vec3 morphedPos = mix(position, aTargetPosition, uMorphFraction);
 
+    // Turbulence / Ambient drifting
     float noiseX = sin(uTime * 2.0 + float(gl_VertexID) * 0.1) * uTurbulence;
     float noiseY = cos(uTime * 2.0 + float(gl_VertexID) * 0.1) * uTurbulence;
-
     morphedPos.x += noiseX;
     morphedPos.y += noiseY;
 
-    vec4 mvPosition = modelViewMatrix * vec4(morphedPos, 1.0);
+    // Convert to World Space for accurate physics
+    vec4 worldPos = modelMatrix * vec4(morphedPos, 1.0);
+
+    // FIX 2: Cylindrical Distance Check.
+    // By ignoring Z, the mouse punches a tunnel completely through the 3D depth, making the interaction massive.
+    vec2 diffXY = worldPos.xy - uMousePos.xy;
+    float distXY = length(diffXY);
+
+    if (distXY < uMouseRadius) {
+      float force = (uMouseRadius - distXY) / uMouseRadius;
+
+      // Calculate 2D direction outward
+      vec2 direction = normalize(diffXY + vec2(0.0001));
+
+      // Push outward violently in X/Y
+      worldPos.xy += direction * (force * force) * uMouseForce;
+
+      // Push INWARD (Z depth) to create a beautiful physical 'dent' when the mouse passes
+      worldPos.z -= (force * force) * (uMouseForce * 0.6);
+    }
+
+    vec4 mvPosition = viewMatrix * worldPos;
     gl_Position = projectionMatrix * mvPosition;
 
-    // FIX: Enforce a minimum size of 2.0 pixels so points never flicker out of existence
+    // Depth-based size attenuation
     float baseSize = (35.0 / -mvPosition.z) * uPixelRatio;
     gl_PointSize = max(baseSize, 2.0);
   }
@@ -272,11 +329,7 @@ const fragmentShader = `
 
   void main() {
     float dist = length(gl_PointCoord - vec2(0.5));
-
-    // FIX: Removed 'discard'. Hardware discarding on tiny moving points causes the noisy static effect.
-    // Instead, we use smoothstep to opticaly fade the edges to 0, ensuring perfect, steady anti-aliasing.
     float alpha = smoothstep(0.5, 0.1, dist);
-
     gl_FragColor = vec4(uColor, alpha * uOpacity);
   }
 `
@@ -287,12 +340,17 @@ const uniforms = {
   uTurbulence: { value: raya3D.turbulence },
   uColor: { value: new Color(raya3D.particleColor) },
   uOpacity: { value: raya3D.particleOpacity },
-  // Pass the device pixel ratio to keep the dots physically small on Retina/Mobile screens
-  uPixelRatio: { value: typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 2) : 1 }
+  uPixelRatio: { value: typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 2) : 1 },
+  uMousePos: { value: new Vector3(9999, 9999, 9999) },
+  uMouseRadius: { value: 12.0 },  // Size of the mouse brush
+  uMouseForce: { value: 10.0 }     // Strength of the push
 }
 
+// ==========================================
+// 4. RENDER LOOP
+// ==========================================
+
 const { onBeforeRender } = useLoop()
-const { camera } = useTresContext()
 
 const currentCamPos = new Vector3(0, 0, 20)
 const currentLookAt = new Vector3(0, 0, 0)
@@ -309,9 +367,19 @@ onBeforeRender(({ delta, elapsed }) => {
     currentLookAt.lerp(targetLookAt, 0.05)
     camera.value.position.copy(currentCamPos)
     camera.value.lookAt(currentLookAt)
+
+    // MOUSE PHYSICS RAYCAST
+    if (!isMobile && mouse2D.x !== -9999) {
+      raycaster.setFromCamera(mouse2D, camera.value)
+
+      const targetHit = raycaster.ray.intersectPlane(invisiblePlane, new Vector3())
+      if (targetHit) {
+        // FIX 3: Lerp the mouse. This creates a "heavy fluid" delay when dragging your mouse across the particles
+        mouse3D.lerp(targetHit, 0.1)
+      }
+    }
   }
 
-  // Calculate Morph Integer and Fraction
   const m = Math.max(0, Math.min(raya3D.morph, shapes.length - 1))
   const startIndex = Math.floor(m)
   let endIndex = startIndex + 1
@@ -319,7 +387,6 @@ onBeforeRender(({ delta, elapsed }) => {
   const morphFraction = m - startIndex
 
   if (geometryRef.value) {
-    // GPU BUFFER SWAP: Only re-upload array attributes when the integer changes, zero math loops!
     if (startIndex !== currentStartIndex || endIndex !== currentEndIndex) {
       geometryRef.value.setAttribute('position', new BufferAttribute(shapes[startIndex], 3))
       geometryRef.value.setAttribute('aTargetPosition', new BufferAttribute(shapes[endIndex], 3))
@@ -328,13 +395,13 @@ onBeforeRender(({ delta, elapsed }) => {
     }
   }
 
-  // Inject current properties directly to shader memory
   if (materialRef.value) {
     materialRef.value.uniforms.uTime.value = elapsed
     materialRef.value.uniforms.uMorphFraction.value = morphFraction
     materialRef.value.uniforms.uTurbulence.value = raya3D.turbulence
     materialRef.value.uniforms.uColor.value.set(raya3D.particleColor)
     materialRef.value.uniforms.uOpacity.value = raya3D.particleOpacity
+    materialRef.value.uniforms.uMousePos.value.copy(mouse3D)
   }
 })
 </script>
@@ -346,6 +413,7 @@ onBeforeRender(({ delta, elapsed }) => {
 
     <TresPoints :rotation-y="rotationY">
       <TresBufferGeometry ref="geometryRef" />
+
       <TresShaderMaterial
           ref="materialRef"
           :vertex-shader="vertexShader"
