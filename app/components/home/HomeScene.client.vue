@@ -24,8 +24,9 @@ const vertexShader = `
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
     gl_Position = projectionMatrix * mvPosition;
 
-    // Reduced from 100.0 to 12.0 for fine background dust
-    gl_PointSize = (12.0 / -mvPosition.z);
+    // FIX: Minimum 2px size to stop background dust from flickering
+    float baseSize = (15.0 / -mvPosition.z);
+    gl_PointSize = max(baseSize, 2.0);
   }
 `
 
@@ -33,10 +34,9 @@ const fragmentShader = `
   uniform vec3 uColor;
   void main() {
     float dist = length(gl_PointCoord - vec2(0.5));
-    if (dist > 0.5) discard;
 
-    // Crisp edges for the background environment
-    float alpha = smoothstep(0.5, 0.4, dist);
+    // Smooth anti-aliased edge instead of hardware discard
+    float alpha = smoothstep(0.5, 0.1, dist);
     gl_FragColor = vec4(uColor, alpha * 0.8);
   }
 `
