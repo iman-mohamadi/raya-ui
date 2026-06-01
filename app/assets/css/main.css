@@ -556,3 +556,22 @@ button {
 .blocks-list-grid-lines > div {
     display: none;
 }
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #303030 #000000;
+}
+
+*::-webkit-scrollbar {
+    width: 4px;
+}
+
+*::-webkit-scrollbar-track {
+    background: #000000;
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: #303030;
+    border-radius: 50px;
+    border: 2px double #ffffff;
+}
