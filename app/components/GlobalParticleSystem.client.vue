@@ -249,10 +249,8 @@ const vertexShader = `
   attribute vec3 aTargetPosition;
 
   void main() {
-    // Hardware interpolated morphing
     vec3 morphedPos = mix(position, aTargetPosition, uMorphFraction);
 
-    // Hardware accelerated noise/turbulence
     float noiseX = sin(uTime * 2.0 + float(gl_VertexID) * 0.1) * uTurbulence;
     float noiseY = cos(uTime * 2.0 + float(gl_VertexID) * 0.1) * uTurbulence;
 
@@ -262,9 +260,9 @@ const vertexShader = `
     vec4 mvPosition = modelViewMatrix * vec4(morphedPos, 1.0);
     gl_Position = projectionMatrix * mvPosition;
 
-    // THE FIX: Restored microscopic scaling math.
-    // This renders delicate 1px - 2px points matching your original 0.04 size.
-    gl_PointSize = (15.0 / -mvPosition.z) * uPixelRatio;
+    // FIX: Enforce a minimum size of 2.0 pixels so points never flicker out of existence
+    float baseSize = (35.0 / -mvPosition.z) * uPixelRatio;
+    gl_PointSize = max(baseSize, 2.0);
   }
 `
 
@@ -275,11 +273,9 @@ const fragmentShader = `
   void main() {
     float dist = length(gl_PointCoord - vec2(0.5));
 
-    // THE FIX: Sharp, crisp cicles instead of fuzzy, blurry glowing orbs.
-    if (dist > 0.5) discard;
-
-    // Mild anti-aliasing to keep the edges perfectly smooth on high-res screens
-    float alpha = smoothstep(0.5, 0.4, dist);
+    // FIX: Removed 'discard'. Hardware discarding on tiny moving points causes the noisy static effect.
+    // Instead, we use smoothstep to opticaly fade the edges to 0, ensuring perfect, steady anti-aliasing.
+    float alpha = smoothstep(0.5, 0.1, dist);
 
     gl_FragColor = vec4(uColor, alpha * uOpacity);
   }
