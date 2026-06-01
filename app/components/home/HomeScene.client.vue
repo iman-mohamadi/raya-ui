@@ -3,7 +3,6 @@ import { ref, shallowRef } from 'vue'
 import { TresCanvas } from '@tresjs/core'
 import { Vector3, AdditiveBlending, Color, BufferGeometry, ShaderMaterial } from 'three'
 
-// Composables
 import { useScrollManager } from '~/composables/home/useScrollManager'
 import { useMouseManager } from '~/composables/home/useMouseManager'
 import { useChapterManager } from '~/composables/home/useChapterManager'
@@ -14,7 +13,6 @@ const { mouse, updateTick } = useMouseManager()
 const { currentChapter, updateChapterByProgress } = useChapterManager()
 const { cameraPosition, cameraLookAt, applyMouseParallax } = useCameraManager()
 
-// Particle System Logic
 const geometry = shallowRef<BufferGeometry | null>(null)
 const material = shallowRef<ShaderMaterial | null>(null)
 const internalColor = ref(new Color('#ffffff'))
@@ -25,7 +23,9 @@ const vertexShader = `
   void main() {
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
     gl_Position = projectionMatrix * mvPosition;
-    gl_PointSize = (100.0 / -mvPosition.z);
+
+    // Reduced from 100.0 to 12.0 for fine background dust
+    gl_PointSize = (12.0 / -mvPosition.z);
   }
 `
 
@@ -34,7 +34,9 @@ const fragmentShader = `
   void main() {
     float dist = length(gl_PointCoord - vec2(0.5));
     if (dist > 0.5) discard;
-    float alpha = smoothstep(0.5, 0.1, dist);
+
+    // Crisp edges for the background environment
+    float alpha = smoothstep(0.5, 0.4, dist);
     gl_FragColor = vec4(uColor, alpha * 0.8);
   }
 `
@@ -45,20 +47,16 @@ const uniforms = {
   uColor: { value: internalColor.value }
 }
 
-// Single Global Render Loop
 const onRenderLoop = ({ elapsed }: any) => {
-  // 1. Update Managers
   updateTick()
   updateChapterByProgress(scrollProgress.value || 0)
   applyMouseParallax(new Vector3(0, 0, 10), mouse.x, mouse.y)
 
-  // 2. Safely Update Shader Uniforms
   if (material.value) {
     material.value.uniforms.uTime.value = elapsed
     material.value.uniforms.uProgress.value = scrollProgress.value || 0
   }
 
-  // 3. Update Particle Color smoothly based on Chapter config
   if (currentChapter.value?.colorPalette?.particles) {
     internalColor.value.set(currentChapter.value.colorPalette.particles)
   }
@@ -66,15 +64,18 @@ const onRenderLoop = ({ elapsed }: any) => {
 </script>
 
 <template>
-  <div class="fixed inset-0 w-full h-full pointer-events-none z-0 bg-black">
-    <TresCanvas clear-color="#050505" window-size @render="onRenderLoop">
-
+  <div class="fixed inset-0 w-full h-[100dvh] pointer-events-none z-0 bg-black">
+    <TresCanvas
+        clear-color="#050505"
+        window-size
+        :pixel-ratio="typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 1.5) : 1"
+        @render="onRenderLoop"
+    >
       <TresPerspectiveCamera
           :position="[cameraPosition.x, cameraPosition.y, cameraPosition.z]"
           :look-at="[cameraLookAt.x, cameraLookAt.y, cameraLookAt.z]"
           :fov="45"
       />
-
       <TresFog
           :color="currentChapter?.colorPalette?.fog || '#050505'"
           :near="10"
@@ -89,7 +90,6 @@ const onRenderLoop = ({ elapsed }: any) => {
           :intensity="1"
           cast-shadow
       />
-
       <TresPoints>
         <TresBufferGeometry ref="geometry" />
         <TresShaderMaterial
@@ -102,7 +102,6 @@ const onRenderLoop = ({ elapsed }: any) => {
             :blending="AdditiveBlending"
         />
       </TresPoints>
-
     </TresCanvas>
   </div>
 </template>

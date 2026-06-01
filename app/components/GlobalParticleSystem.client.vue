@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { shallowRef } from 'vue'
-import { AdditiveBlending, Vector3, Color } from 'three'
+import { AdditiveBlending, Vector3, Color, BufferAttribute } from 'three'
 import { useLoop, useTresContext } from '@tresjs/core'
 import { raya3D } from '~/composables/home/useRayaState'
 
-const particleCount = 20000
+// Detect device capability on load to maintain 60fps on mobile
+const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false
+const particleCount = isMobile ? 8000 : 20000
 
 // ==========================================
 // 1. MATHEMATICAL SHAPE GENERATORS
@@ -23,7 +25,6 @@ const genR = () => {
   canvas.width = 1024
   canvas.height = 1024
   const ctx = canvas.getContext('2d')
-
   if (!ctx) return new Float32Array(particleCount * 3)
 
   ctx.fillStyle = 'black'
@@ -36,14 +37,10 @@ const genR = () => {
 
   const imgData = ctx.getImageData(0, 0, 1024, 1024).data
   const pts = []
-
   for (let y = 0; y < 1024; y += 4) {
     for (let x = 0; x < 1024; x += 4) {
       if (imgData[(y * 1024 + x) * 4] > 128) {
-        pts.push({
-          x: (x / 1024 - 0.5) * 16,
-          y: -(y / 1024 - 0.5) * 16
-        })
+        pts.push({ x: (x / 1024 - 0.5) * 16, y: -(y / 1024 - 0.5) * 16 })
       }
     }
   }
@@ -51,16 +48,13 @@ const genR = () => {
   const positions = new Float32Array(particleCount * 3)
   for (let i = 0; i < particleCount; i++) {
     const pt = pts[Math.floor(Math.random() * pts.length)] || { x: 0, y: 0 }
-
     positions[i * 3]     = pt.x + (Math.random() - 0.5) * 0.4
     positions[i * 3 + 1] = pt.y + (Math.random() - 0.5) * 0.4
     positions[i * 3 + 2] = (Math.random() - 0.5) * 3.0
   }
-
   return positions
 }
 
-// Cache the R shape so we don't redraw the canvas multiple times
 const cachedRShape = genR()
 
 const genWave = () => {
@@ -69,10 +63,7 @@ const genWave = () => {
     const x = (Math.random() - 0.5) * 60
     const z = (Math.random() - 0.5) * 60
     const y = Math.sin(x * 0.2) * 2 + Math.cos(z * 0.2) * 2 - 5
-
-    positions[i * 3]     = x
-    positions[i * 3 + 1] = y
-    positions[i * 3 + 2] = z
+    positions[i * 3] = x; positions[i * 3 + 1] = y; positions[i * 3 + 2] = z
   }
   return positions
 }
@@ -83,8 +74,7 @@ const genAI = () => {
     const r = Math.random() > 0.8 ? Math.random() * 12 : Math.random() * 5
     const theta = Math.random() * Math.PI * 2
     const phi = Math.acos((Math.random() * 2) - 1)
-
-    positions[i * 3]     = r * Math.sin(phi) * Math.cos(theta)
+    positions[i * 3] = r * Math.sin(phi) * Math.cos(theta)
     positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta)
     positions[i * 3 + 2] = r * Math.cos(phi)
   }
@@ -97,8 +87,7 @@ const genFintech = () => {
     const y = (Math.random() - 0.5) * 16
     const radius = 8 - Math.abs(y)
     const theta = Math.random() * Math.PI * 2
-
-    positions[i * 3]     = radius * Math.cos(theta)
+    positions[i * 3] = radius * Math.cos(theta)
     positions[i * 3 + 1] = y
     positions[i * 3 + 2] = radius * Math.sin(theta)
   }
@@ -112,8 +101,7 @@ const genCommerce = () => {
     const v = Math.random() * Math.PI * 2
     const R = 6
     const r = 2 + (Math.random() - 0.5)
-
-    positions[i * 3]     = (R + r * Math.cos(v)) * Math.cos(u)
+    positions[i * 3] = (R + r * Math.cos(v)) * Math.cos(u)
     positions[i * 3 + 1] = (R + r * Math.cos(v)) * Math.sin(u)
     positions[i * 3 + 2] = r * Math.sin(v)
   }
@@ -125,8 +113,7 @@ const genCreative = () => {
   for(let i = 0; i < particleCount; i++) {
     const y = (Math.random() - 0.5) * 20
     const offset = Math.random() > 0.5 ? 0 : Math.PI
-
-    positions[i * 3]     = Math.sin(y + offset) * 5
+    positions[i * 3] = Math.sin(y + offset) * 5
     positions[i * 3 + 1] = y
     positions[i * 3 + 2] = Math.cos(y + offset) * 5
   }
@@ -136,7 +123,7 @@ const genCreative = () => {
 const genAnalytics = () => {
   const positions = new Float32Array(particleCount * 3)
   for(let i = 0; i < particleCount; i++) {
-    positions[i * 3]     = Math.round((Math.random() - 0.5) * 10) * 1.5
+    positions[i * 3] = Math.round((Math.random() - 0.5) * 10) * 1.5
     positions[i * 3 + 1] = Math.round((Math.random() - 0.5) * 10) * 1.5
     positions[i * 3 + 2] = Math.round((Math.random() - 0.5) * 10) * 1.5
   }
@@ -145,21 +132,13 @@ const genAnalytics = () => {
 
 const genMacro = () => {
   const positions = new Float32Array(particleCount * 3)
-  const centers = [
-    { x: -20, y: 0, z: -10 },
-    { x: 20, y: 0, z: -10 },
-    { x: 0, y: 15, z: -20 },
-    { x: -12, y: -15, z: 0 },
-    { x: 12, y: -15, z: 0 }
-  ]
-
+  const centers = [{ x: -20, y: 0, z: -10 }, { x: 20, y: 0, z: -10 }, { x: 0, y: 15, z: -20 }, { x: -12, y: -15, z: 0 }, { x: 12, y: -15, z: 0 }]
   for(let i = 0; i < particleCount; i++) {
     const center = centers[i % 5]
     const r = 3 + Math.random() * 3
     const theta = Math.random() * Math.PI * 2
     const phi = Math.acos((Math.random() * 2) - 1)
-
-    positions[i * 3]     = center.x + r * Math.sin(phi) * Math.cos(theta)
+    positions[i * 3] = center.x + r * Math.sin(phi) * Math.cos(theta)
     positions[i * 3 + 1] = center.y + r * Math.sin(phi) * Math.sin(theta)
     positions[i * 3 + 2] = center.z + r * Math.cos(phi)
   }
@@ -170,20 +149,16 @@ const genEngine = () => {
   const positions = new Float32Array(particleCount * 3)
   for(let i = 0; i < particleCount; i++) {
     if (Math.random() > 0.4) {
-      // Inner Core
       const theta = Math.random() * Math.PI * 2
       const phi = Math.acos((Math.random() * 2) - 1)
       const r = 2 + Math.random() * 3
-
-      positions[i * 3]     = r * Math.sin(phi) * Math.cos(theta)
+      positions[i * 3] = r * Math.sin(phi) * Math.cos(theta)
       positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta)
       positions[i * 3 + 2] = r * Math.cos(phi)
     } else {
-      // Outer Rings
       const ringRadius = 10 + Math.floor(Math.random() * 3) * 2
       const theta = Math.random() * Math.PI * 2
-
-      positions[i * 3]     = Math.cos(theta) * ringRadius
+      positions[i * 3] = Math.cos(theta) * ringRadius
       positions[i * 3 + 1] = (Math.random() - 0.5) * 0.5
       positions[i * 3 + 2] = Math.sin(theta) * ringRadius
     }
@@ -195,39 +170,26 @@ const genUI = (seed: number) => {
   const positions = new Float32Array(particleCount * 3)
   for(let i = 0; i < particleCount; i++) {
     if (Math.random() > 0.2) {
-      // Generate Architectural Glass Panels
-      const panelCount = 3 + (seed % 3)
-      const panelId = i % panelCount
-
-      const w = 4 + (Math.random() * 4 * seed) % 6
-      const h = 2 + (Math.random() * 8 * seed) % 10
-      const px = -10 + ((panelId * 7 * seed) % 20)
-      const py = -5 + ((panelId * 3 * seed) % 10)
-      const pz = -5 + (panelId * 2)
-
-      positions[i * 3]     = px + (Math.random() - 0.5) * w
+      const panelCount = 3 + (seed % 3); const panelId = i % panelCount
+      const w = 4 + (Math.random() * 4 * seed) % 6; const h = 2 + (Math.random() * 8 * seed) % 10
+      const px = -10 + ((panelId * 7 * seed) % 20); const py = -5 + ((panelId * 3 * seed) % 10); const pz = -5 + (panelId * 2)
+      positions[i * 3] = px + (Math.random() - 0.5) * w
       positions[i * 3 + 1] = py + (Math.random() - 0.5) * h
       positions[i * 3 + 2] = pz + (Math.random() - 0.5) * 0.5
     } else {
-      // Ambient Floating Data
-      positions[i * 3]     = (Math.random() - 0.5) * 30
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 20
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 10
+      positions[i * 3] = (Math.random() - 0.5) * 30; positions[i * 3 + 1] = (Math.random() - 0.5) * 20; positions[i * 3 + 2] = (Math.random() - 0.5) * 10
     }
   }
   return positions
 }
 
 const genEvolvedR = () => {
-  const positions = new Float32Array(cachedRShape) // Clone base R
+  const positions = new Float32Array(cachedRShape)
   for (let i = 0; i < particleCount; i++) {
     if (Math.random() > 0.7) {
-      // Add complex volumetric orbital rings around the R
-      const u = Math.random() * Math.PI * 2
-      const v = Math.random() * Math.PI * 2
+      const u = Math.random() * Math.PI * 2; const v = Math.random() * Math.PI * 2
       const radius = 5 + Math.random() * 8
-
-      positions[i * 3]     = (radius + Math.cos(v)) * Math.cos(u)
+      positions[i * 3] = (radius + Math.cos(v)) * Math.cos(u)
       positions[i * 3 + 1] = (radius + Math.cos(v)) * Math.sin(u) * 0.5
       positions[i * 3 + 2] = Math.sin(v) + Math.sin(u * 3) * 2
     }
@@ -238,15 +200,11 @@ const genEvolvedR = () => {
 const genSingularity = () => {
   const positions = new Float32Array(particleCount * 3)
   for (let i = 0; i < particleCount; i++) {
-    // Fibonacci sphere distribution for a mathematically perfect core
     const phi = Math.acos(1 - 2 * (i / particleCount))
     const theta = Math.PI * (1 + Math.sqrt(5)) * i
-
-    // Add organic ripples to the surface
     const ripple = Math.sin(theta * 8) * Math.cos(phi * 8) * 1.5
     const r = 12 + ripple
-
-    positions[i * 3]     = r * Math.sin(phi) * Math.cos(theta)
+    positions[i * 3] = r * Math.sin(phi) * Math.cos(theta)
     positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta)
     positions[i * 3 + 2] = r * Math.cos(phi)
   }
@@ -256,58 +214,90 @@ const genSingularity = () => {
 const genInfiniteVoid = () => {
   const positions = new Float32Array(particleCount * 3)
   for (let i = 0; i < particleCount; i++) {
-    const u = Math.random()
-    const v = Math.random()
-    const theta = u * 2.0 * Math.PI
-    const phi = Math.acos(2.0 * v - 1.0)
-    const r = 50 + Math.random() * 400 // Expands to massive scale
-
-    positions[i * 3]     = r * Math.sin(phi) * Math.cos(theta)
+    const u = Math.random(); const v = Math.random()
+    const theta = u * 2.0 * Math.PI; const phi = Math.acos(2.0 * v - 1.0)
+    const r = 50 + Math.random() * 400
+    positions[i * 3] = r * Math.sin(phi) * Math.cos(theta)
     positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta)
     positions[i * 3 + 2] = r * Math.cos(phi)
   }
   return positions
 }
 
-// ==========================================
-// 2. THE MASTER SHAPE REGISTRY
-// ==========================================
-
 const shapes = [
-  genChaos(),           // 0: Chaos
-  cachedRShape,         // 1: Hero R
-  genWave(),            // 2: Living Wave
-  genAI(),              // 3: AI Brain
-  genFintech(),         // 4: Fintech Diamond
-  genCommerce(),        // 5: Commerce Torus
-  genCreative(),        // 6: Creative Helix
-  genAnalytics(),       // 7: Analytics Grid
-  genMacro(),           // 8: Macro Ring
-  genEngine(),          // 9: The Engine Core
-  genUI(1),             // 10: AI UI
-  genUI(2),             // 11: Fintech UI
-  genUI(3),             // 12: Commerce UI
-  genUI(4),             // 13: Creative UI
-  genUI(5),             // 14: Analytics UI
-  cachedRShape,         // 15: Return R (Post-Whiteout)
-  genEvolvedR(),        // 16: Evolved R (Ascension)
-  genSingularity(),     // 17: Diamond Singularity Reveal
-  genInfiniteVoid()     // 18: Infinite Pullback
+  genChaos(), cachedRShape, genWave(), genAI(), genFintech(), genCommerce(), genCreative(), genAnalytics(), genMacro(), genEngine(),
+  genUI(1), genUI(2), genUI(3), genUI(4), genUI(5), cachedRShape, genEvolvedR(), genSingularity(), genInfiniteVoid()
 ]
 
-const currentPositions = new Float32Array(shapes[0])
-const geometryRef = shallowRef(null)
-const materialRef = shallowRef(null)
+const geometryRef = shallowRef<any>(null)
+const materialRef = shallowRef<any>(null)
 const rotationY = shallowRef(0)
 
+// Track buffer state
+let currentStartIndex = -1
+let currentEndIndex = -1
+
 // ==========================================
-// 3. CINEMATIC RENDER LOOP
+// 2. GPU-ACCELERATED SHADERS
 // ==========================================
+
+const vertexShader = `
+  uniform float uMorphFraction;
+  uniform float uTime;
+  uniform float uTurbulence;
+  uniform float uPixelRatio;
+  attribute vec3 aTargetPosition;
+
+  void main() {
+    // Hardware interpolated morphing
+    vec3 morphedPos = mix(position, aTargetPosition, uMorphFraction);
+
+    // Hardware accelerated noise/turbulence
+    float noiseX = sin(uTime * 2.0 + float(gl_VertexID) * 0.1) * uTurbulence;
+    float noiseY = cos(uTime * 2.0 + float(gl_VertexID) * 0.1) * uTurbulence;
+
+    morphedPos.x += noiseX;
+    morphedPos.y += noiseY;
+
+    vec4 mvPosition = modelViewMatrix * vec4(morphedPos, 1.0);
+    gl_Position = projectionMatrix * mvPosition;
+
+    // THE FIX: Restored microscopic scaling math.
+    // This renders delicate 1px - 2px points matching your original 0.04 size.
+    gl_PointSize = (15.0 / -mvPosition.z) * uPixelRatio;
+  }
+`
+
+const fragmentShader = `
+  uniform vec3 uColor;
+  uniform float uOpacity;
+
+  void main() {
+    float dist = length(gl_PointCoord - vec2(0.5));
+
+    // THE FIX: Sharp, crisp cicles instead of fuzzy, blurry glowing orbs.
+    if (dist > 0.5) discard;
+
+    // Mild anti-aliasing to keep the edges perfectly smooth on high-res screens
+    float alpha = smoothstep(0.5, 0.4, dist);
+
+    gl_FragColor = vec4(uColor, alpha * uOpacity);
+  }
+`
+
+const uniforms = {
+  uMorphFraction: { value: 0 },
+  uTime: { value: 0 },
+  uTurbulence: { value: raya3D.turbulence },
+  uColor: { value: new Color(raya3D.particleColor) },
+  uOpacity: { value: raya3D.particleOpacity },
+  // Pass the device pixel ratio to keep the dots physically small on Retina/Mobile screens
+  uPixelRatio: { value: typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 2) : 1 }
+}
 
 const { onBeforeRender } = useLoop()
 const { camera } = useTresContext()
 
-// Smooth interpolation targets for the camera
 const currentCamPos = new Vector3(0, 0, 20)
 const currentLookAt = new Vector3(0, 0, 0)
 const targetCamPos = new Vector3()
@@ -316,56 +306,40 @@ const targetLookAt = new Vector3()
 onBeforeRender(({ delta, elapsed }) => {
   rotationY.value += delta * 0.05
 
-  // --- CAMERA GLIDE PHYSICS ---
   if (camera.value) {
     targetCamPos.set(raya3D.cameraX, raya3D.cameraY, raya3D.cameraZ)
     targetLookAt.set(raya3D.lookAtX, raya3D.lookAtY, raya3D.lookAtZ)
-
     currentCamPos.lerp(targetCamPos, 0.03)
     currentLookAt.lerp(targetLookAt, 0.05)
-
     camera.value.position.copy(currentCamPos)
     camera.value.lookAt(currentLookAt)
   }
 
-  // --- MATERIAL UPDATES (Fixed Color Bug) ---
-  if (materialRef.value) {
-    // GSAP handles the color string interpolation automatically.
-    // We just apply the current GSAP state directly to the material.
-    materialRef.value.color.set(raya3D.particleColor)
-    materialRef.value.opacity = raya3D.particleOpacity
-  }
-
-  // --- DYNAMIC ARRAY INTERPOLATOR ---
-  if (!geometryRef.value) return
-  const positions = geometryRef.value.attributes.position.array
-
-  // Safely clamp morph value to array bounds
+  // Calculate Morph Integer and Fraction
   const m = Math.max(0, Math.min(raya3D.morph, shapes.length - 1))
-
-  // Identify which two shapes to blend between based on the decimal
   const startIndex = Math.floor(m)
   let endIndex = startIndex + 1
   if (endIndex >= shapes.length) endIndex = startIndex
+  const morphFraction = m - startIndex
 
-  const p = m - startIndex
-  const start = shapes[startIndex]
-  const end = shapes[endIndex]
-
-  // Update every particle position
-  for (let i = 0; i < particleCount * 3; i += 3) {
-
-    // Add organic breathing turbulence to the particles
-    const noiseX = Math.sin(elapsed * 2 + i) * raya3D.turbulence
-    const noiseY = Math.cos(elapsed * 2 + i) * raya3D.turbulence
-
-    // Mathematically crossfade between the start and end shapes
-    positions[i]     = start[i]     + (end[i]     - start[i])     * p + noiseX
-    positions[i + 1] = start[i + 1] + (end[i + 1] - start[i + 1]) * p + noiseY
-    positions[i + 2] = start[i + 2] + (end[i + 2] - start[i + 2]) * p
+  if (geometryRef.value) {
+    // GPU BUFFER SWAP: Only re-upload array attributes when the integer changes, zero math loops!
+    if (startIndex !== currentStartIndex || endIndex !== currentEndIndex) {
+      geometryRef.value.setAttribute('position', new BufferAttribute(shapes[startIndex], 3))
+      geometryRef.value.setAttribute('aTargetPosition', new BufferAttribute(shapes[endIndex], 3))
+      currentStartIndex = startIndex
+      currentEndIndex = endIndex
+    }
   }
 
-  geometryRef.value.attributes.position.needsUpdate = true
+  // Inject current properties directly to shader memory
+  if (materialRef.value) {
+    materialRef.value.uniforms.uTime.value = elapsed
+    materialRef.value.uniforms.uMorphFraction.value = morphFraction
+    materialRef.value.uniforms.uTurbulence.value = raya3D.turbulence
+    materialRef.value.uniforms.uColor.value.set(raya3D.particleColor)
+    materialRef.value.uniforms.uOpacity.value = raya3D.particleOpacity
+  }
 })
 </script>
 
@@ -375,13 +349,13 @@ onBeforeRender(({ delta, elapsed }) => {
     <TresAmbientLight color="#ffffff" :intensity="0.5" />
 
     <TresPoints :rotation-y="rotationY">
-      <TresBufferGeometry ref="geometryRef" :position="[currentPositions, 3]" />
-      <TresPointsMaterial
+      <TresBufferGeometry ref="geometryRef" />
+      <TresShaderMaterial
           ref="materialRef"
-          color="#00E5FF"
-          :size="0.04"
+          :vertex-shader="vertexShader"
+          :fragment-shader="fragmentShader"
+          :uniforms="uniforms"
           :transparent="true"
-          :opacity="0.8"
           :blending="AdditiveBlending"
           :depth-write="false"
       />

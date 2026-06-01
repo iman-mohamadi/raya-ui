@@ -18,10 +18,9 @@ onMounted(async () => {
   await nextTick()
   if (!heroRef.value) return
 
-  // FIX: Explicitly reset the global state on mount!
-  // This guarantees that if a user returns from the Docs, it doesn't get stuck on the white void color.
+  // Explicit reset globally
   raya3D.morph = 0
-  raya3D.particleColor = '#00E5FF' // Your new primary Cyan color
+  raya3D.particleColor = '#00E5FF'
   raya3D.particleOpacity = 0.8
   raya3D.cameraZ = 20
   raya3D.cameraX = 0
@@ -40,20 +39,18 @@ onMounted(async () => {
     scrollTrigger: {
       trigger: heroRef.value,
       start: 'top top',
-      end: '+=200%',
+      end: '+=100%',
       pin: true,
       pinSpacing: false,
       scrub: 1
     }
   })
 
+  // Exclusively controls DOM text to prevent 3D object fight collisions
   scrollTimeline
       .fromTo([line1Ref.value, line2Ref.value, subtextRef.value],
           { y: 0, opacity: 1 },
           { y: -50, opacity: 0, duration: 1, stagger: 0.1 }, 0)
-      .fromTo(raya3D,
-          { cameraZ: 20, turbulence: 0.05 },
-          { cameraZ: 8, turbulence: 0.2, duration: 1 }, 0)
 })
 
 onUnmounted(() => {
@@ -66,7 +63,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section ref="heroRef" id="chapter-hero" class="relative w-full h-screen overflow-hidden">
+  <section ref="heroRef" id="chapter-hero" class="relative w-full h-dvh overflow-hidden">
     <div class="w-full h-full flex flex-col justify-center items-center px-6 md:px-12 pointer-events-none">
       <div class="max-w-5xl w-full flex flex-col items-center text-center">
         <h1 class="text-white flex flex-col items-center gap-2 md:gap-4 tracking-tighter">

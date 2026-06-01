@@ -2,6 +2,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import Lenis from 'lenis'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { raya3D } from '~/composables/home/useRayaState'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -33,15 +34,23 @@ export function useScrollManager() {
 
         gsap.ticker.lagSmoothing(0)
 
-        // Master timeline to drive the entire homepage experience
         masterTimeline.value = gsap.timeline({
             scrollTrigger: {
                 trigger: '#homepage-scroll-container',
                 start: 'top top',
                 end: 'bottom bottom',
-                scrub: 1, // Smooth scrubbing
+                scrub: 1,
             }
         })
+
+        // Add 3D scene mutations sequentially here.
+        // Example: The initial push-in during the hero section
+        masterTimeline.value.to(raya3D, {
+            cameraZ: 8,
+            turbulence: 0.2,
+            ease: 'none',
+            duration: 0.15
+        }, 0)
     })
 
     onUnmounted(() => {
