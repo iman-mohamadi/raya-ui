@@ -40,7 +40,7 @@ const pageTransition = {
 
     <div id="global-transition-overlay" class="fixed inset-0 w-full h-full bg-[#030305] z-[9999] translate-y-full flex items-center justify-center pointer-events-none">
       <div class="flex items-center gap-4">
-        <span class="w-2 h-2 rounded-full bg-[#FF4A00] animate-pulse"></span>
+        <span class="w-2 h-2 rounded-full bg-[#00E5FF] animate-pulse"></span>
         <span class="text-white/50 font-mono text-sm tracking-[0.3em] uppercase">Booting Environment...</span>
       </div>
     </div>

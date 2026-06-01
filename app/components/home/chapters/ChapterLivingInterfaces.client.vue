@@ -64,7 +64,7 @@ onUnmounted(() => tl?.kill())
       <div class="flex flex-col items-center gap-2 md:gap-4 text-[clamp(45px,8vw,160px)] font-black uppercase tracking-tighter leading-[0.85] w-full px-4">
         <span ref="textRespondRef" class="text-white">They should respond.</span>
         <span ref="textAdaptRef" class="text-transparent" style="-webkit-text-stroke: 2px rgba(255,255,255,0.3);">Adapt.</span>
-        <span ref="textBreatheRef" class="text-[#FF4A00]">Breathe.</span>
+        <span ref="textBreatheRef" class="text-[#00E5FF]">Breathe.</span>
       </div>
     </div>
 
@@ -75,9 +75,9 @@ onUnmounted(() => tl?.kill())
           <h3 class="text-white font-mono text-[10px] md:text-xs tracking-[0.3em] uppercase mb-2 md:mb-4">01 — Physics</h3>
           <h4 class="text-2xl md:text-3xl lg:text-4xl text-white font-medium">Motion</h4>
         </div>
-        <div class="flex-1 w-full h-[25vh] min-h-[160px] max-h-[180px] md:max-h-[400px] rounded-[30px] md:rounded-[40px] bg-[#FF4A00]/[0.05] border border-[#FF4A00]/20 backdrop-blur-3xl shadow-[0_0_100px_rgba(255,74,0,0.1)] flex flex-col justify-end p-6 md:p-8 relative overflow-hidden md:translate-y-8">
-          <div class="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-[#FF4A00]/[0.1] to-transparent"></div>
-          <h3 class="text-[#FF4A00] font-mono text-[10px] md:text-xs tracking-[0.3em] uppercase mb-2 md:mb-4">02 — Space</h3>
+        <div class="flex-1 w-full h-[25vh] min-h-[160px] max-h-[180px] md:max-h-[400px] rounded-[30px] md:rounded-[40px] bg-[#00E5FF]/[0.05] border border-[#00E5FF]/20 backdrop-blur-3xl shadow-[0_0_100px_rgba(255,74,0,0.1)] flex flex-col justify-end p-6 md:p-8 relative overflow-hidden md:translate-y-8">
+          <div class="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-[#00E5FF]/[0.1] to-transparent"></div>
+          <h3 class="text-[#00E5FF] font-mono text-[10px] md:text-xs tracking-[0.3em] uppercase mb-2 md:mb-4">02 — Space</h3>
           <h4 class="text-2xl md:text-3xl lg:text-4xl text-white font-medium">Depth</h4>
         </div>
         <div class="flex-1 w-full h-[20vh] min-h-[140px] max-h-[160px] md:max-h-[350px] rounded-[30px] md:rounded-[40px] bg-white/[0.02] border border-white/10 backdrop-blur-3xl shadow-2xl flex flex-col justify-end p-6 md:p-8 relative overflow-hidden">

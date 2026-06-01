@@ -101,7 +101,7 @@ onUnmounted(() => {
 
       <div ref="text3Ref" class="absolute inset-0 flex items-center justify-center text-center w-full max-w-6xl mx-auto px-6 opacity-0">
         <h3 class="text-[clamp(50px,8vw,140px)] font-black text-white uppercase tracking-tighter leading-none">
-          Build what they<br/><span class="text-[#FF4A00]">remember.</span>
+          Build what they<br/><span class="text-[#00E5FF]">remember.</span>
         </h3>
       </div>
 
@@ -109,7 +109,7 @@ onUnmounted(() => {
       <div ref="ctaRef" class="absolute inset-0 flex flex-col items-center justify-center text-center w-full max-w-3xl mx-auto px-6 opacity-0 pointer-events-auto">
         <div class="p-[1px] rounded-full bg-gradient-to-b from-white/20 to-transparent mb-12">
           <div class="flex items-center gap-2 px-8 py-4 rounded-full bg-black/50 backdrop-blur-xl border border-white/10 shadow-2xl">
-            <span class="w-2 h-2 rounded-full bg-[#FF4A00] animate-pulse"></span>
+            <span class="w-2 h-2 rounded-full bg-[#00E5FF] animate-pulse"></span>
             <span class="text-white font-mono text-sm tracking-widest uppercase">Raya Core Online</span>
           </div>
         </div>

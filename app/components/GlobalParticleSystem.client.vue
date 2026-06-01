@@ -378,7 +378,7 @@ onBeforeRender(({ delta, elapsed }) => {
       <TresBufferGeometry ref="geometryRef" :position="[currentPositions, 3]" />
       <TresPointsMaterial
           ref="materialRef"
-          color="#FF4A00"
+          color="#00E5FF"
           :size="0.04"
           :transparent="true"
           :opacity="0.8"

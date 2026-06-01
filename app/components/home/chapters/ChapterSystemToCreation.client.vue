@@ -109,11 +109,11 @@ onUnmounted(() => {
       </div>
 
       <div ref="text2Ref" class="absolute inset-0 flex items-center justify-center text-center w-full max-w-5xl mx-auto px-6">
-        <h3 class="text-4xl md:text-7xl font-light text-zinc-900 tracking-tight">One system. <span class="font-medium">Different outcomes.</span></h3>
+        <h3 class="text-4xl md:text-7xl font-light text-zinc-900 tracking-tight">One system. <span class="font-medium text-[#FF4A00]">Different outcomes.</span></h3>
       </div>
 
       <div ref="text3Ref" class="absolute inset-0 flex items-center justify-center text-center w-full max-w-5xl mx-auto px-6">
-        <h3 class="text-4xl md:text-7xl font-light text-zinc-900 tracking-tight">Not components. <span class="font-medium text-[#FF4A00]">Possibilities.</span></h3>
+        <h3 class="text-4xl md:text-7xl font-light text-zinc-900 tracking-tight">Not components. <span class="font-medium text-[#00E5FF]">Possibilities.</span></h3>
       </div>
 
       <div ref="text4Ref" class="absolute inset-0 flex items-center justify-center text-center w-full max-w-5xl mx-auto px-6">

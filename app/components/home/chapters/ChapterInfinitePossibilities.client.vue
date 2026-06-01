@@ -42,7 +42,7 @@ onMounted(() => {
   tl.fromTo(commerceRef.value, { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 3 }, 35)
   tl.to(commerceRef.value, { y: -50, opacity: 0, duration: 3 }, 42)
 
-  tl.to(raya3D, { morph: 6, particleColor: '#ff4a00', turbulence: 0.5, duration: 6 }, 45)
+  tl.to(raya3D, { morph: 6, particleColor: '#00E5FF', turbulence: 0.5, duration: 6 }, 45)
   tl.to(raya3D, { cameraX: 6, cameraZ: 15, duration: 8 }, 45)
   tl.fromTo(creativeRef.value, { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 3 }, 50)
   tl.to(creativeRef.value, { y: -50, opacity: 0, duration: 3 }, 57)
@@ -87,7 +87,7 @@ onUnmounted(() => tl?.kill())
       </div>
 
       <div ref="creativeRef" class="absolute inset-0 flex flex-col justify-center items-end text-right w-full max-w-7xl mx-auto px-6 opacity-0">
-        <h2 class="text-[#ff4a00] font-mono text-sm tracking-[0.3em] mb-4">WORLD 04 // CREATIVE</h2>
+        <h2 class="text-[#00E5FF] font-mono text-sm tracking-[0.3em] mb-4">WORLD 04 // CREATIVE</h2>
         <h3 class="text-4xl md:text-7xl font-black text-white uppercase tracking-tighter mb-6">Interfaces<br/>without limits.</h3>
         <p class="text-white/60 text-lg md:text-xl max-w-md font-light leading-relaxed">Creative tools. Media platforms. Digital experiences built for expression.</p>
       </div>
@@ -102,7 +102,7 @@ onUnmounted(() => tl?.kill())
         <h2 class="text-[clamp(40px,8vw,140px)] font-black text-white uppercase tracking-tighter leading-[0.85] flex flex-col items-center">
           <span>One System.</span>
           <span class="text-transparent" style="-webkit-text-stroke: 2px rgba(255,255,255,0.4);">Infinite</span>
-          <span class="text-[#FF4A00]">Possibilities.</span>
+          <span class="text-[#00E5FF]">Possibilities.</span>
         </h2>
       </div>
 

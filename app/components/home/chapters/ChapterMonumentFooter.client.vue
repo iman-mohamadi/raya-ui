@@ -51,7 +51,7 @@ onMounted(async () => {
 
   // --- 30-100: STAGE 2 (Massive Navigation & Infinite Pullback) ---
   // Camera orbits slightly to reveal the monument
-  tl.to(raya3D, { cameraX: 10, cameraZ: 45, turbulence: 0.4, particleColor: '#FF4A00', duration: 20 }, 30)
+  tl.to(raya3D, { cameraX: 10, cameraZ: 45, turbulence: 0.4, particleColor: '#00E5FF', duration: 20 }, 30)
 
   // Background RAYA text fades in
   if (massiveRayaRef.value) {
@@ -115,7 +115,7 @@ onUnmounted(() => {
 
           <NuxtLink to="/docs/installation" class="group relative text-[clamp(40px,6vw,100px)] md:text-8xl font-black uppercase tracking-tighter text-transparent transition-all duration-700" style="-webkit-text-stroke: 1px rgba(255,255,255,0.3);">
             <span class="relative z-10 group-hover:text-white transition-colors duration-500">Installation</span>
-            <div class="absolute inset-0 bg-[#FF4A00]/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 -z-10"></div>
+            <div class="absolute inset-0 bg-[#00E5FF]/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 -z-10"></div>
           </NuxtLink>
 
           <NuxtLink to="/components" class="group relative text-[clamp(40px,6vw,100px)] md:text-8xl font-black uppercase tracking-tighter text-transparent transition-all duration-700" style="-webkit-text-stroke: 1px rgba(255,255,255,0.3);">

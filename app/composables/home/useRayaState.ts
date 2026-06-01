@@ -9,7 +9,7 @@ export const raya3D = reactive({
     lookAtY: 0,
     lookAtZ: 0,
     turbulence: 0.05,
-    particleColor: '#FF4A00',
+    particleColor: '#00E5FF',
     particleOpacity: 0.8
 })
 
