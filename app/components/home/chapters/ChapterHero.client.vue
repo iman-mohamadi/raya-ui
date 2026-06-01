@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { raya3D } from '~/composables/home/useRayaState'
@@ -14,12 +14,22 @@ const subtextRef = ref<HTMLElement | null>(null)
 let entryTimeline: gsap.core.Timeline | null = null
 let scrollTimeline: gsap.core.Timeline | null = null
 
-onMounted(() => {
+onMounted(async () => {
+  await nextTick()
+  if (!heroRef.value) return
+
+  // FIX: Explicitly reset the global state on mount!
+  // This guarantees that if a user returns from the Docs, it doesn't get stuck on the white void color.
   raya3D.morph = 0
+  raya3D.particleColor = '#00E5FF' // Your new primary Cyan color
+  raya3D.particleOpacity = 0.8
+  raya3D.cameraZ = 20
+  raya3D.cameraX = 0
+  raya3D.cameraY = 0
+  raya3D.turbulence = 0.05
 
   entryTimeline = gsap.timeline({ delay: 1.0 })
 
-  // REMOVED BLUR
   entryTimeline
       .fromTo(raya3D, { morph: 0 }, { morph: 1, duration: 2.5, ease: 'power3.inOut' }, 0)
       .fromTo(line1Ref.value, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 1.5, ease: 'power3.out' }, 1.0)
@@ -30,7 +40,7 @@ onMounted(() => {
     scrollTrigger: {
       trigger: heroRef.value,
       start: 'top top',
-      end: '+=100%',
+      end: '+=200%',
       pin: true,
       pinSpacing: false,
       scrub: 1
@@ -46,7 +56,13 @@ onMounted(() => {
           { cameraZ: 8, turbulence: 0.2, duration: 1 }, 0)
 })
 
-onUnmounted(() => { entryTimeline?.kill(); scrollTimeline?.kill() })
+onUnmounted(() => {
+  if (entryTimeline) entryTimeline.kill()
+  if (scrollTimeline) {
+    scrollTimeline.scrollTrigger?.kill()
+    scrollTimeline.kill()
+  }
+})
 </script>
 
 <template>
