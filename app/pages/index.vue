@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import FloatingDock from '~/components/home/FloatingDock.vue'
 import InteractionModeOverlay from '~/components/InteractionModeOverlay.vue'
+import PerformanceMonitor from '~/components/PerformanceMonitor.vue'
 
 import ChapterHero from '~/components/home/chapters/ChapterHero.client.vue'
 import ChapterLivingInterfaces from '~/components/home/chapters/ChapterLivingInterfaces.client.vue'
@@ -20,6 +21,7 @@ useScrollManager()
 <template>
   <div class="bg-transparent text-[#FAFAFA] min-h-screen overflow-x-hidden font-sans relative">
     <InteractionModeOverlay />
+    <PerformanceMonitor />
     
     <main class="relative z-10 bg-transparent">
       <FloatingDock/>
