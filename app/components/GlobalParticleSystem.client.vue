@@ -1,12 +1,18 @@
 <script setup lang="ts">
-import { shallowRef, onMounted, onUnmounted } from 'vue'
+import { shallowRef, onMounted, onUnmounted, ref } from 'vue'
 import { AdditiveBlending, Vector3, Color, BufferAttribute, Raycaster, Plane, Vector2 } from 'three'
 import { useLoop, useTresContext } from '@tresjs/core'
 import { raya3D } from '~/composables/home/useRayaState'
+import { interactionManager, type InteractionMode } from '~/utils/particleInteractionModes'
 
 // Detect device capability on load to maintain 60fps on mobile
 const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false
 const particleCount = isMobile ? 8000 : 20000
+
+// Interaction state
+const currentMode = ref<InteractionMode>('explosion')
+const mouseVelocity = ref(0)
+let lastMousePos = { x: 0, y: 0 }
 
 // ==========================================
 // 1. MATHEMATICAL SHAPE GENERATORS
@@ -247,13 +253,34 @@ const raycaster = new Raycaster()
 const invisiblePlane = new Plane(new Vector3(0, 0, 1), 0)
 
 const onMouseMove = (event: MouseEvent) => {
-  mouse2D.x = (event.clientX / window.innerWidth) * 2 - 1
-  mouse2D.y = -(event.clientY / window.innerHeight) * 2 + 1
+  const newX = (event.clientX / window.innerWidth) * 2 - 1
+  const newY = -(event.clientY / window.innerHeight) * 2 + 1
+  
+  // Calculate mouse velocity
+  const deltaX = newX - lastMousePos.x
+  const deltaY = newY - lastMousePos.y
+  mouseVelocity.value = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
+  
+  lastMousePos.x = newX
+  lastMousePos.y = newY
+  
+  mouse2D.x = newX
+  mouse2D.y = newY
+}
+
+const onKeyDown = (event: KeyboardEvent) => {
+  if (event.code === 'Space' || event.code === 'KeyM') {
+    event.preventDefault()
+    currentMode.value = interactionManager.nextMode()
+    // Dispatch event for UI updates
+    window.dispatchEvent(new CustomEvent('modeChanged', { detail: { mode: currentMode.value } }))
+  }
 }
 
 // FIX 1: Explicitly initialize the geometry to Chaos (shapes[0]) the instant the component mounts
 onMounted(() => {
   window.addEventListener('mousemove', onMouseMove)
+  window.addEventListener('keydown', onKeyDown)
 
   if (geometryRef.value) {
     geometryRef.value.setAttribute('position', new BufferAttribute(shapes[0], 3))
@@ -265,6 +292,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('mousemove', onMouseMove)
+  window.removeEventListener('keydown', onKeyDown)
 })
 
 // ==========================================
@@ -307,33 +335,37 @@ const vertexShader = `
     // Convert to World Space for accurate physics
     vec4 worldPos = modelMatrix * vec4(morphedPos, 1.0);
 
-    // Enhanced Mouse Physics with smooth intensity curve
-    vec2 diffXY = worldPos.xy - uMousePos.xy;
-    float distXY = length(diffXY);
+    // Enhanced Mouse Physics with smooth intensity curve - MUCH LARGER EFFECT
+    vec3 diffVec = worldPos.xyz - uMousePos;
+    float distance = length(diffVec);
 
-    if (distXY < uMouseRadius) {
+    if (distance < uMouseRadius) {
       // Smooth intensity falloff using polynomial easing
-      float t = 1.0 - (distXY / uMouseRadius);
+      float t = 1.0 - (distance / uMouseRadius);
       float intensity = t * t * t * (t * (t * 6.0 - 15.0) + 10.0); // Improved smoothstep
+      
+      // Normalize direction
+      vec3 direction = normalize(diffVec + vec3(0.0001));
 
-      // Calculate 2D direction outward
-      vec2 direction = normalize(diffXY + vec2(0.0001));
-
-      // Push outward with cubic intensity curve for dramatic effect
+      // Powerful outward push with higher dimensional effect
       float forceMagnitude = intensity * intensity * intensity * uMouseForce;
-      worldPos.xy += direction * forceMagnitude;
+      worldPos.xyz += direction * forceMagnitude;
 
-      // Push INWARD (Z depth) with ripple effect
-      worldPos.z -= (intensity * intensity) * (uMouseForce * 0.6);
-      worldPos.z += sin(distXY * 3.0 - uTime * 5.0) * intensity * 0.4;
+      // Add ripple effect for visual dynamism
+      worldPos.z += sin(distance * 5.0 - uTime * 8.0) * intensity * intensity * 0.8;
+      
+      // Add tangential twist for vortex-like effect
+      float twist = sin(uTime * 4.0 + float(gl_VertexID) * 0.02) * intensity * 2.0;
+      worldPos.x += cos(atan(worldPos.y, worldPos.x) + twist) * intensity * forceMagnitude * 0.3;
+      worldPos.y += sin(atan(worldPos.y, worldPos.x) + twist) * intensity * forceMagnitude * 0.3;
     }
 
     vec4 mvPosition = viewMatrix * worldPos;
     gl_Position = projectionMatrix * mvPosition;
 
-    // Enhanced depth-based size with smooth falloff
-    float baseSize = (38.0 / -mvPosition.z) * uPixelRatio;
-    gl_PointSize = max(baseSize, 1.5);
+    // Enhanced depth-based size with dynamic glow based on interaction
+    float baseSize = (40.0 / -mvPosition.z) * uPixelRatio;
+    gl_PointSize = max(baseSize, 2.0);
   }
 `
 
@@ -377,8 +409,8 @@ const uniforms = {
   uOpacity: { value: raya3D.particleOpacity },
   uPixelRatio: { value: typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 2) : 1 },
   uMousePos: { value: new Vector3(9999, 9999, 9999) },
-  uMouseRadius: { value: 12.0 },  // Size of the mouse brush
-  uMouseForce: { value: 10.0 }     // Strength of the push
+  uMouseRadius: { value: 40.0 },   // Large brush for dramatic effect
+  uMouseForce: { value: 35.0 }      // Strong force for visible interaction
 }
 
 // ==========================================
@@ -431,12 +463,29 @@ onBeforeRender(({ delta, elapsed }) => {
   }
 
   if (materialRef.value) {
+    // Update basic uniforms
     materialRef.value.uniforms.uTime.value = elapsed
     materialRef.value.uniforms.uMorphFraction.value = morphFraction
     materialRef.value.uniforms.uTurbulence.value = raya3D.turbulence
-    materialRef.value.uniforms.uColor.value.set(raya3D.particleColor)
     materialRef.value.uniforms.uOpacity.value = raya3D.particleOpacity
     materialRef.value.uniforms.uMousePos.value.copy(mouse3D)
+    
+    // Update color and forces based on current interaction mode
+    const modeConfig = interactionManager.getConfig()
+    
+    // Blend base color with mode color shift
+    const baseColor = new Color(raya3D.particleColor)
+    const r = Math.min(1, baseColor.r + modeConfig.colorShift[0] * 0.3)
+    const g = Math.min(1, baseColor.g + modeConfig.colorShift[1] * 0.3)
+    const b = Math.min(1, baseColor.b + modeConfig.colorShift[2] * 0.3)
+    materialRef.value.uniforms.uColor.value.setRGB(r, g, b)
+    
+    // Apply mode-specific physics
+    materialRef.value.uniforms.uMouseRadius.value = modeConfig.mouseRadius
+    materialRef.value.uniforms.uMouseForce.value = modeConfig.mouseForce * (1 + mouseVelocity.value)
+    
+    // Decay mouse velocity
+    mouseVelocity.value *= 0.95
   }
 })
 </script>
