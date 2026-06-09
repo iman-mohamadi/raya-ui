@@ -7,8 +7,6 @@ const router = useRouter()
 const appConfig = useAppConfig()
 
 onMounted(() => {
-
-  // INITIAL REVEAL
   gsap.to('#global-curtain', {
     scaleY: 0,
     transformOrigin: 'top',
