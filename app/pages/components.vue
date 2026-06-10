@@ -64,7 +64,7 @@ const backgroundComponents: Record<string, any> = {
         >
           <ClientOnly>
             <Motion
-                :in-view="{ opacity: 1, y: 0 }"
+                :whileInView="{ opacity: 1, y: 0 }"
                 :initial="{ opacity: 0, y: 20 }"
                 :transition="{ delay: index * 0.05, duration: 0.8, ease: [0.16, 1, 0.3, 1] }"
             >

@@ -4,6 +4,7 @@ import Lenis from 'lenis'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import HomeNav from "~/components/landing/HomeNav.vue";
+import WireframeThumbnail from "~/components/WireframeThumbnail.vue";
 
 definePageMeta({ layout: false })
 
@@ -24,42 +25,47 @@ const navRef = ref<HTMLElement | null>(null)
 const heroRef = ref<HTMLElement | null>(null)
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 
+// Preloader Refs
+const preloaderRef = ref<HTMLElement | null>(null)
+const preloaderTop = ref<HTMLElement | null>(null)
+const preloaderBottom = ref<HTMLElement | null>(null)
+const loadPercent = ref(0)
+const isLoaded = ref(false)
+
 let lenis: Lenis | null = null
 let raf: ((time: number) => void) | null = null
 let animFrame: number | null = null
 let particles: Particle[] = []
 
-// Particle system for hero background
+// Particle system
 class Particle {
-  x: number
-  y: number
-  vx: number
-  vy: number
-  size: number
-  opacity: number
-  color: string
+  x: number; y: number; vx: number; vy: number; size: number; opacity: number; color: string;
   constructor(w: number, h: number) {
     this.x = Math.random() * w
     this.y = Math.random() * h
-    this.vx = (Math.random() - 0.5) * 0.4
-    this.vy = (Math.random() - 0.5) * 0.4
-    this.size = Math.random() * 1.5 + 0.3
-    this.opacity = Math.random() * 0.6 + 0.1
+    this.vx = (Math.random() - 0.5) * 0.8 // Increased speed slightly
+    this.vy = (Math.random() - 0.5) * 0.8
+    this.size = Math.random() * 1.5 + 0.5
+    this.opacity = Math.random() * 0.6 + 0.2
     this.color = Math.random() > 0.85 ? '#FF4A00' : '#ffffff'
   }
   update(w: number, h: number, mx: number, my: number) {
     const dx = mx - this.x
     const dy = my - this.y
     const dist = Math.sqrt(dx * dx + dy * dy)
-    if (dist < 120) {
-      const force = (120 - dist) / 120 * 0.015
+    // Magnetic repel from mouse
+    if (dist < 150) {
+      const force = (150 - dist) / 150 * 0.02
       this.vx -= dx * force
       this.vy -= dy * force
     }
-    this.vx *= 0.99
-    this.vy *= 0.99
+    // Fluid drag
+    this.vx *= 0.98
+    this.vy *= 0.98
     this.x += this.vx
     this.y += this.vy
+
+    // Wrap around screen
     if (this.x < 0) this.x = w
     if (this.x > w) this.x = 0
     if (this.y < 0) this.y = h
@@ -71,7 +77,7 @@ let mouseX = -1000
 let mouseY = -1000
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CANVAS PARTICLE SYSTEM
+// FLUID CANVAS PARTICLE SYSTEM
 // ─────────────────────────────────────────────────────────────────────────────
 const initCanvas = () => {
   const canvas = canvasRef.value
@@ -82,8 +88,7 @@ const initCanvas = () => {
   const resize = () => {
     canvas.width = window.innerWidth
     canvas.height = window.innerHeight
-    // Reinit particles on resize
-    const count = Math.min(Math.floor((canvas.width * canvas.height) / 9000), 180)
+    const count = Math.min(Math.floor((canvas.width * canvas.height) / 8000), 150)
     particles = Array.from({ length: count }, () => new Particle(canvas.width, canvas.height))
   }
   resize()
@@ -91,7 +96,10 @@ const initCanvas = () => {
 
   const draw = () => {
     if (!canvas || !ctx) return
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+    // AWARD WINNING TRICK: Use rgba clear for light trails instead of hard clearRect
+    ctx.fillStyle = 'rgba(4, 4, 4, 0.2)'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
 
     // Draw connection lines
     for (let i = 0; i < particles.length; i++) {
@@ -99,10 +107,10 @@ const initCanvas = () => {
         const dx = particles[i].x - particles[j].x
         const dy = particles[i].y - particles[j].y
         const dist = Math.sqrt(dx * dx + dy * dy)
-        if (dist < 100) {
+        if (dist < 110) {
           ctx.beginPath()
-          ctx.strokeStyle = `rgba(255,255,255,${(1 - dist / 100) * 0.06})`
-          ctx.lineWidth = 0.5
+          ctx.strokeStyle = `rgba(255,255,255,${(1 - dist / 110) * 0.08})`
+          ctx.lineWidth = 0.8
           ctx.moveTo(particles[i].x, particles[i].y)
           ctx.lineTo(particles[j].x, particles[j].y)
           ctx.stroke()
@@ -127,7 +135,49 @@ const initCanvas = () => {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GSAP ANIMATIONS
+// SOTD PRELOADER SEQUENCE
+// ─────────────────────────────────────────────────────────────────────────────
+const runPreloader = () => {
+  // Lock scroll immediately
+  if (lenis) lenis.stop()
+
+  const tl = gsap.timeline({
+    onComplete: () => {
+      isLoaded.value = true
+      if (lenis) lenis.start() // Unlock scroll
+      initMotion() // Start normal page animations
+    }
+  })
+
+  // 1. Simulate data fetching / system boot
+  tl.to({ val: 0 }, {
+    val: 100,
+    duration: 2.5,
+    ease: 'power3.inOut',
+    onUpdate: function() {
+      loadPercent.value = Math.floor(this.targets()[0].val)
+    }
+  })
+
+  // 2. Glitch out text
+  tl.to('.preloader-text', { opacity: 0, scale: 1.1, filter: 'blur(10px)', duration: 0.4, ease: 'power2.in' })
+
+  // 3. Physically split the screen apart
+  tl.to(preloaderTop.value, { yPercent: -100, duration: 1.2, ease: 'expo.inOut' }, 'split')
+  tl.to(preloaderBottom.value, { yPercent: 100, duration: 1.2, ease: 'expo.inOut' }, 'split')
+
+  // 4. Hero content flies in from the void
+  tl.fromTo('.raya-logo-text',
+      { scale: 0.8, opacity: 0, filter: 'blur(20px)' },
+      { scale: 1, opacity: 1, filter: 'blur(0px)', duration: 1.5, ease: 'expo.out' }, 'split+=0.4')
+
+  tl.fromTo('.hero-badge', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, 'split+=0.8')
+  tl.fromTo('.hero-meta-content', { opacity: 0, y: 30, filter: 'blur(8px)' }, { opacity: 1, y: 0, filter: 'blur(0px)', duration: 1, ease: 'power3.out' }, 'split+=0.9')
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GSAP SCROLL ANIMATIONS
 // ─────────────────────────────────────────────────────────────────────────────
 const initMotion = () => {
   ScrollTrigger.getAll().forEach(t => t.kill())
@@ -150,7 +200,6 @@ const initMotion = () => {
     scale: 1,
     transformOrigin: 'center center',
     willChange: 'transform',
-    zIndex: 120,
   })
 
   gsap.to('.raya-logo-text', {
@@ -170,10 +219,10 @@ const initMotion = () => {
   })
 
   // Hero subtitles fade on scroll
-  gsap.to('.hero-meta', {
+  gsap.to('.hero-meta-content', {
     opacity: 0,
     y: -40,
-    filter: 'blur(6px)',
+    filter: 'blur(10px)',
     ease: 'none',
     scrollTrigger: {
       trigger: '#hero-section',
@@ -183,8 +232,10 @@ const initMotion = () => {
     }
   })
 
-  // MANIFESTO section
+  // 3D KINETIC TYPOGRAPHY (Manifesto)
   const manifestoLines = gsap.utils.toArray('.manifesto-line')
+  gsap.set(manifestoLines, { transformPerspective: 800, transformOrigin: '50% 100%' })
+
   const manifestoTl = gsap.timeline({
     scrollTrigger: {
       trigger: '#manifesto',
@@ -198,9 +249,10 @@ const initMotion = () => {
     }
   })
   manifestoTl
-      .fromTo(manifestoLines, { y: 100, opacity: 0, filter: 'blur(10px)' }, {
-        y: 0, opacity: 1, filter: 'blur(0px)', stagger: 0.2, ease: 'power3.out'
-      })
+      .fromTo(manifestoLines,
+          { y: 80, opacity: 0, rotationX: -60, filter: 'blur(10px)' },
+          { y: 0, opacity: 1, rotationX: 0, filter: 'blur(0px)', stagger: 0.2, ease: 'power3.out' }
+      )
       .to(manifestoLines.slice(0, -1), { opacity: 0.12, stagger: 0.15, ease: 'none' }, '+=0.4')
 
   // FEATURES cards stagger reveal
@@ -305,7 +357,7 @@ const initMotion = () => {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MAGNETIC BUTTON LOGIC
+// MAGNETIC BUTTON & HOVER LOGIC
 // ─────────────────────────────────────────────────────────────────────────────
 const magneticEl = ref<HTMLElement | null>(null)
 const onMagneticEnter = (e: MouseEvent) => {
@@ -333,9 +385,6 @@ const onMagneticMove = (e: MouseEvent) => {
   })
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 3D TILT ON CARDS
-// ─────────────────────────────────────────────────────────────────────────────
 const handleTilt = (e: MouseEvent, el: HTMLElement) => {
   const rect = el.getBoundingClientRect()
   const x = (e.clientX - rect.left) / rect.width - 0.5
@@ -358,17 +407,17 @@ const resetTilt = (el: HTMLElement) => {
 onMounted(async () => {
   await nextTick()
 
-  // Lenis smooth scroll
+  // 1. Setup Lenis smooth scroll (keep stopped during preloader)
   lenis = new Lenis({ duration: 1.2, smoothWheel: true, wheelMultiplier: 0.9 })
   lenis.on('scroll', ScrollTrigger.update)
   raf = (time: number) => lenis?.raf(time * 1000)
   gsap.ticker.add(raf)
   gsap.ticker.lagSmoothing(0)
 
-  // Canvas particle system
+  // 2. Canvas particle system starts in background
   initCanvas()
 
-  // Cursor
+  // 3. Custom Cursor Logic
   window.addEventListener('mousemove', (e) => {
     mouseX = e.clientX
     mouseY = e.clientY
@@ -388,11 +437,9 @@ onMounted(async () => {
     })
   })
 
-  // Hero entrance animation
-  gsap.fromTo('.hero-badge', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8, delay: 0.3, ease: 'power3.out' })
-  gsap.fromTo('.hero-meta-content', { opacity: 0, y: 30, filter: 'blur(8px)' }, { opacity: 1, y: 0, filter: 'blur(0px)', duration: 1, delay: 0.5, ease: 'power3.out' })
+  // 4. Trigger Preloader (which triggers everything else)
+  runPreloader()
 
-  requestAnimationFrame(() => initMotion())
   window.addEventListener('resize', () => ScrollTrigger.refresh())
 })
 
@@ -403,7 +450,7 @@ onBeforeUnmount(() => {
   if (animFrame) cancelAnimationFrame(animFrame)
 })
 
-// Component list for horizontal showcase
+// Data arrays
 const components = [
   { name: 'Liquid Glass', tag: 'glassmorphism', color: '#4FC3F7' },
   { name: 'Magnetic', tag: 'physics', color: '#FF4A00' },
@@ -416,30 +463,10 @@ const components = [
 ]
 
 const features = [
-  {
-    num: '01',
-    title: 'Copy-Paste Architecture',
-    body: 'No black-box npm packages. Take the source, own every line. Zero runtime surprises.',
-    icon: '⌗'
-  },
-  {
-    num: '02',
-    title: 'WAI-ARIA Bedrock',
-    body: 'Reka UI primitives underneath. Screen-reader native. Keyboard navigation first.',
-    icon: '◈'
-  },
-  {
-    num: '03',
-    title: 'GSAP Motion Engine',
-    body: 'Spring-physics interactions. Scroll-driven narratives. Every interaction alive.',
-    icon: '⟳'
-  },
-  {
-    num: '04',
-    title: 'Vue 3.5 Native',
-    body: 'Written from scratch for the latest Vue macros, Nuxt 4 and the Composition API.',
-    icon: '⬡'
-  },
+  { num: '01', title: 'Copy-Paste Architecture', body: 'No black-box npm packages. Take the source, own every line. Zero runtime surprises.', icon: '⌗' },
+  { num: '02', title: 'WAI-ARIA Bedrock', body: 'Reka UI primitives underneath. Screen-reader native. Keyboard navigation first.', icon: '◈' },
+  { num: '03', title: 'GSAP Motion Engine', body: 'Spring-physics interactions. Scroll-driven narratives. Every interaction alive.', icon: '⟳' },
+  { num: '04', title: 'Vue 3.5 Native', body: 'Written from scratch for the latest Vue macros, Nuxt 4 and the Composition API.', icon: '⬡' },
 ]
 </script>
 
@@ -448,14 +475,25 @@ const features = [
       class="bg-[#040404] text-[#FAFAFA] min-h-screen overflow-x-hidden font-sans relative selection:bg-[#FF4A00]/30 selection:text-[#FF4A00]"
       style="cursor: none;"
   >
+    <div v-show="!isLoaded" ref="preloaderRef" class="fixed inset-0 z-[9999] pointer-events-none flex flex-col font-mono text-[10px] tracking-[0.4em] uppercase text-white/50">
+      <div ref="preloaderTop" class="h-1/2 w-full bg-[#040404] flex items-end justify-center pb-2 border-b border-white/5 relative overflow-hidden">
+        <div class="preloader-text absolute bottom-4 flex flex-col items-center gap-2">
+          <span class="text-[#FF4A00]">Initializing System</span>
+          <div class="w-48 h-px bg-white/10 overflow-hidden rounded-full">
+            <div class="h-full bg-[#FF4A00]" :style="`width: ${loadPercent}%`" />
+          </div>
+        </div>
+      </div>
+      <div ref="preloaderBottom" class="h-1/2 w-full bg-[#040404] flex items-start justify-center pt-4 relative overflow-hidden">
+        <span class="preloader-text">{{ loadPercent }}%</span>
+      </div>
+    </div>
 
-    <!-- ─── STRUCTURAL GRID OVERLAY ─────────────────────────────────── -->
     <div class="fixed inset-0 grid grid-cols-4 md:grid-cols-12 gap-px px-6 md:px-12 pointer-events-none z-[1]">
       <div v-for="i in 12" :key="i" class="h-full border-r border-white/[0.025] hidden md:block last:border-none" />
       <div v-for="i in 4" :key="'m'+i" class="h-full border-r border-white/[0.03] md:hidden last:border-none" />
     </div>
 
-    <!-- ─── CUSTOM CURSOR ─────────────────────────────────────────────── -->
     <div
         ref="cursorRef"
         class="fixed top-0 left-0 w-8 h-8 rounded-full border border-white/60 z-[9999] pointer-events-none mix-blend-difference"
@@ -467,16 +505,13 @@ const features = [
         style="transform: translate(-50%, -50%)"
     />
 
-    <!-- ─── PARTICLE CANVAS ───────────────────────────────────────────── -->
     <canvas
         ref="canvasRef"
-        class="fixed inset-0 z-[2] pointer-events-none opacity-60"
+        class="fixed inset-0 z-[2] pointer-events-none opacity-60 mix-blend-screen"
     />
 
-    <!-- ─── FLOATING NAV ─────────────────────────────────────────────── -->
     <HomeNav />
 
-    <!-- ─── RAYA LOGO (kinetic, fixed, scrolls to corner) ───────────── -->
     <div class="fixed inset-0 pointer-events-none z-[120] mix-blend-difference">
       <div class="raya-logo-text absolute text-white select-none">
         <h1
@@ -488,7 +523,6 @@ const features = [
       </div>
     </div>
 
-    <!-- ─── BOTTOM FLOATING DOCK ─────────────────────────────────────── -->
     <nav class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-6 px-8 py-3.5 rounded-full border border-white/10 bg-[#040404]/50 backdrop-blur-2xl shadow-2xl">
       <NuxtLink
           to="/components"
@@ -513,25 +547,19 @@ const features = [
       </a>
     </nav>
 
-    <!-- ═══════════════════════════════════════════════════════════════════ -->
-    <!-- MAIN                                                                -->
-    <!-- ═══════════════════════════════════════════════════════════════════ -->
     <main class="relative z-10">
 
-      <!-- ─── HERO ─────────────────────────────────────────────────────── -->
       <section
           id="hero-section"
           ref="heroRef"
           class="relative h-screen flex items-center justify-center overflow-hidden"
       >
-        <!-- Radial glow at center -->
         <div class="absolute inset-0 pointer-events-none">
           <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[#FF4A00]/5 blur-[120px]" />
           <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-white/3 blur-[80px]" />
         </div>
 
-        <!-- Hero meta — lives below the giant "RAYA" word -->
-        <div class="hero-meta absolute bottom-[12vh] left-1/2 -translate-x-1/2 text-center w-full z-10 flex flex-col items-center gap-4 px-6 pointer-events-none">
+        <div class="absolute bottom-[12vh] left-1/2 -translate-x-1/2 text-center w-full z-10 px-6 pointer-events-none">
           <div class="hero-meta-content flex flex-col items-center gap-4 w-full">
             <div class="hero-badge inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm">
               <span class="w-1.5 h-1.5 rounded-full bg-[#FF4A00] animate-pulse" />
@@ -564,19 +592,13 @@ const features = [
           </div>
         </div>
 
-        <!-- Scroll indicator -->
         <div class="absolute bottom-8 right-8 md:right-12 flex flex-col items-center gap-2 opacity-30">
           <div class="w-px h-12 bg-white/60 origin-top" style="animation: scrollLine 2s ease-in-out infinite;" />
           <span class="font-mono text-[8px] tracking-[0.3em] uppercase rotate-90 origin-center">scroll</span>
         </div>
       </section>
 
-      <!-- ─── MANIFESTO ─────────────────────────────────────────────────── -->
-      <section
-          id="manifesto"
-          class="relative h-screen flex items-center px-6 md:px-24 bg-[#040404]"
-      >
-        <!-- Blueprint crosshair decoration -->
+      <section id="manifesto" class="relative h-screen flex items-center px-6 md:px-24 bg-[#040404]" style="perspective: 1200px;">
         <div class="absolute top-8 right-12 opacity-10 pointer-events-none">
           <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
             <circle cx="40" cy="40" r="30" stroke="#FF4A00" stroke-width="0.5" stroke-dasharray="4 4"/>
@@ -609,9 +631,7 @@ const features = [
         </div>
       </section>
 
-      <!-- ─── SWAP PANELS ───────────────────────────────────────────────── -->
       <section id="swap-section" class="relative h-screen overflow-hidden">
-        <!-- Panel 1: Dark / Base -->
         <div class="swap-panel absolute inset-0 bg-[#040404] flex items-center justify-center p-6">
           <div class="text-center max-w-4xl">
             <h2 class="text-[clamp(38px,8vw,120px)] font-black uppercase tracking-tighter leading-none mb-6">
@@ -623,7 +643,6 @@ const features = [
           </div>
         </div>
 
-        <!-- Panel 2: Light -->
         <div class="swap-panel absolute inset-0 bg-[#F5F5F0] text-[#040404] flex items-center justify-center p-6" style="clip-path: inset(100% 0% 0% 0%)">
           <div class="text-center max-w-4xl relative z-10">
             <h2 class="text-[clamp(38px,8vw,120px)] font-black uppercase tracking-tighter leading-none mb-6">
@@ -635,7 +654,6 @@ const features = [
           </div>
         </div>
 
-        <!-- Panel 3: Orange -->
         <div class="swap-panel absolute inset-0 bg-[#FF4A00] text-black flex items-center justify-center p-6" style="clip-path: inset(100% 0% 0% 0%)">
           <div class="text-center max-w-4xl">
             <h2 class="text-[clamp(38px,8vw,120px)] font-black uppercase tracking-tighter leading-none mb-6">
@@ -648,9 +666,7 @@ const features = [
         </div>
       </section>
 
-      <!-- ─── FEATURES GRID (Happly vibe) ───────────────────────────────── -->
       <section class="relative py-32 px-6 md:px-12 bg-[#040404]">
-        <!-- Organic blob background -->
         <div class="absolute inset-0 overflow-hidden pointer-events-none">
           <div class="absolute top-1/4 -left-32 w-[500px] h-[500px] rounded-full bg-[#FF4A00]/4 blur-[150px]" />
           <div class="absolute bottom-1/4 -right-32 w-[400px] h-[400px] rounded-full bg-white/3 blur-[120px]" />
@@ -676,19 +692,11 @@ const features = [
                 @mousemove="(e) => handleTilt(e, $event.currentTarget as HTMLElement)"
                 @mouseleave="(e) => resetTilt($event.currentTarget as HTMLElement)"
             >
-              <!-- Glow on hover -->
               <div class="absolute inset-0 bg-gradient-to-br from-[#FF4A00]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-
-              <!-- Number -->
               <span class="font-mono text-[10px] tracking-[0.4em] text-white/15 block mb-6">{{ feat.num }}</span>
-
-              <!-- Icon -->
               <div class="text-3xl mb-5 text-white/20 group-hover:text-[#FF4A00] transition-colors duration-500">{{ feat.icon }}</div>
-
               <h3 class="text-xl md:text-2xl font-bold text-white mb-4 group-hover:text-white/90 transition-colors">{{ feat.title }}</h3>
               <p class="text-white/40 leading-relaxed text-sm md:text-base">{{ feat.body }}</p>
-
-              <!-- Corner indicator -->
               <div class="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
                 <div class="w-6 h-6 border border-white/20 rounded-sm flex items-center justify-center">
                   <span class="text-white/40 text-xs">→</span>
@@ -699,7 +707,6 @@ const features = [
         </div>
       </section>
 
-      <!-- ─── MARQUEE ───────────────────────────────────────────────────── -->
       <section class="marquee-section py-20 bg-[#F5F5F0] text-[#040404] overflow-hidden relative z-20 border-y border-black/8">
         <div class="marquee-track flex whitespace-nowrap font-black uppercase tracking-tighter leading-none select-none" style="font-size: clamp(48px, 8vw, 140px)">
           <span class="marquee-text mx-8 block origin-bottom shrink-0">COPY · PASTE · OWN THE CODE ·&nbsp;</span>
@@ -709,20 +716,16 @@ const features = [
         </div>
       </section>
 
-      <!-- ─── HORIZONTAL BLUEPRINT SHOWCASE ─────────────────────────────── -->
       <section
           id="horizontal-worlds"
           class="relative h-screen bg-[#040404] overflow-hidden flex items-center blueprint-section"
       >
-        <!-- Section label -->
         <div class="absolute top-16 left-6 md:left-12 font-mono text-[10px] tracking-[0.3em] text-white/20 uppercase z-10">
           ( Component Architecture )
         </div>
 
-        <!-- Blueprint grid background -->
         <div class="absolute inset-0 opacity-5 pointer-events-none" style="background-image: linear-gradient(#4FC3F7 1px, transparent 1px), linear-gradient(90deg, #4FC3F7 1px, transparent 1px); background-size: 60px 60px;" />
 
-        <!-- Animated SVG connection lines -->
         <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-20" viewBox="0 0 1440 900" preserveAspectRatio="none">
           <path class="bp-line" d="M0 200 Q360 100 720 250 T1440 200" stroke="#FF4A00" stroke-width="0.8" fill="none"/>
           <path class="bp-line" d="M0 700 Q360 600 720 650 T1440 700" stroke="#4FC3F7" stroke-width="0.8" fill="none"/>
@@ -730,8 +733,6 @@ const features = [
         </svg>
 
         <div class="h-track flex items-center gap-6 px-6 md:px-12 w-max">
-
-          <!-- Intro card -->
           <div class="shrink-0 w-[80vw] md:w-[500px] pr-8">
             <div class="font-mono text-[9px] tracking-[0.4em] uppercase text-[#FF4A00]/70 mb-6 flex items-center gap-3">
               <svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" stroke="#FF4A00" stroke-width="0.8" fill="none" stroke-dasharray="2 2"/><circle cx="10" cy="10" r="2" fill="#FF4A00" opacity="0.6"/></svg>
@@ -746,27 +747,26 @@ const features = [
             </p>
           </div>
 
-          <!-- Component cards -->
           <div
               v-for="comp in components"
               :key="comp.name"
               class="shrink-0 w-[280px] md:w-[320px] h-[420px] relative overflow-hidden border border-white/8 bg-white/3 backdrop-blur-sm group hover-target"
               style="border-radius: 2px;"
           >
-            <!-- Glassmorphism panel -->
+            <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div class="absolute top-0 left-0 right-0 h-px transition-all duration-500 group-hover:h-0.5"
+                 :style="`background-color: ${comp.color}; opacity: 0.5;`" />
+
             <div class="absolute inset-0 p-8 flex flex-col justify-between">
               <div>
                 <div class="font-mono text-[9px] tracking-[0.3em] uppercase mb-6"
                      :style="`color: ${comp.color}; opacity: 0.7`">
                   {{ comp.tag }}
                 </div>
-
                 <div class="relative h-24 w-full flex items-center justify-start mb-8 opacity-50 group-hover:opacity-100 transition-all duration-500 pointer-events-none transform-gpu group-hover:translate-x-2" :style="`color: ${comp.color}`">
                   <WireframeThumbnail :component="comp.name" />
                 </div>
-
               </div>
-
               <div>
                 <h3 class="text-xl font-bold text-white mb-3 group-hover:translate-x-1 transition-transform duration-300">
                   {{ comp.name }}
@@ -782,7 +782,6 @@ const features = [
             </div>
           </div>
 
-          <!-- End card CTA -->
           <div class="shrink-0 w-[280px] md:w-[320px] h-[420px] flex flex-col items-center justify-center gap-6 border border-dashed border-white/10" style="border-radius: 2px;">
             <div class="font-mono text-[10px] tracking-[0.3em] uppercase text-white/25">That's the registry</div>
             <NuxtLink
@@ -792,11 +791,9 @@ const features = [
               View All →
             </NuxtLink>
           </div>
-
         </div>
       </section>
 
-      <!-- ─── GLASSMORPHISM SHOWCASE CARDS ──────────────────────────────── -->
       <section class="relative py-32 px-6 md:px-12 bg-[#040404] overflow-hidden">
         <div class="absolute inset-0 pointer-events-none">
           <div class="absolute top-0 left-1/3 w-[800px] h-[800px] rounded-full bg-[#FF4A00]/3 blur-[200px]" />
@@ -819,17 +816,12 @@ const features = [
             </p>
           </div>
 
-          <!-- Three feature panels -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-            <!-- Panel: Glassmorphism -->
             <div class="feature-card relative h-80 overflow-hidden group border border-white/8" style="border-radius: 2px;">
               <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
               <div class="absolute inset-0 backdrop-blur-md" />
-              <!-- Inner glowing orbs -->
               <div class="absolute top-8 left-8 w-24 h-24 rounded-full bg-[#FF4A00]/30 blur-2xl group-hover:scale-150 transition-transform duration-700" />
               <div class="absolute bottom-8 right-8 w-20 h-20 rounded-full bg-blue-500/20 blur-2xl group-hover:scale-150 transition-transform duration-700" />
-              <!-- Glass card inside -->
               <div class="absolute inset-0 flex items-center justify-center">
                 <div class="w-36 h-24 border border-white/15 bg-white/8 backdrop-blur-xl rounded-lg flex items-center justify-center group-hover:border-white/25 transition-all duration-500">
                   <span class="font-mono text-xs text-white/60 tracking-widest uppercase">Liquid Glass</span>
@@ -840,9 +832,7 @@ const features = [
               </div>
             </div>
 
-            <!-- Panel: Motion -->
             <div class="feature-card relative h-80 overflow-hidden group border border-white/8 bg-[#0a0a0a]" style="border-radius: 2px;">
-              <!-- Animated rings -->
               <div class="absolute inset-0 flex items-center justify-center">
                 <div class="absolute w-40 h-40 rounded-full border border-[#FF4A00]/20 animate-ping" style="animation-duration: 3s;" />
                 <div class="absolute w-28 h-28 rounded-full border border-[#FF4A00]/30 animate-ping" style="animation-duration: 2.5s; animation-delay: 0.5s" />
@@ -854,11 +844,8 @@ const features = [
               </div>
             </div>
 
-            <!-- Panel: Grid / Blueprint -->
             <div class="feature-card relative h-80 overflow-hidden group border border-white/8 bg-[#050505]" style="border-radius: 2px;">
-              <!-- Dotted grid -->
               <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle, rgba(255,255,255,0.4) 1px, transparent 1px); background-size: 20px 20px;" />
-              <!-- Center element -->
               <div class="absolute inset-0 flex items-center justify-center">
                 <div class="relative">
                   <svg width="120" height="120" viewBox="0 0 120 120" class="opacity-40 group-hover:opacity-70 transition-opacity duration-500">
@@ -874,12 +861,10 @@ const features = [
                 <span class="font-mono text-[10px] tracking-[0.3em] uppercase text-white/30">Blueprint Precision</span>
               </div>
             </div>
-
           </div>
         </div>
       </section>
 
-      <!-- ─── SECOND MARQUEE (Docs CTA) ─────────────────────────────────── -->
       <section class="marquee-section py-16 bg-[#040404] overflow-hidden border-y border-white/5">
         <div class="marquee-track flex whitespace-nowrap select-none" style="font-size: clamp(12px, 1.8vw, 22px)">
           <span class="marquee-text mx-6 block origin-bottom font-mono text-white/10 uppercase tracking-[0.3em] shrink-0">
@@ -894,10 +879,7 @@ const features = [
         </div>
       </section>
 
-      <!-- ─── FOOTER / CTA ──────────────────────────────────────────────── -->
       <footer class="relative min-h-screen bg-[#020202] flex flex-col justify-between p-6 md:p-12 pb-[8vh] border-t border-white/5 overflow-hidden">
-
-        <!-- Background beams -->
         <div class="absolute inset-0 pointer-events-none overflow-hidden">
           <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-px h-full bg-gradient-to-t from-[#FF4A00]/20 to-transparent" />
           <div class="absolute bottom-0 left-1/3 w-px h-3/4 bg-gradient-to-t from-[#FF4A00]/10 to-transparent rotate-6 origin-bottom" />
@@ -907,7 +889,6 @@ const features = [
         </div>
 
         <div class="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-12 mt-16">
-          <!-- CTA left -->
           <div class="md:col-span-2">
             <div class="font-mono text-[10px] tracking-[0.4em] uppercase text-[#FF4A00]/70 mb-8 flex items-center gap-4">
               <div class="w-8 h-px bg-[#FF4A00]/40" />
@@ -923,13 +904,11 @@ const features = [
             </h2>
 
             <div class="flex flex-col sm:flex-row items-start gap-4">
-              <!-- Pixelated-style CTA button -->
               <NuxtLink to="/docs/installation" class="hover-target group">
                 <div class="relative px-8 py-4 border-2 border-dotted border-white/30 bg-transparent hover:border-[#FF4A00] hover:bg-[#FF4A00]/5 transition-all duration-300">
                   <span class="font-mono text-[11px] tracking-[0.3em] uppercase font-bold text-white group-hover:text-[#FF4A00] transition-colors duration-300">
                     Get Started →
                   </span>
-                  <!-- Corner accents -->
                   <div class="absolute -top-px -left-px w-2 h-2 border-t border-l border-[#FF4A00] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div class="absolute -top-px -right-px w-2 h-2 border-t border-r border-[#FF4A00] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div class="absolute -bottom-px -left-px w-2 h-2 border-b border-l border-[#FF4A00] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -943,7 +922,6 @@ const features = [
             </div>
           </div>
 
-          <!-- Footer links right -->
           <div class="flex flex-col justify-end gap-8">
             <div>
               <h4 class="font-mono text-[9px] tracking-[0.4em] uppercase text-white/20 mb-4">Directory</h4>
@@ -971,7 +949,6 @@ const features = [
           </div>
         </div>
 
-        <!-- Large wordmark at bottom -->
         <div class="relative z-10 w-full mt-16 border-t border-white/5 pt-8 flex items-center justify-center pointer-events-none select-none">
           <h1 class="font-black italic tracking-tighter uppercase leading-none text-transparent opacity-[0.04]"
               style="font-size: 18vw; -webkit-text-stroke: 1px rgba(255,255,255,1);">
@@ -979,7 +956,6 @@ const features = [
           </h1>
         </div>
 
-        <!-- Copyright -->
         <p class="absolute bottom-8 left-6 md:left-12 font-mono text-[9px] tracking-[0.3em] uppercase text-white/20">
           © {{ new Date().getFullYear() }} Architected by
           <a href="https://iman-mhmdi.ir" target="_blank" class="text-[#FF4A00]/60 hover:text-[#FF4A00] transition-colors duration-300">Iman</a>
@@ -1013,23 +989,19 @@ html.lenis, html.lenis body {
   scroll-behavior: auto !important;
 }
 
-/* Hide scrollbar */
 ::-webkit-scrollbar { display: none; }
 * { scrollbar-width: none; box-sizing: border-box; }
 
-/* Preserve 3D for tilt cards */
 .feature-card {
   transform-style: preserve-3d;
 }
 
-/* Scroll line indicator animation */
 @keyframes scrollLine {
   0%, 100% { transform: scaleY(0); opacity: 0; transform-origin: top; }
   50% { transform: scaleY(1); opacity: 1; }
   100% { transform: scaleY(0); opacity: 0; transform-origin: bottom; }
 }
 
-/* Will-change hints */
 #hero-section,
 #manifesto,
 #swap-section,
@@ -1048,15 +1020,12 @@ html.lenis, html.lenis body {
   transform: translateZ(0);
 }
 
-/* Blueprint line SVG draw animation */
 .bp-line {
   will-change: stroke-dashoffset;
 }
 
-/* Responsive: Reduce particle density on mobile via CSS (canvas handles it by count) */
 @media (max-width: 768px) {
   .h-track {
-    /* On mobile, allow natural horizontal scroll */
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
