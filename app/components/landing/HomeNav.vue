@@ -37,16 +37,14 @@ const toggleMenu = () => {
 </script>
 
 <template>
-  <!-- NAVIGATION -->
   <nav class="fixed top-0 left-0 right-0 z-[8000] px-8 py-8 flex justify-between items-center mix-blend-difference">
     <span></span>
-    <button @click="toggleMenu" class="w-16 h-16 rounded-full bg-[#ff4a00] text-black flex flex-col items-center justify-center gap-1.5 hover:scale-105 transition-transform duration-300">
-      <div class="w-6 h-[2px] bg-black transition-all duration-500" :class="{ 'rotate-45 translate-y-[4px]': isMenuOpen }"></div>
-      <div class="w-6 h-[2px] bg-black transition-all duration-500" :class="{ '-rotate-45 -translate-y-[4px]': isMenuOpen }"></div>
+    <button @click="toggleMenu" class="w-12 h-12 flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform duration-300">
+      <div class="w-8 h-[2px] bg-white transition-all duration-500 origin-center" :class="{ 'rotate-45 translate-y-[5px]': isMenuOpen }"></div>
+      <div class="w-8 h-[2px] bg-white transition-all duration-500 origin-center" :class="{ '-rotate-45 -translate-y-[5px]': isMenuOpen }"></div>
     </button>
   </nav>
 
-  <!-- FULLSCREEN MENU -->
   <div ref="menuRef" class="fixed inset-0 bg-[#ff4a00] z-[7000] flex items-center justify-center perspective-[1000px]" style="clip-path: circle(0% at 95% 5%);">
     <div class="flex flex-col text-center gap-6">
       <div class="overflow-hidden p-2"><NuxtLink to="/components" class="menu-item block text-black text-[clamp(60px,10vw,160px)] font-black uppercase tracking-tighter hover:text-white transition-colors leading-none">Components</NuxtLink></div>

@@ -390,7 +390,7 @@ onMounted(async () => {
 
   // Hero entrance animation
   gsap.fromTo('.hero-badge', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8, delay: 0.3, ease: 'power3.out' })
-  gsap.fromTo('.hero-meta', { opacity: 0, y: 30, filter: 'blur(8px)' }, { opacity: 1, y: 0, filter: 'blur(0px)', duration: 1, delay: 0.5, ease: 'power3.out' })
+  gsap.fromTo('.hero-meta-content', { opacity: 0, y: 30, filter: 'blur(8px)' }, { opacity: 1, y: 0, filter: 'blur(0px)', duration: 1, delay: 0.5, ease: 'power3.out' })
 
   requestAnimationFrame(() => initMotion())
   window.addEventListener('resize', () => ScrollTrigger.refresh())
@@ -477,8 +477,8 @@ const features = [
     <HomeNav />
 
     <!-- ─── RAYA LOGO (kinetic, fixed, scrolls to corner) ───────────── -->
-    <div class="fixed inset-0 pointer-events-none z-[120]">
-      <div class="raya-logo-text absolute text-white mix-blend-difference select-none">
+    <div class="fixed inset-0 pointer-events-none z-[120] mix-blend-difference">
+      <div class="raya-logo-text absolute text-white select-none">
         <h1
             class="font-black uppercase tracking-tighter leading-none"
             style="font-size: clamp(72px, 18vw, 280px);"
@@ -532,35 +532,35 @@ const features = [
 
         <!-- Hero meta — lives below the giant "RAYA" word -->
         <div class="hero-meta absolute bottom-[12vh] left-1/2 -translate-x-1/2 text-center w-full z-10 flex flex-col items-center gap-4 px-6 pointer-events-none">
-          <!-- Badge -->
-          <div class="hero-badge inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm">
-            <span class="w-1.5 h-1.5 rounded-full bg-[#FF4A00] animate-pulse" />
-            <span class="font-mono text-[9px] tracking-[0.4em] uppercase text-white/60">Vue · Nuxt · Tailwind</span>
-          </div>
+          <div class="hero-meta-content flex flex-col items-center gap-4 w-full">
+            <div class="hero-badge inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#FF4A00] animate-pulse" />
+              <span class="font-mono text-[9px] tracking-[0.4em] uppercase text-white/60">Vue · Nuxt · Tailwind</span>
+            </div>
 
-          <p class="font-serif italic text-white/40 text-lg md:text-2xl font-light">
-            user interfaces that breathe
-          </p>
+            <p class="font-serif italic text-white/40 text-lg md:text-2xl font-light">
+              user interfaces that breathe
+            </p>
 
-          <!-- Magnetic CTA -->
-          <div
-              ref="magneticEl"
-              class="mt-4 inline-block hover-target"
-              @mouseenter="onMagneticEnter"
-              @mouseleave="onMagneticLeave"
-          >
-            <NuxtLink to="/components">
-              <div class="mag-inner relative flex items-center gap-3 px-8 py-3.5 rounded-full border border-white/20 bg-white/5 backdrop-blur-md group hover:border-[#FF4A00]/40 hover:bg-[#FF4A00]/8 transition-all duration-500">
-                <span class="font-mono text-[11px] tracking-[0.3em] uppercase font-semibold text-white">
-                  Explore Registry
-                </span>
-                <span class="text-white/40 group-hover:text-[#FF4A00] group-hover:translate-x-1 transition-all duration-300">→</span>
-              </div>
-            </NuxtLink>
-          </div>
+            <div
+                ref="magneticEl"
+                class="mt-4 inline-block hover-target pointer-events-auto"
+                @mouseenter="onMagneticEnter"
+                @mouseleave="onMagneticLeave"
+            >
+              <NuxtLink to="/components">
+                <div class="mag-inner relative flex items-center gap-3 px-8 py-3.5 rounded-full border border-white/20 bg-white/5 backdrop-blur-md group hover:border-[#FF4A00]/40 hover:bg-[#FF4A00]/8 transition-all duration-500">
+                  <span class="font-mono text-[11px] tracking-[0.3em] uppercase font-semibold text-white">
+                    Explore Registry
+                  </span>
+                  <span class="text-white/40 group-hover:text-[#FF4A00] group-hover:translate-x-1 transition-all duration-300">→</span>
+                </div>
+              </NuxtLink>
+            </div>
 
-          <div class="font-mono text-[9px] tracking-[0.4em] uppercase text-white/20 mt-2">
-            Vue OS · Digital Matter · v1.0.0
+            <div class="font-mono text-[9px] tracking-[0.4em] uppercase text-white/20 mt-2">
+              Vue OS · Digital Matter · v1.0.0
+            </div>
           </div>
         </div>
 
@@ -754,26 +754,17 @@ const features = [
               style="border-radius: 2px;"
           >
             <!-- Glassmorphism panel -->
-            <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-            <!-- Color accent bar -->
-            <div class="absolute top-0 left-0 right-0 h-px transition-all duration-500 group-hover:h-0.5"
-                 :style="`background-color: ${comp.color}; opacity: 0.5;`" />
-
-            <!-- Content -->
             <div class="absolute inset-0 p-8 flex flex-col justify-between">
               <div>
                 <div class="font-mono text-[9px] tracking-[0.3em] uppercase mb-6"
                      :style="`color: ${comp.color}; opacity: 0.7`">
                   {{ comp.tag }}
                 </div>
-                <!-- Blueprint crosshair -->
-                <div class="relative w-16 h-16 mb-8 opacity-30 group-hover:opacity-60 transition-opacity duration-500">
-                  <div class="absolute inset-0 border border-current rounded-sm" :style="`color: ${comp.color}`" />
-                  <div class="absolute top-1/2 left-0 w-full h-px bg-current" :style="`color: ${comp.color}`" />
-                  <div class="absolute left-1/2 top-0 w-px h-full bg-current" :style="`color: ${comp.color}`" />
-                  <div class="absolute top-1/2 left-1/2 w-2 h-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-current" :style="`color: ${comp.color}`" />
+
+                <div class="relative h-24 w-full flex items-center justify-start mb-8 opacity-50 group-hover:opacity-100 transition-all duration-500 pointer-events-none transform-gpu group-hover:translate-x-2" :style="`color: ${comp.color}`">
+                  <WireframeThumbnail :component="comp.name" />
                 </div>
+
               </div>
 
               <div>
