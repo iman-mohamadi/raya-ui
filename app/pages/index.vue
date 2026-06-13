@@ -27,6 +27,23 @@ const navRef = ref<HTMLElement | null>(null)
 const heroRef = ref<HTMLElement | null>(null)
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 
+// ── System HUD state ─────────────────────────────────────────────────────────
+const scrollProgress = ref(0)
+const systemTime = ref('00:00:00')
+const coords = ref('0000 · 0000')
+const activeSection = ref(0)
+const sections = [
+  { id: 'hero-section', label: 'Index' },
+  { id: 'manifesto', label: 'Philosophy' },
+  { id: 'swap-section', label: 'Principles' },
+  { id: 'feature-section', label: 'Why Raya' },
+  { id: 'horizontal-worlds', label: 'Registry' },
+  { id: 'aesthetic-section', label: 'Aesthetic' },
+  { id: 'footer-section', label: 'Initialize' },
+]
+let clockTimer: ReturnType<typeof setInterval> | null = null
+let manifestoST: ScrollTrigger | null = null
+
 // Preloader Refs
 const preloaderRef = ref<HTMLElement | null>(null)
 const preloaderTop = ref<HTMLElement | null>(null)
@@ -37,46 +54,61 @@ const isLoaded = ref(false)
 let lenis: Lenis | null = null
 let raf: ((time: number) => void) | null = null
 let animFrame: number | null = null
-let particles: Particle[] = []
-
-// Particle system
-class Particle {
-  x: number; y: number; vx: number; vy: number; size: number; opacity: number; color: string;
-  constructor(w: number, h: number) {
-    this.x = Math.random() * w
-    this.y = Math.random() * h
-    this.vx = (Math.random() - 0.5) * 0.8
-    this.vy = (Math.random() - 0.5) * 0.8
-    this.size = Math.random() * 1.5 + 0.5
-    this.opacity = Math.random() * 0.6 + 0.2
-    this.color = Math.random() > 0.85 ? '#FF4A00' : '#ffffff'
-  }
-  update(w: number, h: number, mx: number, my: number) {
-    const dx = mx - this.x
-    const dy = my - this.y
-    const dist = Math.sqrt(dx * dx + dy * dy)
-    if (dist < 150) {
-      const force = (150 - dist) / 150 * 0.02
-      this.vx -= dx * force
-      this.vy -= dy * force
-    }
-    this.vx *= 0.98
-    this.vy *= 0.98
-    this.x += this.vx
-    this.y += this.vy
-
-    if (this.x < 0) this.x = w
-    if (this.x > w) this.x = 0
-    if (this.y < 0) this.y = h
-    if (this.y > h) this.y = 0
-  }
-}
+let sparks: Spark[] = []
 
 let mouseX = -1000
 let mouseY = -1000
+let scrollVelocity = 0
+
+const reducedMotion = () =>
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 // ─────────────────────────────────────────────────────────────────────────────
-// FLUID CANVAS PARTICLE SYSTEM
+// "DATA SPARKS" — orange points drifting along a pseudo-curl flow field
+// ─────────────────────────────────────────────────────────────────────────────
+class Spark {
+  x = 0; y = 0; vx = 0; vy = 0; size = 1; life = 0; maxLife = 1
+  constructor(w: number, h: number) { this.reset(w, h, true) }
+  reset(w: number, h: number, initial = false) {
+    this.x = Math.random() * w
+    this.y = Math.random() * h
+    this.vx = 0
+    this.vy = 0
+    this.size = Math.random() * 1.1 + 0.4
+    this.maxLife = 220 + Math.random() * 320
+    this.life = initial ? Math.random() * this.maxLife : 0
+  }
+  update(w: number, h: number, t: number) {
+    // Layered sines approximate a curl-noise flow, giving organic motion.
+    const angle = (Math.sin(this.x * 0.0016 + t) + Math.cos(this.y * 0.0015 - t)) * Math.PI
+    this.vx += Math.cos(angle) * 0.06
+    this.vy += Math.sin(angle) * 0.06
+
+    const dx = mouseX - this.x
+    const dy = mouseY - this.y
+    const dist = Math.hypot(dx, dy)
+    if (dist < 240) {
+      const f = (1 - dist / 240) * 0.14
+      this.vx += (dx / (dist || 1)) * f
+      this.vy += (dy / (dist || 1)) * f
+    }
+
+    this.vx *= 0.93
+    this.vy *= 0.93
+    this.x += this.vx
+    this.y += this.vy
+    this.life++
+
+    if (this.life > this.maxLife || this.x < -30 || this.x > w + 30 || this.y < -30 || this.y > h + 30) {
+      this.reset(w, h)
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BLUEPRINT FIELD — a precision grid that ignites around the cursor,
+// woven with drifting orange data sparks. Bespoke, on-brand, no clichés.
 // ─────────────────────────────────────────────────────────────────────────────
 const initCanvas = () => {
   const canvas = canvasRef.value
@@ -84,49 +116,82 @@ const initCanvas = () => {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
 
+  let dpr = Math.min(window.devicePixelRatio || 1, 2)
+
   const resize = () => {
-    canvas.width = window.innerWidth
-    canvas.height = window.innerHeight
-    const count = Math.min(Math.floor((canvas.width * canvas.height) / 8000), 150)
-    particles = Array.from({ length: count }, () => new Particle(canvas.width, canvas.height))
+    dpr = Math.min(window.devicePixelRatio || 1, 2)
+    canvas.width = window.innerWidth * dpr
+    canvas.height = window.innerHeight * dpr
+    canvas.style.width = window.innerWidth + 'px'
+    canvas.style.height = window.innerHeight + 'px'
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    const count = Math.min(Math.floor((window.innerWidth * window.innerHeight) / 14000), 90)
+    sparks = Array.from({ length: count }, () => new Spark(window.innerWidth, window.innerHeight))
   }
   resize()
   window.addEventListener('resize', resize)
 
-  const draw = () => {
-    if (!canvas || !ctx) return
+  const spacing = 54
+  const influence = 210
+  let t = 0
 
-    ctx.fillStyle = 'rgba(4, 4, 4, 0.2)'
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-    for (let i = 0; i < particles.length; i++) {
-      for (let j = i + 1; j < particles.length; j++) {
-        const dx = particles[i].x - particles[j].x
-        const dy = particles[i].y - particles[j].y
-        const dist = Math.sqrt(dx * dx + dy * dy)
-        if (dist < 110) {
-          ctx.beginPath()
-          ctx.strokeStyle = `rgba(255,255,255,${(1 - dist / 110) * 0.08})`
+  const renderGrid = (w: number, h: number) => {
+    for (let x = 0; x <= w; x += spacing) {
+      for (let y = 0; y <= h; y += spacing) {
+        const dx = mouseX - x
+        const dy = mouseY - y
+        const dist = Math.hypot(dx, dy)
+        if (dist < influence) {
+          const f = 1 - dist / influence
+          const s = 1.5 + f * 6
+          ctx.strokeStyle = `rgba(255,74,0,${0.05 + f * 0.55})`
           ctx.lineWidth = 0.8
-          ctx.moveTo(particles[i].x, particles[i].y)
-          ctx.lineTo(particles[j].x, particles[j].y)
+          ctx.beginPath()
+          ctx.moveTo(x - s, y); ctx.lineTo(x + s, y)
+          ctx.moveTo(x, y - s); ctx.lineTo(x, y + s)
           ctx.stroke()
+        } else {
+          ctx.fillStyle = 'rgba(255,255,255,0.035)'
+          ctx.fillRect(x - 0.5, y - 0.5, 1, 1)
         }
       }
     }
+  }
 
-    particles.forEach(p => {
-      p.update(canvas.width, canvas.height, mouseX, mouseY)
+  const draw = () => {
+    if (!canvas || !ctx) return
+    const w = window.innerWidth
+    const h = window.innerHeight
+
+    // Near-black trail fade (invisible over screen blend, leaves spark tails).
+    ctx.fillStyle = 'rgba(4,4,4,0.18)'
+    ctx.fillRect(0, 0, w, h)
+
+    t += 0.0016 + Math.min(Math.abs(scrollVelocity) * 0.00002, 0.012)
+    scrollVelocity *= 0.92
+
+    renderGrid(w, h)
+
+    for (const sp of sparks) {
+      sp.update(w, h, t)
+      const lf = Math.sin((sp.life / sp.maxLife) * Math.PI)
       ctx.beginPath()
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
-      ctx.fillStyle = p.color === '#FF4A00'
-          ? `rgba(255,74,0,${p.opacity})`
-          : `rgba(255,255,255,${p.opacity})`
+      ctx.arc(sp.x, sp.y, sp.size, 0, Math.PI * 2)
+      ctx.fillStyle = `rgba(255,74,0,${0.55 * lf})`
       ctx.fill()
-    })
+    }
 
     animFrame = requestAnimationFrame(draw)
   }
+
+  if (reducedMotion()) {
+    // Static, calm frame — no animation loop.
+    ctx.fillStyle = '#040404'
+    ctx.fillRect(0, 0, window.innerWidth, window.innerHeight)
+    renderGrid(window.innerWidth, window.innerHeight)
+    return
+  }
+
   draw()
 }
 
@@ -135,6 +200,18 @@ const initCanvas = () => {
 // ─────────────────────────────────────────────────────────────────────────────
 const runPreloader = () => {
   if (lenis) lenis.stop()
+
+  if (reducedMotion()) {
+    loadPercent.value = 100
+    gsap.set([preloaderTop.value, preloaderBottom.value], { autoAlpha: 0 })
+    gsap.set('.raya-logo-text', { opacity: 1, scale: 1, filter: 'blur(0px)' })
+    gsap.set(['.hero-badge', '.hero-meta-content'], { opacity: 1, y: 0, filter: 'blur(0px)' })
+    gsap.set('.hero-frame-inner', { opacity: 1, scaleX: 1 })
+    isLoaded.value = true
+    if (lenis) lenis.start()
+    initMotion()
+    return
+  }
 
   const tl = gsap.timeline({
     onComplete: () => {
@@ -161,6 +238,7 @@ const runPreloader = () => {
       { scale: 0.8, opacity: 0, filter: 'blur(20px)' },
       { scale: 1, opacity: 1, filter: 'blur(0px)', duration: 1.5, ease: 'expo.out' }, 'split+=0.4')
 
+  tl.fromTo('.hero-frame-inner', { opacity: 0, scaleX: 0.9 }, { opacity: 1, scaleX: 1, duration: 1.3, ease: 'power3.out' }, 'split+=0.55')
   tl.fromTo('.hero-badge', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, 'split+=0.8')
   tl.fromTo('.hero-meta-content', { opacity: 0, y: 30, filter: 'blur(8px)' }, { opacity: 1, y: 0, filter: 'blur(0px)', duration: 1, ease: 'power3.out' }, 'split+=0.9')
 }
@@ -177,6 +255,11 @@ const initMotion = () => {
     onEnter: () => gsap.to(navRef.value, { backdropFilter: 'blur(32px)', backgroundColor: 'rgba(4,4,4,0.7)', duration: 0.5 }),
     onLeaveBack: () => gsap.to(navRef.value, { backdropFilter: 'blur(16px)', backgroundColor: 'rgba(4,4,4,0.2)', duration: 0.5 }),
   })
+
+  // The rail is synced via a geometry check (updateActiveSection) driven by the
+  // Lenis scroll loop — this is robust even while sections are pinned/scrubbing,
+  // because a pinned element's rect keeps covering the viewport for its duration.
+  ScrollTrigger.addEventListener('refreshInit', updateActiveSection)
 
   gsap.to('.raya-logo-text', {
     scale: 0.10,
@@ -207,6 +290,17 @@ const initMotion = () => {
     }
   })
 
+  gsap.to('.hero-frame', {
+    opacity: 0,
+    ease: 'none',
+    scrollTrigger: {
+      trigger: '#hero-section',
+      start: 'top top',
+      end: '40% top',
+      scrub: true,
+    }
+  })
+
   const manifestoLines = gsap.utils.toArray('.manifesto-line')
   gsap.set(manifestoLines, { transformPerspective: 800, transformOrigin: '50% 100%' })
 
@@ -228,6 +322,7 @@ const initMotion = () => {
           { y: 0, opacity: 1, rotationX: 0, filter: 'blur(0px)', stagger: 0.2, ease: 'power3.out' }
       )
       .to(manifestoLines.slice(0, -1), { opacity: 0.12, stagger: 0.15, ease: 'none' }, '+=0.4')
+  manifestoST = manifestoTl.scrollTrigger ?? null
 
   gsap.utils.toArray('.feature-card').forEach((card: any, i) => {
     gsap.fromTo(card,
@@ -325,6 +420,38 @@ const initMotion = () => {
   requestAnimationFrame(() => ScrollTrigger.refresh())
 }
 
+// Geometry-based active-section detection: find the section straddling the
+// viewport midline. Works while sections are pinned (their rect stays put).
+const updateActiveSection = () => {
+  const mid = window.innerHeight * 0.5
+  for (let i = 0; i < sections.length; i++) {
+    const sec = sections[i]
+    if (!sec) continue
+    const el = document.getElementById(sec.id)
+    if (!el) continue
+    const r = el.getBoundingClientRect()
+    if (r.top <= mid && r.bottom > mid) {
+      activeSection.value = i
+      return
+    }
+  }
+}
+
+const scrollToSection = (id: string) => {
+  const el = document.getElementById(id)
+  if (!el) return
+
+  // The manifesto pins and reveals its text via scrub, so its top is "empty".
+  // Jump partway into its scroll range to land on the fully-revealed copy.
+  let target: number | HTMLElement = el
+  if (id === 'manifesto' && manifestoST) {
+    target = manifestoST.start + (manifestoST.end - manifestoST.start) * 0.5
+  }
+
+  if (lenis) lenis.scrollTo(target as any, { offset: 0, duration: 1.4 })
+  else el.scrollIntoView({ behavior: 'smooth' })
+}
+
 const magneticEl = ref<HTMLElement | null>(null)
 const onMagneticEnter = (e: MouseEvent) => {
   const el = magneticEl.value
@@ -403,23 +530,22 @@ watch(isAudioMuted, (muted) => {
   }
 })
 
-const loadAudioSecurely = (audioRef: any, path: string) => {
-  const xhr = new XMLHttpRequest()
-  xhr.open('GET', path, true)
-  xhr.responseType = 'arraybuffer' // Bulletproof IDM bypass
-  xhr.onload = function() {
-    if (this.status === 200) {
-      const blob = new Blob([this.response], { type: 'audio/wav' })
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        if (audioRef.value) {
-          audioRef.value.src = reader.result as string
-        }
-      }
-      reader.readAsDataURL(blob)
-    }
+// Object URLs are released on unmount.
+const objectUrls: string[] = []
+
+// Fetched as a blob (never as a media URL), so download managers like IDM
+// can't intercept it, and we skip the costly base64 conversion entirely.
+const loadAudioSecurely = async (audioRef: any, path: string): Promise<void> => {
+  try {
+    const res = await fetch(path, { cache: 'force-cache' })
+    if (!res.ok) return
+    const raw = await res.blob()
+    const url = URL.createObjectURL(new Blob([raw], { type: 'audio/wav' }))
+    objectUrls.push(url)
+    if (audioRef.value) audioRef.value.src = url
+  } catch {
+    /* network/decoding errors are non-fatal — the page works without audio */
   }
-  xhr.send()
 }
 
 const playAudio = (audioEl: HTMLAudioElement | null, volume: number = 0.2) => {
@@ -440,31 +566,27 @@ const toggleMute = () => {
 onMounted(async () => {
   await nextTick()
 
-  // Load ambient audio securely bypassing IDM using ArrayBuffer XHR
-  const xhr = new XMLHttpRequest()
-  xhr.open('GET', '/audio/ambient-loop.wav', true)
-  xhr.responseType = 'arraybuffer' // IDM ignores arraybuffer requests
-  xhr.onload = function() {
-    if (this.status === 200) {
-      const blob = new Blob([this.response], { type: 'audio/wav' })
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        if (ambientAudioRef.value) {
-          ambientAudioRef.value.src = reader.result as string
-          if (userInteracted.value && !ambientStarted) {
-            ambientStarted = true
-            ambientAudioRef.value.volume = 0.5
-            ambientAudioRef.value.muted = isAudioMuted.value
-            ambientAudioRef.value.play().catch(() => {})
-          }
+  // Load ambient audio as a blob (no media URL → invisible to IDM, no base64 bloat).
+  ;(async () => {
+    try {
+      const res = await fetch('/audio/ambient-loop.txt', { cache: 'force-cache' })
+      if (!res.ok) return
+      const raw = await res.blob()
+      const url = URL.createObjectURL(new Blob([raw], { type: 'audio/wav' }))
+      objectUrls.push(url)
+      if (ambientAudioRef.value) {
+        ambientAudioRef.value.src = url
+        if (userInteracted.value && !ambientStarted) {
+          ambientStarted = true
+          ambientAudioRef.value.volume = 0.5
+          ambientAudioRef.value.muted = isAudioMuted.value
+          ambientAudioRef.value.play().catch(() => {})
         }
       }
-      reader.readAsDataURL(blob)
-    }
-  }
-  xhr.send()
+    } catch { /* audio is optional */ }
+  })()
 
-  loadAudioSecurely(hoverAudioRef, '/audio/secondary-hover.wav')
+  loadAudioSecurely(hoverAudioRef, '/audio/secondary-hover.txt')
 
   // Initialize Ambient Audio specifically on the first interaction
   window.addEventListener('click', startAmbientAudio)
@@ -481,7 +603,12 @@ onMounted(async () => {
   })
 
   lenis = new Lenis({ duration: 1.2, smoothWheel: true, wheelMultiplier: 0.9 })
-  lenis.on('scroll', ScrollTrigger.update)
+  lenis.on('scroll', (e: any) => {
+    ScrollTrigger.update()
+    scrollVelocity = e?.velocity ?? 0
+    scrollProgress.value = e?.progress ?? 0
+    updateActiveSection()
+  })
   raf = (time: number) => lenis?.raf(time * 1000)
   gsap.ticker.add(raf)
   gsap.ticker.lagSmoothing(0)
@@ -491,6 +618,7 @@ onMounted(async () => {
   window.addEventListener('mousemove', (e) => {
     mouseX = e.clientX
     mouseY = e.clientY
+    coords.value = `${String(Math.round(e.clientX)).padStart(4, '0')} · ${String(Math.round(e.clientY)).padStart(4, '0')}`
     gsap.to(cursorRef.value, { x: e.clientX, y: e.clientY, duration: 0.18, ease: 'power2.out' })
     gsap.to(cursorDotRef.value, { x: e.clientX, y: e.clientY, duration: 0.06 })
     
@@ -511,6 +639,14 @@ onMounted(async () => {
     })
   })
 
+  const tick = () => {
+    const d = new Date()
+    systemTime.value =
+        `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`
+  }
+  tick()
+  clockTimer = setInterval(tick, 1000)
+
   runPreloader()
 
   window.addEventListener('resize', () => ScrollTrigger.refresh())
@@ -521,6 +657,8 @@ onBeforeUnmount(() => {
   if (raf) gsap.ticker.remove(raf)
   lenis?.destroy()
   if (animFrame) cancelAnimationFrame(animFrame)
+  if (clockTimer) clearInterval(clockTimer)
+  objectUrls.forEach(URL.revokeObjectURL)
   window.removeEventListener('click', startAmbientAudio)
 })
 
@@ -545,7 +683,7 @@ const features = [
 
 <template>
   <div
-      class="bg-[#040404] text-[#FAFAFA] min-h-screen overflow-x-hidden font-sans relative selection:bg-[#FF4A00]/30 selection:text-[#FF4A00]"
+      class="home-root bg-[#040404] text-[#FAFAFA] min-h-screen overflow-x-hidden font-sans relative selection:bg-[#FF4A00]/30 selection:text-[#FF4A00]"
       style="cursor: none;"
   >
     <audio ref="ambientAudioRef" loop style="display: none;"></audio>
@@ -572,18 +710,18 @@ const features = [
 
     <div
         ref="cursorRef"
-        class="fixed top-0 left-0 w-8 h-8 rounded-full border border-white/60 z-[9999] pointer-events-none mix-blend-difference"
+        class="custom-cursor fixed top-0 left-0 w-8 h-8 rounded-full border border-white/60 z-[9999] pointer-events-none mix-blend-difference"
         style="transform: translate(-50%, -50%)"
     />
     <div
         ref="cursorDotRef"
-        class="fixed top-0 left-0 w-1.5 h-1.5 rounded-full bg-white z-[9999] pointer-events-none"
+        class="custom-cursor fixed top-0 left-0 w-1.5 h-1.5 rounded-full bg-white z-[9999] pointer-events-none"
         style="transform: translate(-50%, -50%)"
     />
 
     <div
         ref="cursorTextRef"
-        class="fixed top-0 left-0 font-mono text-[9px] tracking-[0.2em] uppercase text-[#FF4A00] z-[9999] pointer-events-none mix-blend-difference whitespace-nowrap opacity-70"
+        class="custom-cursor fixed top-0 left-0 font-mono text-[9px] tracking-[0.2em] uppercase text-[#FF4A00] z-[9999] pointer-events-none mix-blend-difference whitespace-nowrap opacity-70"
         style="transform: translate(-1000px, -1000px);"
     >
       Click to enable audio
@@ -591,8 +729,60 @@ const features = [
 
     <canvas
         ref="canvasRef"
-        class="fixed inset-0 z-[2] pointer-events-none opacity-60 mix-blend-screen"
+        class="fixed inset-0 z-[2] pointer-events-none opacity-70 mix-blend-screen"
     />
+
+    <div
+        class="fixed inset-0 z-[3] pointer-events-none"
+        aria-hidden="true"
+        style="background: radial-gradient(ellipse 90% 80% at 50% 50%, transparent 50%, rgba(0,0,0,0.55) 100%);"
+    />
+
+    <div class="grain-overlay fixed inset-0 z-[400] pointer-events-none" aria-hidden="true" />
+
+    <div class="fixed top-0 left-0 right-0 h-[2px] z-[8500] pointer-events-none">
+      <div class="h-full bg-[#FF4A00] origin-left" :style="{ transform: `scaleX(${scrollProgress})` }" />
+    </div>
+
+    <div class="fixed inset-0 z-[150] pointer-events-none hidden md:block mix-blend-difference" aria-hidden="true">
+      <div class="absolute top-6 left-6 w-3 h-3 border-t border-l border-white/25" />
+      <div class="absolute top-6 right-6 w-3 h-3 border-t border-r border-white/25" />
+      <div class="absolute bottom-6 left-6 w-3 h-3 border-b border-l border-white/25" />
+      <div class="absolute bottom-6 right-6 w-3 h-3 border-b border-r border-white/25" />
+
+      <div class="absolute top-[26px] left-11 flex items-center gap-3 font-mono text-[9px] tracking-[0.25em] uppercase text-white/45">
+        <span class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-white system-pulse" />
+          SYS·ONLINE
+        </span>
+        <span class="w-px h-3 bg-white/20" />
+        <span class="tabular-nums">{{ systemTime }}</span>
+      </div>
+
+      <div class="absolute bottom-[22px] left-11 font-mono text-[9px] tracking-[0.25em] uppercase text-white/35 tabular-nums">
+        CRD {{ coords }}
+      </div>
+    </div>
+
+    <div class="fixed right-8 top-1/2 -translate-y-1/2 z-[150] hidden lg:flex flex-col items-end gap-3.5 mix-blend-difference">
+      <button
+          v-for="(sec, i) in sections"
+          :key="sec.id"
+          type="button"
+          @click="scrollToSection(sec.id)"
+          class="hover-target group flex items-center gap-2.5 pointer-events-auto"
+          :aria-label="`Jump to ${sec.label}`"
+      >
+        <span
+            class="font-mono text-[8px] tracking-[0.25em] uppercase transition-all duration-300 text-white"
+            :class="activeSection === i ? 'opacity-100' : 'opacity-30 group-hover:opacity-70'"
+        >{{ sec.label }}</span>
+        <span
+            class="h-px bg-white transition-all duration-300"
+            :class="activeSection === i ? 'w-7 opacity-100' : 'w-3 opacity-40 group-hover:w-5'"
+        />
+      </button>
+    </div>
 
     <HomeNav />
 
@@ -643,11 +833,29 @@ const features = [
           <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-white/3 blur-[80px]" />
         </div>
 
+        <div class="hero-frame absolute inset-x-0 top-1/2 -translate-y-1/2 px-6 md:px-12 z-[5] pointer-events-none">
+          <div class="hero-frame-inner max-w-[1500px] mx-auto flex items-center gap-5 opacity-0">
+            <span class="font-mono text-[9px] tracking-[0.35em] uppercase text-white/35 whitespace-nowrap">Fig. 00 — Wordmark</span>
+            <span class="relative h-px flex-1 bg-gradient-to-r from-white/5 via-white/20 to-white/5">
+              <span class="absolute left-1/4 -top-1.5 w-px h-3 bg-white/15" />
+              <span class="absolute left-1/2 -top-1.5 w-px h-3 bg-white/15" />
+              <span class="absolute left-3/4 -top-1.5 w-px h-3 bg-white/15" />
+            </span>
+            <span class="font-mono text-[9px] tracking-[0.35em] uppercase text-[#FF4A00]/60 whitespace-nowrap">Vue · Nuxt · TS</span>
+          </div>
+        </div>
+
         <div class="absolute bottom-[12vh] left-1/2 -translate-x-1/2 text-center w-full z-10 px-6 pointer-events-none">
           <div class="hero-meta-content flex flex-col items-center gap-4 w-full">
             <div class="hero-badge inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm">
               <span class="w-1.5 h-1.5 rounded-full bg-[#FF4A00] animate-pulse" />
               <span class="font-mono text-[9px] tracking-[0.4em] uppercase text-white/60">Vue · Nuxt · Tailwind</span>
+            </div>
+
+            <div class="flex items-center gap-3 font-mono text-[9px] tracking-[0.4em] uppercase text-white/25">
+              <span class="w-5 h-px bg-white/20" />
+              <span>00 / The Architecture of Systems</span>
+              <span class="w-5 h-px bg-white/20" />
             </div>
 
             <p class="font-serif italic text-white/40 text-lg md:text-2xl font-light">
@@ -750,7 +958,7 @@ const features = [
         </div>
       </section>
 
-      <section class="relative py-32 px-6 md:px-12 bg-[#040404]">
+      <section id="feature-section" class="relative py-32 px-6 md:px-12 bg-[#040404]">
         <div class="absolute inset-0 overflow-hidden pointer-events-none">
           <div class="absolute top-1/4 -left-32 w-[500px] h-[500px] rounded-full bg-[#FF4A00]/4 blur-[150px]" />
           <div class="absolute bottom-1/4 -right-32 w-[400px] h-[400px] rounded-full bg-white/3 blur-[120px]" />
@@ -878,7 +1086,7 @@ const features = [
         </div>
       </section>
 
-      <section class="relative py-32 px-6 md:px-12 bg-[#040404] overflow-hidden">
+      <section id="aesthetic-section" class="relative py-32 px-6 md:px-12 bg-[#040404] overflow-hidden">
         <div class="absolute inset-0 pointer-events-none">
           <div class="absolute top-0 left-1/3 w-[800px] h-[800px] rounded-full bg-[#FF4A00]/3 blur-[200px]" />
         </div>
@@ -963,7 +1171,7 @@ const features = [
         </div>
       </section>
 
-      <footer class="relative min-h-screen bg-[#020202] flex flex-col justify-between p-6 md:p-12 pb-[8vh] border-t border-white/5 overflow-hidden">
+      <footer id="footer-section" class="relative min-h-screen bg-[#020202] flex flex-col justify-between p-6 md:p-12 pb-[8vh] border-t border-white/5 overflow-hidden">
         <div class="absolute inset-0 pointer-events-none overflow-hidden">
           <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-px h-full bg-gradient-to-t from-[#FF4A00]/20 to-transparent" />
           <div class="absolute bottom-0 left-1/3 w-px h-3/4 bg-gradient-to-t from-[#FF4A00]/10 to-transparent rotate-6 origin-bottom" />
@@ -1123,6 +1331,66 @@ html.lenis, html.lenis body {
 
 .bp-line {
   will-change: stroke-dashoffset;
+}
+
+/* ── Film grain: kills banding in the big blurs, adds analog texture ───────── */
+.grain-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  opacity: 0.055;
+  mix-blend-mode: overlay;
+  animation: grainShift 0.7s steps(1) infinite;
+}
+
+@keyframes grainShift {
+  0%   { background-position: 0 0; }
+  10%  { background-position: -12% -8%; }
+  20%  { background-position: 8% -14%; }
+  30%  { background-position: -8% 12%; }
+  40%  { background-position: 14% 6%; }
+  50%  { background-position: -14% -10%; }
+  60%  { background-position: 10% 14%; }
+  70%  { background-position: -10% 8%; }
+  80%  { background-position: 12% -12%; }
+  90%  { background-position: -6% 10%; }
+  100% { background-position: 0 0; }
+}
+
+.system-pulse {
+  animation: systemPulse 2.4s ease-in-out infinite;
+}
+@keyframes systemPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+/* ── Keyboard accessibility ────────────────────────────────────────────────── */
+:focus:not(:focus-visible) { outline: none; }
+:focus-visible {
+  outline: 2px solid #FF4A00;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ── Restore native cursor where a custom one makes no sense ───────────────── */
+@media (hover: none), (pointer: coarse) {
+  .home-root { cursor: auto !important; }
+  .custom-cursor { display: none !important; }
+}
+
+/* ── Honour reduced-motion preference ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .grain-overlay,
+  .system-pulse {
+    animation: none;
+  }
+  .home-root { cursor: auto !important; }
+  .custom-cursor { display: none !important; }
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
 }
 
 @media (max-width: 768px) {

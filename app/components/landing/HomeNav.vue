@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import gsap from 'gsap'
 import EncryptedText from '~/components/ui/encrypted-text/EncryptedText.vue'
 
@@ -16,23 +16,21 @@ const secondaryAudioRef = ref<HTMLAudioElement | null>(null)
 const modalOpenAudioRef = ref<HTMLAudioElement | null>(null)
 const clickAudioRef = ref<HTMLAudioElement | null>(null)
 
-const loadAudioSecurely = (audioRef: any, path: string) => {
-  const xhr = new XMLHttpRequest()
-  xhr.open('GET', path, true)
-  xhr.responseType = 'arraybuffer' // Bulletproof IDM bypass
-  xhr.onload = function() {
-    if (this.status === 200) {
-      const blob = new Blob([this.response], { type: 'audio/wav' })
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        if (audioRef.value) {
-          audioRef.value.src = reader.result as string
-        }
-      }
-      reader.readAsDataURL(blob)
-    }
+const objectUrls: string[] = []
+
+// Fetched as a blob (not a media URL) so download managers like IDM can't grab
+// it, and we avoid the heavy base64 data-URL conversion.
+const loadAudioSecurely = async (audioRef: any, path: string): Promise<void> => {
+  try {
+    const res = await fetch(path, { cache: 'force-cache' })
+    if (!res.ok) return
+    const raw = await res.blob()
+    const url = URL.createObjectURL(new Blob([raw], { type: 'audio/wav' }))
+    objectUrls.push(url)
+    if (audioRef.value) audioRef.value.src = url
+  } catch {
+    /* audio is optional */
   }
-  xhr.send()
 }
 
 const playAudio = (audioEl: HTMLAudioElement | null, volume: number = 0.2) => {
@@ -50,10 +48,14 @@ const navLinks = [
 ]
 
 onMounted(() => {
-  loadAudioSecurely(hoverAudioRef, '/audio/hover.wav')
-  loadAudioSecurely(secondaryAudioRef, '/audio/secondary-hover.wav')
-  loadAudioSecurely(modalOpenAudioRef, '/audio/modal-open.wav')
-  loadAudioSecurely(clickAudioRef, '/audio/click.wav')
+  loadAudioSecurely(hoverAudioRef, '/audio/hover.txt')
+  loadAudioSecurely(secondaryAudioRef, '/audio/secondary-hover.txt')
+  loadAudioSecurely(modalOpenAudioRef, '/audio/modal-open.txt')
+  loadAudioSecurely(clickAudioRef, '/audio/click.txt')
+})
+
+onBeforeUnmount(() => {
+  objectUrls.forEach(URL.revokeObjectURL)
 })
 
 const toggleMenu = () => {
