@@ -18,6 +18,12 @@ logs
 .fleet
 .idea
 
+# Local audio source masters (uncompressed originals, not served)
+audio-src/
+
+# Local QA screenshots
+.qa-shots/
+
 # Local env files
 .env
 .env.*

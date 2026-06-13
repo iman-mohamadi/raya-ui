@@ -5,6 +5,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import HomeNav from "~/components/landing/HomeNav.vue";
 import WireframeThumbnail from "~/components/WireframeThumbnail.vue";
+import RegistryLivePreview from "~/components/RegistryLivePreview.vue";
 import EncryptedText from "~/components/ui/encrypted-text/EncryptedText.vue";
 
 definePageMeta({ layout: false })
@@ -12,7 +13,19 @@ definePageMeta({ layout: false })
 useSeoMeta({
   title: 'Raya UI — The Architecture of Systems',
   description: 'Beautifully engineered, high-end components built with Vue & Nuxt. Copy the code. Own the architecture.',
+  ogTitle: 'Raya UI — The Architecture of Systems',
+  ogDescription: 'Beautifully engineered, high-end components built with Vue & Nuxt. Copy the code. Own the architecture.',
+  ogType: 'website',
+  ogUrl: 'https://raya-ui.com',
   ogImage: 'https://raya-ui.com/og-image.png',
+  ogImageWidth: 1200,
+  ogImageHeight: 630,
+  ogImageType: 'image/png',
+  ogImageAlt: 'Raya UI — The Architecture of Systems',
+  twitterCard: 'summary_large_image',
+  twitterTitle: 'Raya UI — The Architecture of Systems',
+  twitterDescription: 'Beautifully engineered, high-end components built with Vue & Nuxt. Copy the code. Own the architecture.',
+  twitterImage: 'https://raya-ui.com/og-image.png',
 })
 
 gsap.registerPlugin(ScrollTrigger)
@@ -341,8 +354,9 @@ const initMotion = () => {
     )
   })
 
-  const panels = gsap.utils.toArray('.swap-panel')
-  if (panels.length >= 3) {
+  const panels = gsap.utils.toArray<HTMLElement>('.swap-panel')
+  const [p0, p1, p2] = panels
+  if (p0 && p1 && p2) {
     const swapTl = gsap.timeline({
       scrollTrigger: {
         trigger: '#swap-section',
@@ -355,9 +369,18 @@ const initMotion = () => {
         invalidateOnRefresh: true,
       }
     })
+    const h0 = p0.querySelector('h2')
+    const h1 = p1.querySelector('h2')
+    const h2 = p2.querySelector('h2')
+    // Each panel clips up into view while its headline counter-rises and the
+    // outgoing one drifts — turning a flat swap into a layered, kinetic reveal.
     swapTl
-        .fromTo(panels[1], { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', ease: 'none' })
-        .fromTo(panels[2], { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', ease: 'none' })
+        .fromTo(p1, { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', ease: 'none' })
+    if (h1) swapTl.fromTo(h1, { yPercent: 60, opacity: 0.4 }, { yPercent: 0, opacity: 1, ease: 'power2.out' }, '<')
+    if (h0) swapTl.to(h0, { yPercent: -25, ease: 'none' }, '<')
+    swapTl.fromTo(p2, { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', ease: 'none' })
+    if (h2) swapTl.fromTo(h2, { yPercent: 60, opacity: 0.4 }, { yPercent: 0, opacity: 1, ease: 'power2.out' }, '<')
+    if (h1) swapTl.to(h1, { yPercent: -25, ease: 'none' }, '<')
   }
 
   gsap.to('.marquee-track', {
@@ -383,8 +406,14 @@ const initMotion = () => {
     }
   })
 
-  const hTrack = document.querySelector('.h-track') as HTMLElement
-  if (hTrack) {
+  // Desktop only: pin the Registry and translate it horizontally on scroll.
+  // On touch/small screens we fall back to a native horizontal swipe strip
+  // (see the media query in <style>), which avoids the well-known pinned-
+  // horizontal jank on mobile. gsap.matchMedia auto-reverts on resize.
+  const mm = gsap.matchMedia()
+  mm.add('(min-width: 769px)', () => {
+    const hTrack = document.querySelector('.h-track') as HTMLElement | null
+    if (!hTrack) return
     const dist = hTrack.scrollWidth - window.innerWidth + 200
     gsap.to(hTrack, {
       x: -dist,
@@ -400,7 +429,7 @@ const initMotion = () => {
         invalidateOnRefresh: true,
       }
     })
-  }
+  })
 
   gsap.utils.toArray('.bp-line').forEach((el: any) => {
     const len = el.getTotalLength ? el.getTotalLength() : 200
@@ -572,7 +601,7 @@ onMounted(async () => {
       const res = await fetch('/audio/ambient-loop.txt', { cache: 'force-cache' })
       if (!res.ok) return
       const raw = await res.blob()
-      const url = URL.createObjectURL(new Blob([raw], { type: 'audio/wav' }))
+      const url = URL.createObjectURL(new Blob([raw], { type: 'audio/mpeg' }))
       objectUrls.push(url)
       if (ambientAudioRef.value) {
         ambientAudioRef.value.src = url
@@ -938,7 +967,7 @@ const features = [
         <div class="swap-panel absolute inset-0 bg-[#F5F5F0] text-[#040404] flex items-center justify-center p-6" style="clip-path: inset(100% 0% 0% 0%)">
           <div class="text-center max-w-4xl relative z-10">
             <h2 class="text-[clamp(38px,8vw,120px)] font-black uppercase tracking-tighter leading-none mb-6">
-              Own <span class="font-serif italic text-[#FF4A00] lowercase font-light">the</span> Physics.
+              Own <span class="font-serif italic text-[#FF4A00] lowercase font-light">the</span> <br /> Physics.
             </h2>
             <p class="text-black/35 font-mono text-xs md:text-sm uppercase tracking-[0.2em]">
               GSAP-powered motion architecture.
@@ -949,7 +978,7 @@ const features = [
         <div class="swap-panel absolute inset-0 bg-[#FF4A00] text-black flex items-center justify-center p-6" style="clip-path: inset(100% 0% 0% 0%)">
           <div class="text-center max-w-4xl">
             <h2 class="text-[clamp(38px,8vw,120px)] font-black uppercase tracking-tighter leading-none mb-6">
-              Build <span class="font-serif italic text-black/30 lowercase font-light">the</span> Unseen.
+              Build <span class="font-serif italic text-black/30 lowercase font-light">the</span> <br /> Unseen.
             </h2>
             <p class="text-black/50 font-mono text-xs md:text-sm uppercase tracking-[0.2em] font-bold">
               WAI-ARIA bedrock. Screen-reader native.
@@ -981,8 +1010,8 @@ const features = [
                 v-for="(feat, i) in features"
                 :key="feat.num"
                 class="feature-card relative bg-[#040404] p-10 md:p-14 group overflow-hidden hover-target"
-                @mousemove="(e) => handleTilt(e, $event.currentTarget as HTMLElement)"
-                @mouseleave="(e) => resetTilt($event.currentTarget as HTMLElement)"
+                @mousemove="handleTilt($event, $event.currentTarget as HTMLElement)"
+                @mouseleave="resetTilt($event.currentTarget as HTMLElement)"
             >
               <div class="absolute inset-0 bg-gradient-to-br from-[#FF4A00]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
               <span class="font-mono text-[10px] tracking-[0.4em] text-white/15 block mb-6">{{ feat.num }}</span>
@@ -1055,8 +1084,8 @@ const features = [
                      :style="`color: ${comp.color}; opacity: 0.7`">
                   {{ comp.tag }}
                 </div>
-                <div class="relative h-24 w-full flex items-center justify-start mb-8 opacity-50 group-hover:opacity-100 transition-all duration-500 pointer-events-none transform-gpu group-hover:translate-x-2" :style="`color: ${comp.color}`">
-                  <WireframeThumbnail :component="comp.name" />
+                <div class="relative h-24 w-full flex items-center justify-start mb-8 opacity-60 group-hover:opacity-100 transition-all duration-500 transform-gpu group-hover:translate-x-2" :style="`color: ${comp.color}`">
+                  <RegistryLivePreview :component="comp.name" :color="comp.color" />
                 </div>
               </div>
               <div>
@@ -1277,7 +1306,7 @@ const features = [
 </template>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,300;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Playfair+Display:ital,wght@1,300;1,400&display=swap');
 
 html, body {
   overflow-x: hidden;
@@ -1288,6 +1317,22 @@ body { margin: 0; }
 
 .font-serif {
   font-family: 'Playfair Display', Georgia, serif;
+}
+
+/* ── Display voice: a distinctive grotesque for the headline system, paired
+   with the mono HUD and Playfair italic accents. Serif accent words keep
+   their own face (excluded below). ──────────────────────────────────────── */
+.font-display,
+#hero-section h1,
+.manifesto-line:not(.font-serif),
+#swap-section h2,
+#feature-section h2,
+#aesthetic-section h2,
+#horizontal-worlds h2,
+#footer-section h2,
+.marquee-text {
+  font-family: 'Bricolage Grotesque', 'Geist', sans-serif;
+  font-weight: 800;
 }
 
 html.lenis, html.lenis body {
@@ -1381,8 +1426,15 @@ html.lenis, html.lenis body {
 /* ── Honour reduced-motion preference ──────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .grain-overlay,
-  .system-pulse {
-    animation: none;
+  .system-pulse,
+  .animate-ping,
+  .animate-pulse {
+    animation: none !important;
+  }
+  /* Neutralise the decorative scroll-hint line. */
+  #hero-section [style*="scrollLine"] {
+    animation: none !important;
+    opacity: 0;
   }
   .home-root { cursor: auto !important; }
   .custom-cursor { display: none !important; }
@@ -1394,13 +1446,20 @@ html.lenis, html.lenis body {
 }
 
 @media (max-width: 768px) {
-  .h-track {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
+  /* Native horizontal swipe strip for the Registry (no GSAP pin on mobile). */
   #horizontal-worlds {
     overflow-x: auto;
     overflow-y: hidden;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    scroll-padding-left: 1.5rem;
+  }
+  #horizontal-worlds .h-track {
+    width: max-content;
+    padding-right: 1.5rem;
+  }
+  #horizontal-worlds .h-track > * {
+    scroll-snap-align: start;
   }
 }
 </style>
