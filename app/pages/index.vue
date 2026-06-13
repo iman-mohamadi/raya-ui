@@ -190,18 +190,6 @@ const initMotion = () => {
     onLeaveBack: () => gsap.to(navRef.value, { backdropFilter: 'blur(16px)', backgroundColor: 'rgba(4,4,4,0.2)', duration: 0.5 }),
   })
 
-  // RAYA word logo: fixed centered → shrinks to nav
-  gsap.set('.raya-logo-text', {
-    position: 'fixed',
-    top: '50%',
-    left: '50%',
-    xPercent: -50,
-    yPercent: -50,
-    scale: 1,
-    transformOrigin: 'center center',
-    willChange: 'transform',
-  })
-
   gsap.to('.raya-logo-text', {
     scale: 0.10,
     top: '0%',
@@ -406,6 +394,18 @@ const resetTilt = (el: HTMLElement) => {
 // ─────────────────────────────────────────────────────────────────────────────
 onMounted(async () => {
   await nextTick()
+
+  // NEW: Instantly lock the logo to the center before the preloader starts
+  gsap.set('.raya-logo-text', {
+    position: 'fixed',
+    top: '50%',
+    left: '50%',
+    xPercent: -50,
+    yPercent: -50,
+    scale: 1,
+    transformOrigin: 'center center',
+    willChange: 'transform',
+  })
 
   // 1. Setup Lenis smooth scroll (keep stopped during preloader)
   lenis = new Lenis({ duration: 1.2, smoothWheel: true, wheelMultiplier: 0.9 })
