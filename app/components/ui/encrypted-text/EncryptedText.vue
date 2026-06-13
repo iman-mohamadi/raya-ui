@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, watch, onUnmounted, computed } from 'vue'
 import { useElementVisibility } from '@vueuse/core'
-import { cn } from '@/lib/utils'
+import { cn } from '~/lib/utils'
 
 const props = withDefaults(defineProps<{
   text: string
+  trigger?: 'visible' | 'hover' | 'manual'
   revealDelayMs?: number
   charset?: string
   flipDelayMs?: number
@@ -12,9 +13,10 @@ const props = withDefaults(defineProps<{
   encryptedClass?: string
   revealedClass?: string
 }>(), {
+  trigger: 'visible',
   revealDelayMs: 50,
-  charset: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-={}[];:,.<>/?",
-  flipDelayMs: 50
+  charset: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", // Restrict to uniform-width characters
+  flipDelayMs: 40
 })
 
 const containerRef = ref<HTMLElement | null>(null)
@@ -24,22 +26,19 @@ const hasStarted = ref(false)
 const revealCount = ref(0)
 const scrambleChars = ref<string[]>([])
 let animationFrameId: number | null = null
+let isAnimating = ref(false)
 
-// Helper to generate a random char
 function generateRandomCharacter(charset: string): string {
-  const index = Math.floor(Math.random() * charset.length)
-  return charset.charAt(index)
+  return charset.charAt(Math.floor(Math.random() * charset.length))
 }
 
-// Helper to create initial gibberish preserving spaces
 function generateGibberish(original: string, charset: string): string[] {
-  return original.split('').map(char =>
-      char === ' ' ? ' ' : generateRandomCharacter(charset)
-  )
+  return original.split('').map(char => char === ' ' ? ' ' : generateRandomCharacter(charset))
 }
 
 const startAnimation = () => {
-  // Initialize state
+  if (isAnimating.value) return
+  isAnimating.value = true
   revealCount.value = 0
   scrambleChars.value = generateGibberish(props.text, props.charset)
 
@@ -49,47 +48,45 @@ const startAnimation = () => {
   const update = (now: number) => {
     const elapsed = now - startTime
     const totalLength = props.text.length
+    revealCount.value = Math.min(totalLength, Math.floor(elapsed / Math.max(1, props.revealDelayMs)))
 
-    // 1. Calculate how many characters should be revealed by now
-    const currentReveal = Math.floor(elapsed / Math.max(1, props.revealDelayMs))
-    revealCount.value = Math.min(totalLength, currentReveal)
-
-    // 2. Check if animation is complete
     if (revealCount.value >= totalLength) {
+      isAnimating.value = false
       return
     }
 
-    // 3. Flip unrevealed characters (Gibberish effect)
     if (now - lastFlipTime >= props.flipDelayMs) {
-      // We map over the array to create a new one (triggering reactivity)
-      // Only randomize characters that haven't been revealed yet
       scrambleChars.value = scrambleChars.value.map((char, index) => {
-        if (index < revealCount.value) return props.text[index] // Already revealed (just safety)
-        if (props.text[index] === ' ') return ' ' // Preserve spaces
+        if (index < revealCount.value) return props.text[index]
+        if (props.text[index] === ' ') return ' '
         return generateRandomCharacter(props.charset)
       })
       lastFlipTime = now
     }
-
     animationFrameId = requestAnimationFrame(update)
   }
-
   animationFrameId = requestAnimationFrame(update)
 }
 
-// Watch for visibility to start (once: true behavior)
 watch(isVisible, (visible) => {
-  if (visible && !hasStarted.value) {
+  if (props.trigger === 'visible' && visible && !hasStarted.value) {
     hasStarted.value = true
     startAnimation()
   }
 })
 
+const handleHover = () => {
+  if (props.trigger === 'hover') {
+    startAnimation()
+  }
+}
+
 onUnmounted(() => {
   if (animationFrameId !== null) cancelAnimationFrame(animationFrameId)
 })
 
-// Prepare the display characters for the template
+defineExpose({ start: startAnimation })
+
 const characters = computed(() => {
   return props.text.split('').map((char, index) => {
     const isRevealed = index < revealCount.value
@@ -104,14 +101,19 @@ const characters = computed(() => {
 <template>
   <span
       ref="containerRef"
-      :class="cn('inline-block whitespace-pre-wrap', props.class)"
+      :class="cn('relative inline-flex', props.class)"
+      @mouseenter="handleHover"
       :aria-label="text"
       role="text"
   >
-    <span
-        v-for="(item, index) in characters"
-        :key="index"
-        :class="cn(item.isRevealed ? revealedClass : encryptedClass)"
-    >{{ item.char }}</span>
+    <span class="invisible whitespace-pre pointer-events-none select-none">{{ text }}</span>
+
+    <span class="absolute inset-0 flex whitespace-pre">
+      <span
+          v-for="(item, index) in characters"
+          :key="index"
+          :class="cn(item.isRevealed ? revealedClass : encryptedClass)"
+      >{{ item.char }}</span>
+    </span>
   </span>
 </template>
