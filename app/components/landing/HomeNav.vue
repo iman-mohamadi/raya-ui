@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted } from 'vue'
 import gsap from 'gsap'
 import EncryptedText from '~/components/ui/encrypted-text/EncryptedText.vue'
 
@@ -8,77 +8,39 @@ const isMenuOpen = ref(false)
 const menuBtnRef = ref<HTMLButtonElement | null>(null)
 const linkRefs = ref<InstanceType<typeof EncryptedText>[]>([])
 
-// ─── UI AUDIO ENGINE (Local interaction sounds only) ─────────────────────────
-let ctx: AudioContext | null = null
+const isAudioMuted = useState('isAudioMuted', () => false)
 
-const ac = () => {
-  if (!ctx) ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
-  return ctx
+// ─── AUDIO ENGINE (HTML Audio Element Refs for reliability) ──────────────────
+const hoverAudioRef = ref<HTMLAudioElement | null>(null)
+const secondaryAudioRef = ref<HTMLAudioElement | null>(null)
+const modalOpenAudioRef = ref<HTMLAudioElement | null>(null)
+const clickAudioRef = ref<HTMLAudioElement | null>(null)
+
+const loadAudioSecurely = (audioRef: any, path: string) => {
+  const xhr = new XMLHttpRequest()
+  xhr.open('GET', path, true)
+  xhr.responseType = 'arraybuffer' // Bulletproof IDM bypass
+  xhr.onload = function() {
+    if (this.status === 200) {
+      const blob = new Blob([this.response], { type: 'audio/wav' })
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        if (audioRef.value) {
+          audioRef.value.src = reader.result as string
+        }
+      }
+      reader.readAsDataURL(blob)
+    }
+  }
+  xhr.send()
 }
 
-const getMaster = () => {
-  const c = ac()
-  const comp = c.createDynamicsCompressor()
-  comp.threshold.value = -12
-  comp.connect(c.destination)
-  return comp
-}
-
-const playBip = () => {
-  const c = ac()
-  const m = getMaster()
-  const now = c.currentTime
-  const osc = c.createOscillator()
-  const g = c.createGain()
-  osc.connect(g); g.connect(m)
-
-  osc.type = 'sine'
-  osc.frequency.setValueAtTime(1200, now)
-  osc.frequency.exponentialRampToValueAtTime(1400, now + 0.04)
-
-  g.gain.setValueAtTime(0, now)
-  g.gain.linearRampToValueAtTime(0.12, now + 0.005)
-  g.gain.exponentialRampToValueAtTime(0.0001, now + 0.05)
-
-  osc.start(now); osc.stop(now + 0.06)
-}
-
-const playMenuOpenWhoosh = () => {
-  const c = ac()
-  const m = getMaster()
-  const now = c.currentTime
-
-  const osc = c.createOscillator()
-  const g = c.createGain()
-  osc.connect(g); g.connect(m)
-
-  osc.type = 'triangle'
-  osc.frequency.setValueAtTime(40, now)
-  osc.frequency.exponentialRampToValueAtTime(200, now + 0.3)
-
-  g.gain.setValueAtTime(0, now)
-  g.gain.linearRampToValueAtTime(0.15, now + 0.1)
-  g.gain.exponentialRampToValueAtTime(0.0001, now + 0.4)
-
-  osc.start(now); osc.stop(now + 0.45)
-}
-
-const playMenuClose = () => {
-  const c = ac()
-  const m = getMaster()
-  const now = c.currentTime
-  const thud = c.createOscillator()
-  const tg = c.createGain()
-  thud.connect(tg); tg.connect(m)
-
-  thud.type = 'sine'
-  thud.frequency.setValueAtTime(150, now)
-  thud.frequency.exponentialRampToValueAtTime(30, now + 0.15)
-
-  tg.gain.setValueAtTime(0.2, now)
-  tg.gain.exponentialRampToValueAtTime(0.0001, now + 0.2)
-
-  thud.start(now); thud.stop(now + 0.25)
+const playAudio = (audioEl: HTMLAudioElement | null, volume: number = 0.2) => {
+  if (audioEl && audioEl.src && !isAudioMuted.value) {
+    audioEl.volume = volume
+    audioEl.currentTime = 0
+    audioEl.play().catch(() => {})
+  }
 }
 
 const navLinks = [
@@ -87,15 +49,40 @@ const navLinks = [
   { name: 'GITHUB', href: 'https://github.com/iman-mohamadi/raya-ui', external: true }
 ]
 
+onMounted(() => {
+  loadAudioSecurely(hoverAudioRef, '/audio/hover.wav')
+  loadAudioSecurely(secondaryAudioRef, '/audio/secondary-hover.wav')
+  loadAudioSecurely(modalOpenAudioRef, '/audio/modal-open.wav')
+  loadAudioSecurely(clickAudioRef, '/audio/click.wav')
+})
+
 const toggleMenu = () => {
+  playAudio(clickAudioRef.value, 0.3)
+
   isMenuOpen.value = !isMenuOpen.value
-  // We ping the context in case it was suspended
-  ac().resume()
+
+  const btnRect = menuBtnRef.value?.getBoundingClientRect()
+  const originX = btnRect ? btnRect.left + btnRect.width / 2 : window.innerWidth - 64
+  const originY = btnRect ? btnRect.top + btnRect.height / 2 : 64
+  
+  // Calculate the maximum pixel radius needed to cover the entire screen from the button's origin
+  const maxRadius = Math.hypot(
+    Math.max(originX, window.innerWidth - originX),
+    Math.max(originY, window.innerHeight - originY)
+  )
+
+  const startClipPath = `circle(0px at ${originX}px ${originY}px)`
+  const endClipPath = `circle(${Math.ceil(maxRadius) + 30}px at ${originX}px ${originY}px)`
 
   if (isMenuOpen.value) {
-    playMenuOpenWhoosh()
-    gsap.set(menuRef.value, { display: 'flex' })
-    gsap.to(menuRef.value, { clipPath: 'circle(170% at 94% 4%)', duration: 1.2, ease: 'expo.inOut' })
+    // Play modal open sound
+    // Give it a 50ms buffer to ensure it doesn't overlap exactly with click.wav
+    setTimeout(() => {
+      playAudio(modalOpenAudioRef.value, 0.3)
+    }, 50)
+
+    gsap.set(menuRef.value, { display: 'flex', clipPath: startClipPath })
+    gsap.to(menuRef.value, { clipPath: endClipPath, duration: 1.2, ease: 'expo.inOut' })
 
     gsap.utils.toArray('.menu-item-wrap').forEach((el: any, i) => {
       gsap.fromTo(el,
@@ -116,38 +103,38 @@ const toggleMenu = () => {
     )
 
   } else {
-    playMenuClose()
     gsap.to('.menu-item-wrap', { y: -40, opacity: 0, skewX: '-3deg', stagger: 0.05, duration: 0.3, ease: 'power2.in' })
     gsap.to('.menu-meta-line', { opacity: 0, duration: 0.2 })
     gsap.to(menuRef.value, {
-      clipPath: 'circle(0% at 94% 4%)',
+      clipPath: startClipPath,
       duration: 1.0, ease: 'expo.inOut', delay: 0.12,
       onComplete: () => gsap.set(menuRef.value, { display: 'none' })
     })
   }
 }
-
-const onMenuBtnEnter = () => {
-  playBip()
-}
-
-onBeforeUnmount(() => {
-  if (ctx) ctx.close()
-})
 </script>
 
 <template>
+  <audio ref="hoverAudioRef" style="display: none;"></audio>
+  <audio ref="secondaryAudioRef" style="display: none;"></audio>
+  <audio ref="modalOpenAudioRef" style="display: none;"></audio>
+  <audio ref="clickAudioRef" style="display: none;"></audio>
+
   <nav class="fixed top-0 left-0 right-0 z-[8000] px-8 py-8 flex justify-between items-center pointer-events-none">
     <span />
     <button
         ref="menuBtnRef"
         @click="toggleMenu"
-        @mouseenter="onMenuBtnEnter"
-        class="pointer-events-auto relative w-14 h-14 flex flex-col items-center justify-center gap-[7px] group mix-blend-difference"
+        @mouseenter="playAudio(hoverAudioRef, 0.1)"
+        class="pointer-events-auto relative w-14 h-14 flex items-center justify-center group mix-blend-difference"
     >
-      <span class="absolute inset-0 rounded-full border border-white/0 group-hover:border-white/30 group-hover:scale-125 transition-all duration-500 ease-out" />
-      <div class="w-8 h-[1.5px] bg-white transition-all duration-500 origin-center" :class="isMenuOpen ? 'rotate-45 translate-y-[4.25px]' : ''" />
-      <div class="h-[1.5px] bg-white transition-all duration-500 origin-right" :class="isMenuOpen ? 'w-8 -rotate-45 -translate-y-[4.25px]' : 'w-5 self-end'" />
+      <span class="absolute inset-0 rounded-full border border-white/0 group-hover:border-white/30 group-hover:scale-110 transition-all duration-500 ease-out" />
+      <div class="relative w-8 h-[14px]">
+        <div class="absolute right-0 h-[1.5px] bg-white transition-all duration-500"
+             :class="isMenuOpen ? 'w-8 top-1/2 -translate-y-1/2 rotate-45' : 'w-8 top-0'" />
+        <div class="absolute right-0 h-[1.5px] bg-white transition-all duration-500"
+             :class="isMenuOpen ? 'w-8 top-1/2 -translate-y-1/2 -rotate-45' : 'w-5 bottom-0 group-hover:w-8'" />
+      </div>
     </button>
   </nav>
 
@@ -155,7 +142,7 @@ onBeforeUnmount(() => {
     <div
         ref="menuRef"
         class="fixed inset-0 z-[7500] hidden items-center justify-center overflow-hidden"
-        :style="{ background: '#FF4A00', clipPath: 'circle(0% at 94% 4%)' }"
+        :style="{ background: '#FF4A00', clipPath: 'circle(0px at 94% 4%)' }"
     >
       <div class="absolute inset-0 pointer-events-none opacity-[0.04]" style="background: repeating-linear-gradient(0deg,#000 0px,#000 1px,transparent 1px,transparent 3px)" />
 
@@ -171,7 +158,7 @@ onBeforeUnmount(() => {
                 :href="link.external ? link.href : undefined"
                 :to="link.external ? undefined : link.href"
                 :target="link.external ? '_blank' : undefined"
-                @mouseenter="playBip"
+                @mouseenter="playAudio(secondaryAudioRef, 0.1)"
                 class="group relative flex items-baseline gap-5 py-1 cursor-pointer"
             >
               <span class="font-mono text-[12px] tracking-widest text-black/30 mb-1 shrink-0 tabular-nums">

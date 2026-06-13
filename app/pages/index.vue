@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import Lenis from 'lenis'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import HomeNav from "~/components/landing/HomeNav.vue";
 import WireframeThumbnail from "~/components/WireframeThumbnail.vue";
+import EncryptedText from "~/components/ui/encrypted-text/EncryptedText.vue";
 
 definePageMeta({ layout: false })
 
@@ -21,6 +22,7 @@ gsap.registerPlugin(ScrollTrigger)
 // ─────────────────────────────────────────────────────────────────────────────
 const cursorRef = ref<HTMLDivElement | null>(null)
 const cursorDotRef = ref<HTMLDivElement | null>(null)
+const cursorTextRef = ref<HTMLDivElement | null>(null)
 const navRef = ref<HTMLElement | null>(null)
 const heroRef = ref<HTMLElement | null>(null)
 const canvasRef = ref<HTMLCanvasElement | null>(null)
@@ -43,7 +45,7 @@ class Particle {
   constructor(w: number, h: number) {
     this.x = Math.random() * w
     this.y = Math.random() * h
-    this.vx = (Math.random() - 0.5) * 0.8 // Increased speed slightly
+    this.vx = (Math.random() - 0.5) * 0.8
     this.vy = (Math.random() - 0.5) * 0.8
     this.size = Math.random() * 1.5 + 0.5
     this.opacity = Math.random() * 0.6 + 0.2
@@ -53,19 +55,16 @@ class Particle {
     const dx = mx - this.x
     const dy = my - this.y
     const dist = Math.sqrt(dx * dx + dy * dy)
-    // Magnetic repel from mouse
     if (dist < 150) {
       const force = (150 - dist) / 150 * 0.02
       this.vx -= dx * force
       this.vy -= dy * force
     }
-    // Fluid drag
     this.vx *= 0.98
     this.vy *= 0.98
     this.x += this.vx
     this.y += this.vy
 
-    // Wrap around screen
     if (this.x < 0) this.x = w
     if (this.x > w) this.x = 0
     if (this.y < 0) this.y = h
@@ -97,11 +96,9 @@ const initCanvas = () => {
   const draw = () => {
     if (!canvas || !ctx) return
 
-    // AWARD WINNING TRICK: Use rgba clear for light trails instead of hard clearRect
     ctx.fillStyle = 'rgba(4, 4, 4, 0.2)'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-    // Draw connection lines
     for (let i = 0; i < particles.length; i++) {
       for (let j = i + 1; j < particles.length; j++) {
         const dx = particles[i].x - particles[j].x
@@ -118,7 +115,6 @@ const initCanvas = () => {
       }
     }
 
-    // Draw particles
     particles.forEach(p => {
       p.update(canvas.width, canvas.height, mouseX, mouseY)
       ctx.beginPath()
@@ -138,18 +134,16 @@ const initCanvas = () => {
 // SOTD PRELOADER SEQUENCE
 // ─────────────────────────────────────────────────────────────────────────────
 const runPreloader = () => {
-  // Lock scroll immediately
   if (lenis) lenis.stop()
 
   const tl = gsap.timeline({
     onComplete: () => {
       isLoaded.value = true
-      if (lenis) lenis.start() // Unlock scroll
-      initMotion() // Start normal page animations
+      if (lenis) lenis.start()
+      initMotion()
     }
   })
 
-  // 1. Simulate data fetching / system boot
   tl.to({ val: 0 }, {
     val: 100,
     duration: 2.5,
@@ -159,14 +153,10 @@ const runPreloader = () => {
     }
   })
 
-  // 2. Glitch out text
   tl.to('.preloader-text', { opacity: 0, scale: 1.1, filter: 'blur(10px)', duration: 0.4, ease: 'power2.in' })
-
-  // 3. Physically split the screen apart
   tl.to(preloaderTop.value, { yPercent: -100, duration: 1.2, ease: 'expo.inOut' }, 'split')
   tl.to(preloaderBottom.value, { yPercent: 100, duration: 1.2, ease: 'expo.inOut' }, 'split')
 
-  // 4. Hero content flies in from the void
   tl.fromTo('.raya-logo-text',
       { scale: 0.8, opacity: 0, filter: 'blur(20px)' },
       { scale: 1, opacity: 1, filter: 'blur(0px)', duration: 1.5, ease: 'expo.out' }, 'split+=0.4')
@@ -175,14 +165,12 @@ const runPreloader = () => {
   tl.fromTo('.hero-meta-content', { opacity: 0, y: 30, filter: 'blur(8px)' }, { opacity: 1, y: 0, filter: 'blur(0px)', duration: 1, ease: 'power3.out' }, 'split+=0.9')
 }
 
-
 // ─────────────────────────────────────────────────────────────────────────────
 // GSAP SCROLL ANIMATIONS
 // ─────────────────────────────────────────────────────────────────────────────
 const initMotion = () => {
   ScrollTrigger.getAll().forEach(t => t.kill())
 
-  // NAV shrink on scroll
   ScrollTrigger.create({
     start: 'top -80',
     end: 99999,
@@ -206,7 +194,6 @@ const initMotion = () => {
     }
   })
 
-  // Hero subtitles fade on scroll
   gsap.to('.hero-meta-content', {
     opacity: 0,
     y: -40,
@@ -220,7 +207,6 @@ const initMotion = () => {
     }
   })
 
-  // 3D KINETIC TYPOGRAPHY (Manifesto)
   const manifestoLines = gsap.utils.toArray('.manifesto-line')
   gsap.set(manifestoLines, { transformPerspective: 800, transformOrigin: '50% 100%' })
 
@@ -243,7 +229,6 @@ const initMotion = () => {
       )
       .to(manifestoLines.slice(0, -1), { opacity: 0.12, stagger: 0.15, ease: 'none' }, '+=0.4')
 
-  // FEATURES cards stagger reveal
   gsap.utils.toArray('.feature-card').forEach((card: any, i) => {
     gsap.fromTo(card,
         { opacity: 0, y: 60, scale: 0.95 },
@@ -261,7 +246,6 @@ const initMotion = () => {
     )
   })
 
-  // SWAP panels (three full-screen overlays)
   const panels = gsap.utils.toArray('.swap-panel')
   if (panels.length >= 3) {
     const swapTl = gsap.timeline({
@@ -281,7 +265,6 @@ const initMotion = () => {
         .fromTo(panels[2], { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', ease: 'none' })
   }
 
-  // MARQUEE scroll parallax + velocity skew
   gsap.to('.marquee-track', {
     xPercent: -35,
     ease: 'none',
@@ -305,7 +288,6 @@ const initMotion = () => {
     }
   })
 
-  // HORIZONTAL component showcase
   const hTrack = document.querySelector('.h-track') as HTMLElement
   if (hTrack) {
     const dist = hTrack.scrollWidth - window.innerWidth + 200
@@ -325,7 +307,6 @@ const initMotion = () => {
     })
   }
 
-  // SVG path draw-in for blueprint lines
   gsap.utils.toArray('.bp-line').forEach((el: any) => {
     const len = el.getTotalLength ? el.getTotalLength() : 200
     gsap.set(el, { strokeDasharray: len, strokeDashoffset: len })
@@ -344,9 +325,6 @@ const initMotion = () => {
   requestAnimationFrame(() => ScrollTrigger.refresh())
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MAGNETIC BUTTON & HOVER LOGIC
-// ─────────────────────────────────────────────────────────────────────────────
 const magneticEl = ref<HTMLElement | null>(null)
 const onMagneticEnter = (e: MouseEvent) => {
   const el = magneticEl.value
@@ -390,12 +368,107 @@ const resetTilt = (el: HTMLElement) => {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// AUDIO: IDM Bypass & Ambient System
+// ─────────────────────────────────────────────────────────────────────────────
+const isAudioMuted = useState('isAudioMuted', () => false)
+const ambientAudioRef = ref<HTMLAudioElement | null>(null)
+const hoverAudioRef = ref<HTMLAudioElement | null>(null)
+let ambientStarted = false
+const userInteracted = ref(false)
+
+const startAmbientAudio = async () => {
+  if (!userInteracted.value) {
+    userInteracted.value = true
+    gsap.to(cursorTextRef.value, { opacity: 0, duration: 0.3, onComplete: () => {
+      if (cursorTextRef.value) cursorTextRef.value.style.display = 'none'
+    }})
+  }
+  
+  if (ambientStarted || !ambientAudioRef.value || !ambientAudioRef.value.src) return
+  
+  ambientStarted = true
+
+  try {
+    ambientAudioRef.value.volume = 0.5
+    ambientAudioRef.value.muted = isAudioMuted.value
+    ambientAudioRef.value.play().catch(() => {})
+  } catch (err) {
+    console.error("Audio initialization failed:", err)
+  }
+}
+
+watch(isAudioMuted, (muted) => {
+  if (ambientAudioRef.value) {
+    ambientAudioRef.value.muted = muted
+  }
+})
+
+const loadAudioSecurely = (audioRef: any, path: string) => {
+  const xhr = new XMLHttpRequest()
+  xhr.open('GET', path, true)
+  xhr.responseType = 'arraybuffer' // Bulletproof IDM bypass
+  xhr.onload = function() {
+    if (this.status === 200) {
+      const blob = new Blob([this.response], { type: 'audio/wav' })
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        if (audioRef.value) {
+          audioRef.value.src = reader.result as string
+        }
+      }
+      reader.readAsDataURL(blob)
+    }
+  }
+  xhr.send()
+}
+
+const playAudio = (audioEl: HTMLAudioElement | null, volume: number = 0.2) => {
+  if (audioEl && audioEl.src && !isAudioMuted.value) {
+    audioEl.volume = volume
+    audioEl.currentTime = 0
+    audioEl.play().catch(() => {})
+  }
+}
+
+const toggleMute = () => {
+  isAudioMuted.value = !isAudioMuted.value
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // MOUNT
 // ─────────────────────────────────────────────────────────────────────────────
 onMounted(async () => {
   await nextTick()
 
-  // NEW: Instantly lock the logo to the center before the preloader starts
+  // Load ambient audio securely bypassing IDM using ArrayBuffer XHR
+  const xhr = new XMLHttpRequest()
+  xhr.open('GET', '/audio/ambient-loop.wav', true)
+  xhr.responseType = 'arraybuffer' // IDM ignores arraybuffer requests
+  xhr.onload = function() {
+    if (this.status === 200) {
+      const blob = new Blob([this.response], { type: 'audio/wav' })
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        if (ambientAudioRef.value) {
+          ambientAudioRef.value.src = reader.result as string
+          if (userInteracted.value && !ambientStarted) {
+            ambientStarted = true
+            ambientAudioRef.value.volume = 0.5
+            ambientAudioRef.value.muted = isAudioMuted.value
+            ambientAudioRef.value.play().catch(() => {})
+          }
+        }
+      }
+      reader.readAsDataURL(blob)
+    }
+  }
+  xhr.send()
+
+  loadAudioSecurely(hoverAudioRef, '/audio/secondary-hover.wav')
+
+  // Initialize Ambient Audio specifically on the first interaction
+  window.addEventListener('click', startAmbientAudio)
+
   gsap.set('.raya-logo-text', {
     position: 'fixed',
     top: '50%',
@@ -407,27 +480,28 @@ onMounted(async () => {
     willChange: 'transform',
   })
 
-  // 1. Setup Lenis smooth scroll (keep stopped during preloader)
   lenis = new Lenis({ duration: 1.2, smoothWheel: true, wheelMultiplier: 0.9 })
   lenis.on('scroll', ScrollTrigger.update)
   raf = (time: number) => lenis?.raf(time * 1000)
   gsap.ticker.add(raf)
   gsap.ticker.lagSmoothing(0)
 
-  // 2. Canvas particle system starts in background
   initCanvas()
 
-  // 3. Custom Cursor Logic
   window.addEventListener('mousemove', (e) => {
     mouseX = e.clientX
     mouseY = e.clientY
     gsap.to(cursorRef.value, { x: e.clientX, y: e.clientY, duration: 0.18, ease: 'power2.out' })
     gsap.to(cursorDotRef.value, { x: e.clientX, y: e.clientY, duration: 0.06 })
+    
+    if (!userInteracted.value && cursorTextRef.value) {
+      gsap.to(cursorTextRef.value, { x: e.clientX + 20, y: e.clientY + 20, duration: 0.18, ease: 'power2.out' })
+    }
   })
 
-  // Cursor hover states
   document.querySelectorAll('a, button, .hover-target').forEach(el => {
     el.addEventListener('mouseenter', () => {
+      playAudio(hoverAudioRef.value, 0.1)
       gsap.to(cursorRef.value, { scale: 3.5, opacity: 0.15, duration: 0.35 })
       gsap.to(cursorDotRef.value, { scale: 0.5, duration: 0.3 })
     })
@@ -437,7 +511,6 @@ onMounted(async () => {
     })
   })
 
-  // 4. Trigger Preloader (which triggers everything else)
   runPreloader()
 
   window.addEventListener('resize', () => ScrollTrigger.refresh())
@@ -448,9 +521,9 @@ onBeforeUnmount(() => {
   if (raf) gsap.ticker.remove(raf)
   lenis?.destroy()
   if (animFrame) cancelAnimationFrame(animFrame)
+  window.removeEventListener('click', startAmbientAudio)
 })
 
-// Data arrays
 const components = [
   { name: 'Liquid Glass', tag: 'glassmorphism', color: '#4FC3F7' },
   { name: 'Magnetic', tag: 'physics', color: '#FF4A00' },
@@ -475,6 +548,9 @@ const features = [
       class="bg-[#040404] text-[#FAFAFA] min-h-screen overflow-x-hidden font-sans relative selection:bg-[#FF4A00]/30 selection:text-[#FF4A00]"
       style="cursor: none;"
   >
+    <audio ref="ambientAudioRef" loop style="display: none;"></audio>
+    <audio ref="hoverAudioRef" style="display: none;"></audio>
+
     <div v-show="!isLoaded" ref="preloaderRef" class="fixed inset-0 z-[9999] pointer-events-none flex flex-col font-mono text-[10px] tracking-[0.4em] uppercase text-white/50">
       <div ref="preloaderTop" class="h-1/2 w-full bg-[#040404] flex items-end justify-center pb-2 border-b border-white/5 relative overflow-hidden">
         <div class="preloader-text absolute bottom-4 flex flex-col items-center gap-2">
@@ -505,6 +581,14 @@ const features = [
         style="transform: translate(-50%, -50%)"
     />
 
+    <div
+        ref="cursorTextRef"
+        class="fixed top-0 left-0 font-mono text-[9px] tracking-[0.2em] uppercase text-[#FF4A00] z-[9999] pointer-events-none mix-blend-difference whitespace-nowrap opacity-70"
+        style="transform: translate(-1000px, -1000px);"
+    >
+      Click to enable audio
+    </div>
+
     <canvas
         ref="canvasRef"
         class="fixed inset-0 z-[2] pointer-events-none opacity-60 mix-blend-screen"
@@ -528,14 +612,14 @@ const features = [
           to="/components"
           class="dock-link text-[10px] font-mono uppercase tracking-[0.2em] text-white hover:text-[#FF4A00] transition-colors duration-300 hover-target"
       >
-        Components
+        <EncryptedText text="Components" trigger="hover" />
       </NuxtLink>
       <div class="w-px h-3 bg-white/20" />
       <NuxtLink
           to="/docs/introduction"
           class="dock-link text-[10px] font-mono uppercase tracking-[0.2em] text-white hover:text-[#FF4A00] transition-colors duration-300 hover-target"
       >
-        Docs
+        <EncryptedText text="Docs" trigger="hover" />
       </NuxtLink>
       <div class="w-px h-3 bg-white/20" />
       <a
@@ -543,7 +627,7 @@ const features = [
           target="_blank"
           class="dock-link text-[10px] font-mono uppercase tracking-[0.2em] text-[#FF4A00] hover:opacity-70 transition-opacity duration-300 hover-target"
       >
-        GitHub ↗
+        <EncryptedText text="GitHub ↗" trigger="hover" />
       </a>
     </nav>
 
@@ -579,7 +663,7 @@ const features = [
               <NuxtLink to="/components">
                 <div class="mag-inner relative flex items-center gap-3 px-8 py-3.5 rounded-full border border-white/20 bg-white/5 backdrop-blur-md group hover:border-[#FF4A00]/40 hover:bg-[#FF4A00]/8 transition-all duration-500">
                   <span class="font-mono text-[11px] tracking-[0.3em] uppercase font-semibold text-white">
-                    Explore Registry
+                    <EncryptedText text="Explore Registry" trigger="hover" />
                   </span>
                   <span class="text-white/40 group-hover:text-[#FF4A00] group-hover:translate-x-1 transition-all duration-300">→</span>
                 </div>
@@ -775,7 +859,7 @@ const features = [
                     :to="`/components`"
                     class="inline-flex items-center gap-2 font-mono text-[10px] tracking-[0.2em] uppercase text-white/30 group-hover:text-white/70 transition-colors duration-300 hover-target"
                 >
-                  View source
+                  <EncryptedText text="View source" trigger="hover" />
                   <span class="group-hover:translate-x-1 transition-transform duration-300">→</span>
                 </NuxtLink>
               </div>
@@ -788,7 +872,7 @@ const features = [
                 to="/components"
                 class="px-6 py-3 border border-white/20 font-mono text-[10px] tracking-[0.2em] uppercase text-white hover:border-[#FF4A00] hover:text-[#FF4A00] transition-all duration-300 hover-target"
             >
-              View All →
+              <EncryptedText text="View All →" trigger="hover" />
             </NuxtLink>
           </div>
         </div>
@@ -907,7 +991,7 @@ const features = [
               <NuxtLink to="/docs/installation" class="hover-target group">
                 <div class="relative px-8 py-4 border-2 border-dotted border-white/30 bg-transparent hover:border-[#FF4A00] hover:bg-[#FF4A00]/5 transition-all duration-300">
                   <span class="font-mono text-[11px] tracking-[0.3em] uppercase font-bold text-white group-hover:text-[#FF4A00] transition-colors duration-300">
-                    Get Started →
+                    <EncryptedText text="Get Started →" trigger="hover" />
                   </span>
                   <div class="absolute -top-px -left-px w-2 h-2 border-t border-l border-[#FF4A00] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div class="absolute -top-px -right-px w-2 h-2 border-t border-r border-[#FF4A00] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -917,7 +1001,7 @@ const features = [
               </NuxtLink>
 
               <NuxtLink to="/components" class="hover-target flex items-center gap-2 px-8 py-4 font-mono text-[11px] tracking-[0.3em] uppercase text-white/40 hover:text-white/70 transition-colors duration-300 border border-white/8 hover:border-white/20">
-                View Components
+                <EncryptedText text="View Components" trigger="hover" />
               </NuxtLink>
             </div>
           </div>
@@ -926,9 +1010,9 @@ const features = [
             <div>
               <h4 class="font-mono text-[9px] tracking-[0.4em] uppercase text-white/20 mb-4">Directory</h4>
               <ul class="space-y-2">
-                <li><NuxtLink to="/docs/introduction" class="font-mono text-[11px] tracking-[0.15em] uppercase text-white/40 hover:text-white transition-colors duration-300 hover-target">Introduction</NuxtLink></li>
-                <li><NuxtLink to="/docs/installation" class="font-mono text-[11px] tracking-[0.15em] uppercase text-white/40 hover:text-white transition-colors duration-300 hover-target">Installation</NuxtLink></li>
-                <li><NuxtLink to="/components" class="font-mono text-[11px] tracking-[0.15em] uppercase text-white/40 hover:text-white transition-colors duration-300 hover-target">Components</NuxtLink></li>
+                <li><NuxtLink to="/docs/introduction" class="font-mono text-[11px] tracking-[0.15em] uppercase text-white/40 hover:text-white transition-colors duration-300 hover-target"><EncryptedText text="Introduction" trigger="hover" /></NuxtLink></li>
+                <li><NuxtLink to="/docs/installation" class="font-mono text-[11px] tracking-[0.15em] uppercase text-white/40 hover:text-white transition-colors duration-300 hover-target"><EncryptedText text="Installation" trigger="hover" /></NuxtLink></li>
+                <li><NuxtLink to="/components" class="font-mono text-[11px] tracking-[0.15em] uppercase text-white/40 hover:text-white transition-colors duration-300 hover-target"><EncryptedText text="Components" trigger="hover" /></NuxtLink></li>
               </ul>
             </div>
             <div>
@@ -936,12 +1020,12 @@ const features = [
               <ul class="space-y-2">
                 <li>
                   <a href="https://github.com/iman-mohamadi/raya-ui" target="_blank" class="font-mono text-[11px] tracking-[0.15em] uppercase text-white/40 hover:text-[#FF4A00] transition-colors duration-300 hover-target">
-                    GitHub ↗
+                    <EncryptedText text="GitHub ↗" trigger="hover" />
                   </a>
                 </li>
                 <li>
                   <a href="https://iman-mhmdi.ir" target="_blank" class="font-mono text-[11px] tracking-[0.15em] uppercase text-white/40 hover:text-white transition-colors duration-300 hover-target">
-                    Creator ↗
+                    <EncryptedText text="Creator ↗" trigger="hover" />
                   </a>
                 </li>
               </ul>
@@ -958,10 +1042,27 @@ const features = [
 
         <p class="absolute bottom-8 left-6 md:left-12 font-mono text-[9px] tracking-[0.3em] uppercase text-white/20">
           © {{ new Date().getFullYear() }} Architected by
-          <a href="https://iman-mhmdi.ir" target="_blank" class="text-[#FF4A00]/60 hover:text-[#FF4A00] transition-colors duration-300">Iman</a>
+          <a href="https://iman-mhmdi.ir" target="_blank" class="text-[#FF4A00]/60 hover:text-[#FF4A00] transition-colors duration-300"><EncryptedText text="Iman" trigger="hover" /></a>
           · MIT License
         </p>
       </footer>
+
+      <!-- Global Audio Mute/Unmute Button -->
+      <button
+          @click="toggleMute"
+          @mouseenter="playAudio(hoverAudioRef, 0.1)"
+          class="fixed bottom-8 right-6 md:right-12 z-[9000] w-12 h-12 flex items-center justify-center rounded-full border border-white/10 bg-[#040404]/50 backdrop-blur-md group hover-target hover:border-[#FF4A00]/50 transition-all duration-300 pointer-events-auto"
+      >
+        <svg v-if="!isAudioMuted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white group-hover:text-[#FF4A00] transition-colors">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+        </svg>
+        <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white/40 group-hover:text-[#FF4A00] transition-colors">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <line x1="23" y1="1" x2="1" y2="23"></line>
+        </svg>
+      </button>
 
     </main>
   </div>
