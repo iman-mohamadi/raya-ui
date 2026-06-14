@@ -1,8 +1,9 @@
 <script lang="ts" setup>
-import {computed} from 'vue'
+import {computed, ref, onMounted, onBeforeUnmount} from 'vue'
 import {Motion} from 'motion-v'
 import {useNavigationStore} from "~/stores/navigation"
 import { ArrowRight } from 'lucide-vue-next'
+import EncryptedText from '~/components/ui/encrypted-text/EncryptedText.vue'
 
 // Import background components for live previews
 import AmbientGrid from '@/components/ui/ambient-grid/AmbientGrid.vue'
@@ -13,6 +14,45 @@ import BackgroundRippleEffect from '@/components/ui/background-ripple-effect/Bac
 import SnowEffect from '@/components/ui/snow-effect/SnowEffect.vue'
 
 const navStore = useNavigationStore()
+
+// ─── Hover audio + encrypted-text reveal (parity with the home page) ─────────
+const isAudioMuted = useState('isAudioMuted', () => false)
+const hoverAudioRef = ref<HTMLAudioElement | null>(null)
+const linkRefs = ref<Record<string, InstanceType<typeof EncryptedText>>>({})
+const objectUrls: string[] = []
+
+// Fetched as a blob (not a media URL) so download managers can't grab it and we
+// skip the heavy base64 conversion.
+const loadAudioSecurely = async (audioRef: any, path: string): Promise<void> => {
+  try {
+    const res = await fetch(path, { cache: 'force-cache' })
+    if (!res.ok) return
+    const raw = await res.blob()
+    const url = URL.createObjectURL(new Blob([raw], { type: 'audio/wav' }))
+    objectUrls.push(url)
+    if (audioRef.value) audioRef.value.src = url
+  } catch {
+    /* audio is optional */
+  }
+}
+
+const onLinkEnter = (key: string) => {
+  const el = hoverAudioRef.value
+  if (el && el.src && !isAudioMuted.value) {
+    el.volume = 0.1
+    el.currentTime = 0
+    el.play().catch(() => {})
+  }
+  linkRefs.value[key]?.start()
+}
+
+onMounted(() => {
+  loadAudioSecurely(hoverAudioRef, '/audio/secondary-hover.txt')
+})
+
+onBeforeUnmount(() => {
+  objectUrls.forEach(URL.revokeObjectURL)
+})
 
 // Filter out Guide to focus on UI Primitives
 const groups = computed(() => {
@@ -32,6 +72,7 @@ const backgroundComponents: Record<string, any> = {
 
 <template>
   <div class="max-w-7xl mx-auto">
+    <audio ref="hoverAudioRef" style="display: none;"></audio>
 
     <header class="mb-16">
       <div
@@ -70,6 +111,7 @@ const backgroundComponents: Record<string, any> = {
             >
               <NuxtLink
                   :to="item.to"
+                  @mouseenter="onLinkEnter(item.to)"
                   class="group flex flex-col h-full rounded-[2rem] border border-border/50 bg-muted/10 overflow-hidden hover:bg-muted/20 hover:border-primary/20 transition-all duration-500"
               >
                 <div
@@ -94,9 +136,12 @@ const backgroundComponents: Record<string, any> = {
 
                 <div class="p-6 flex flex-col flex-1">
                   <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm font-bold text-foreground transition-colors group-hover:text-primary">
-                      {{ item.label }}
-                    </span>
+                    <EncryptedText
+                        :ref="el => { if (el) linkRefs[item.to] = el as InstanceType<typeof EncryptedText> }"
+                        :text="item.label"
+                        trigger="manual"
+                        class="text-sm font-bold text-foreground transition-colors group-hover:text-primary"
+                    />
                     <ArrowRight
                         class="size-3 text-muted-foreground -translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all"/>
                   </div>

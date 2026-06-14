@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, resolveComponent } from 'vue'
 import gsap from 'gsap'
 import EncryptedText from '~/components/ui/encrypted-text/EncryptedText.vue'
 
@@ -40,6 +40,10 @@ const playAudio = (audioEl: HTMLAudioElement | null, volume: number = 0.2) => {
     audioEl.play().catch(() => {})
   }
 }
+
+// Resolve NuxtLink to a real component reference. Passing the string 'NuxtLink'
+// to <component :is> renders a literal <nuxtlink> element that never navigates.
+const NuxtLinkComponent = resolveComponent('NuxtLink')
 
 const navLinks = [
   { name: 'COMPONENTS', href: '/components' },
@@ -153,7 +157,7 @@ const toggleMenu = () => {
     <div
         ref="menuRef"
         class="fixed inset-0 z-[7500] hidden items-center justify-center overflow-hidden"
-        :style="{ background: '#FF4A00', clipPath: 'circle(0px at 94% 4%)' }"
+        :style="{ background: 'var(--primary)', clipPath: 'circle(0px at 94% 4%)' }"
     >
       <div class="absolute inset-0 pointer-events-none opacity-[0.04]" style="background: repeating-linear-gradient(0deg,#000 0px,#000 1px,transparent 1px,transparent 3px)" />
 
@@ -165,7 +169,7 @@ const toggleMenu = () => {
         <nav>
           <div v-for="(link, i) in navLinks" :key="link.href" class="menu-item-wrap overflow-hidden opacity-0">
             <component
-                :is="link.external ? 'a' : 'NuxtLink'"
+                :is="link.external ? 'a' : NuxtLinkComponent"
                 :href="link.external ? link.href : undefined"
                 :to="link.external ? undefined : link.href"
                 :target="link.external ? '_blank' : undefined"

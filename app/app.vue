@@ -111,7 +111,7 @@ useSeoMeta({
         id="global-curtain"
         class="fixed inset-0 z-[99999] bg-[#020202] pointer-events-none flex items-center justify-center origin-bottom"
     >
-      <div class="font-mono text-[10px] tracking-[0.4em] text-[#FF4A00] uppercase animate-pulse">
+      <div class="font-mono text-[10px] tracking-[0.4em] text-primary uppercase animate-pulse">
         System.Routing
       </div>
     </div>

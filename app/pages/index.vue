@@ -77,6 +77,22 @@ const reducedMotion = () =>
     typeof window !== 'undefined' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
+// Resolve the CSS primary color so the canvas matches the design token.
+// Falls back to the known oklch value during SSR / before read.
+let PRIMARY = 'oklch(0.83 0.14 195.33)'
+const readPrimary = () => {
+  if (typeof window === 'undefined') return
+  const v = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()
+  if (v) PRIMARY = v
+}
+const primaryAlpha = (a: number): string => {
+  const ok = PRIMARY.match(/^oklch\((.+)\)$/i)
+  if (ok?.[1]) return `oklch(${ok[1]} / ${a})`
+  const rgb = PRIMARY.match(/^rgba?\(([^)]+)\)/i)
+  if (rgb?.[1]) return `rgba(${rgb[1].split(',').slice(0, 3).join(',')}, ${a})`
+  return PRIMARY
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // "DATA SPARKS" — orange points drifting along a pseudo-curl flow field
 // ─────────────────────────────────────────────────────────────────────────────
@@ -129,6 +145,8 @@ const initCanvas = () => {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
 
+  readPrimary()
+
   let dpr = Math.min(window.devicePixelRatio || 1, 2)
 
   const resize = () => {
@@ -157,7 +175,7 @@ const initCanvas = () => {
         if (dist < influence) {
           const f = 1 - dist / influence
           const s = 1.5 + f * 6
-          ctx.strokeStyle = `rgba(255,74,0,${0.05 + f * 0.55})`
+          ctx.strokeStyle = primaryAlpha(0.05 + f * 0.55)
           ctx.lineWidth = 0.8
           ctx.beginPath()
           ctx.moveTo(x - s, y); ctx.lineTo(x + s, y)
@@ -190,7 +208,7 @@ const initCanvas = () => {
       const lf = Math.sin((sp.life / sp.maxLife) * Math.PI)
       ctx.beginPath()
       ctx.arc(sp.x, sp.y, sp.size, 0, Math.PI * 2)
-      ctx.fillStyle = `rgba(255,74,0,${0.55 * lf})`
+      ctx.fillStyle = primaryAlpha(0.55 * lf)
       ctx.fill()
     }
 
@@ -693,7 +711,7 @@ onBeforeUnmount(() => {
 
 const components = [
   { name: 'Liquid Glass', tag: 'glassmorphism', color: '#4FC3F7' },
-  { name: 'Magnetic', tag: 'physics', color: '#FF4A00' },
+  { name: 'Magnetic', tag: 'physics', color: 'var(--primary)' },
   { name: 'Morphing Text', tag: 'typography', color: '#B39DDB' },
   { name: 'Bar Visualizer', tag: 'audio-reactive', color: '#81C784' },
   { name: 'Flip Clock', tag: 'mechanical', color: '#FFD54F' },
@@ -712,7 +730,7 @@ const features = [
 
 <template>
   <div
-      class="home-root bg-[#040404] text-[#FAFAFA] min-h-screen overflow-x-hidden font-sans relative selection:bg-[#FF4A00]/30 selection:text-[#FF4A00]"
+      class="home-root bg-[#040404] text-[#FAFAFA] min-h-screen overflow-x-hidden font-sans relative selection:bg-primary/30 selection:text-primary"
       style="cursor: none;"
   >
     <audio ref="ambientAudioRef" loop style="display: none;"></audio>
@@ -721,9 +739,9 @@ const features = [
     <div v-show="!isLoaded" ref="preloaderRef" class="fixed inset-0 z-[9999] pointer-events-none flex flex-col font-mono text-[10px] tracking-[0.4em] uppercase text-white/50">
       <div ref="preloaderTop" class="h-1/2 w-full bg-[#040404] flex items-end justify-center pb-2 border-b border-white/5 relative overflow-hidden">
         <div class="preloader-text absolute bottom-4 flex flex-col items-center gap-2">
-          <span class="text-[#FF4A00]">Initializing System</span>
+          <span class="text-primary">Initializing System</span>
           <div class="w-48 h-px bg-white/10 overflow-hidden rounded-full">
-            <div class="h-full bg-[#FF4A00]" :style="`width: ${loadPercent}%`" />
+            <div class="h-full bg-primary" :style="`width: ${loadPercent}%`" />
           </div>
         </div>
       </div>
@@ -750,7 +768,7 @@ const features = [
 
     <div
         ref="cursorTextRef"
-        class="custom-cursor fixed top-0 left-0 font-mono text-[9px] tracking-[0.2em] uppercase text-[#FF4A00] z-[9999] pointer-events-none mix-blend-difference whitespace-nowrap opacity-70"
+        class="custom-cursor fixed top-0 left-0 font-mono text-[9px] tracking-[0.2em] uppercase text-primary z-[9999] pointer-events-none mix-blend-difference whitespace-nowrap opacity-70"
         style="transform: translate(-1000px, -1000px);"
     >
       Click to enable audio
@@ -770,7 +788,7 @@ const features = [
     <div class="grain-overlay fixed inset-0 z-[400] pointer-events-none" aria-hidden="true" />
 
     <div class="fixed top-0 left-0 right-0 h-[2px] z-[8500] pointer-events-none">
-      <div class="h-full bg-[#FF4A00] origin-left" :style="{ transform: `scaleX(${scrollProgress})` }" />
+      <div class="h-full bg-primary origin-left" :style="{ transform: `scaleX(${scrollProgress})` }" />
     </div>
 
     <div class="fixed inset-0 z-[150] pointer-events-none hidden md:block mix-blend-difference" aria-hidden="true">
@@ -829,14 +847,14 @@ const features = [
     <nav class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-6 px-8 py-3.5 rounded-full border border-white/10 bg-[#040404]/50 backdrop-blur-2xl shadow-2xl">
       <NuxtLink
           to="/components"
-          class="dock-link text-[10px] font-mono uppercase tracking-[0.2em] text-white hover:text-[#FF4A00] transition-colors duration-300 hover-target"
+          class="dock-link text-[10px] font-mono uppercase tracking-[0.2em] text-white hover:text-primary transition-colors duration-300 hover-target"
       >
         <EncryptedText text="Components" trigger="hover" />
       </NuxtLink>
       <div class="w-px h-3 bg-white/20" />
       <NuxtLink
           to="/docs/introduction"
-          class="dock-link text-[10px] font-mono uppercase tracking-[0.2em] text-white hover:text-[#FF4A00] transition-colors duration-300 hover-target"
+          class="dock-link text-[10px] font-mono uppercase tracking-[0.2em] text-white hover:text-primary transition-colors duration-300 hover-target"
       >
         <EncryptedText text="Docs" trigger="hover" />
       </NuxtLink>
@@ -844,7 +862,7 @@ const features = [
       <a
           href="https://github.com/iman-mohamadi/raya-ui"
           target="_blank"
-          class="dock-link text-[10px] font-mono uppercase tracking-[0.2em] text-[#FF4A00] hover:opacity-70 transition-opacity duration-300 hover-target"
+          class="dock-link text-[10px] font-mono uppercase tracking-[0.2em] text-primary hover:opacity-70 transition-opacity duration-300 hover-target"
       >
         <EncryptedText text="GitHub ↗" trigger="hover" />
       </a>
@@ -858,7 +876,7 @@ const features = [
           class="relative h-screen flex items-center justify-center overflow-hidden"
       >
         <div class="absolute inset-0 pointer-events-none">
-          <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[#FF4A00]/5 blur-[120px]" />
+          <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-[120px]" />
           <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-white/3 blur-[80px]" />
         </div>
 
@@ -870,14 +888,14 @@ const features = [
               <span class="absolute left-1/2 -top-1.5 w-px h-3 bg-white/15" />
               <span class="absolute left-3/4 -top-1.5 w-px h-3 bg-white/15" />
             </span>
-            <span class="font-mono text-[9px] tracking-[0.35em] uppercase text-[#FF4A00]/60 whitespace-nowrap">Vue · Nuxt · TS</span>
+            <span class="font-mono text-[9px] tracking-[0.35em] uppercase text-primary/60 whitespace-nowrap">Vue · Nuxt · TS</span>
           </div>
         </div>
 
         <div class="absolute bottom-[12vh] left-1/2 -translate-x-1/2 text-center w-full z-10 px-6 pointer-events-none">
           <div class="hero-meta-content flex flex-col items-center gap-4 w-full">
             <div class="hero-badge inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm">
-              <span class="w-1.5 h-1.5 rounded-full bg-[#FF4A00] animate-pulse" />
+              <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
               <span class="font-mono text-[9px] tracking-[0.4em] uppercase text-white/60">Vue · Nuxt · Tailwind</span>
             </div>
 
@@ -898,11 +916,11 @@ const features = [
                 @mouseleave="onMagneticLeave"
             >
               <NuxtLink to="/components">
-                <div class="mag-inner relative flex items-center gap-3 px-8 py-3.5 rounded-full border border-white/20 bg-white/5 backdrop-blur-md group hover:border-[#FF4A00]/40 hover:bg-[#FF4A00]/8 transition-all duration-500">
+                <div class="mag-inner relative flex items-center gap-3 px-8 py-3.5 rounded-full border border-white/20 bg-white/5 backdrop-blur-md group hover:border-primary/40 hover:bg-primary/8 transition-all duration-500">
                   <span class="font-mono text-[11px] tracking-[0.3em] uppercase font-semibold text-white">
                     <EncryptedText text="Explore Registry" trigger="hover" />
                   </span>
-                  <span class="text-white/40 group-hover:text-[#FF4A00] group-hover:translate-x-1 transition-all duration-300">→</span>
+                  <span class="text-white/40 group-hover:text-primary group-hover:translate-x-1 transition-all duration-300">→</span>
                 </div>
               </NuxtLink>
             </div>
@@ -922,16 +940,16 @@ const features = [
       <section id="manifesto" class="relative h-screen flex items-center px-6 md:px-24 bg-[#040404]" style="perspective: 1200px;">
         <div class="absolute top-8 right-12 opacity-10 pointer-events-none">
           <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
-            <circle cx="40" cy="40" r="30" stroke="#FF4A00" stroke-width="0.5" stroke-dasharray="4 4"/>
-            <line x1="40" y1="0" x2="40" y2="80" stroke="#FF4A00" stroke-width="0.5"/>
-            <line x1="0" y1="40" x2="80" y2="40" stroke="#FF4A00" stroke-width="0.5"/>
-            <circle cx="40" cy="40" r="4" stroke="#FF4A00" stroke-width="0.5"/>
+            <circle cx="40" cy="40" r="30" style="stroke:var(--primary)" stroke-width="0.5" stroke-dasharray="4 4"/>
+            <line x1="40" y1="0" x2="40" y2="80" style="stroke:var(--primary)" stroke-width="0.5"/>
+            <line x1="0" y1="40" x2="80" y2="40" style="stroke:var(--primary)" stroke-width="0.5"/>
+            <circle cx="40" cy="40" r="4" style="stroke:var(--primary)" stroke-width="0.5"/>
           </svg>
         </div>
 
         <div class="max-w-5xl relative z-10">
-          <div class="font-mono text-[10px] tracking-[0.4em] uppercase text-[#FF4A00]/80 mb-14 flex items-center gap-4">
-            <div class="w-8 h-px bg-[#FF4A00]/40" />
+          <div class="font-mono text-[10px] tracking-[0.4em] uppercase text-primary/80 mb-14 flex items-center gap-4">
+            <div class="w-8 h-px bg-primary/40" />
             Philosophy
           </div>
 
@@ -945,7 +963,7 @@ const features = [
             <div class="manifesto-line text-white font-black uppercase tracking-tighter leading-none" style="font-size: clamp(40px, 6vw, 96px);">
               Every primitive is
             </div>
-            <div class="manifesto-line text-[#FF4A00] font-black uppercase tracking-tighter leading-none" style="font-size: clamp(40px, 6vw, 96px);">
+            <div class="manifesto-line text-primary font-black uppercase tracking-tighter leading-none" style="font-size: clamp(40px, 6vw, 96px);">
               a deliberate act.
             </div>
           </div>
@@ -967,7 +985,7 @@ const features = [
         <div class="swap-panel absolute inset-0 bg-[#F5F5F0] text-[#040404] flex items-center justify-center p-6" style="clip-path: inset(100% 0% 0% 0%)">
           <div class="text-center max-w-4xl relative z-10">
             <h2 class="text-[clamp(38px,8vw,120px)] font-black uppercase tracking-tighter leading-none mb-6">
-              Own <span class="font-serif italic text-[#FF4A00] lowercase font-light">the</span> <br /> Physics.
+              Own <span class="font-serif italic text-primary lowercase font-light">the</span> <br /> Physics.
             </h2>
             <p class="text-black/35 font-mono text-xs md:text-sm uppercase tracking-[0.2em]">
               GSAP-powered motion architecture.
@@ -975,7 +993,7 @@ const features = [
           </div>
         </div>
 
-        <div class="swap-panel absolute inset-0 bg-[#FF4A00] text-black flex items-center justify-center p-6" style="clip-path: inset(100% 0% 0% 0%)">
+        <div class="swap-panel absolute inset-0 bg-primary text-black flex items-center justify-center p-6" style="clip-path: inset(100% 0% 0% 0%)">
           <div class="text-center max-w-4xl">
             <h2 class="text-[clamp(38px,8vw,120px)] font-black uppercase tracking-tighter leading-none mb-6">
               Build <span class="font-serif italic text-black/30 lowercase font-light">the</span> <br /> Unseen.
@@ -989,7 +1007,7 @@ const features = [
 
       <section id="feature-section" class="relative py-32 px-6 md:px-12 bg-[#040404]">
         <div class="absolute inset-0 overflow-hidden pointer-events-none">
-          <div class="absolute top-1/4 -left-32 w-[500px] h-[500px] rounded-full bg-[#FF4A00]/4 blur-[150px]" />
+          <div class="absolute top-1/4 -left-32 w-[500px] h-[500px] rounded-full bg-primary/4 blur-[150px]" />
           <div class="absolute bottom-1/4 -right-32 w-[400px] h-[400px] rounded-full bg-white/3 blur-[120px]" />
         </div>
 
@@ -1001,7 +1019,7 @@ const features = [
             </div>
             <h2 class="text-5xl md:text-7xl font-black uppercase tracking-tighter text-white leading-none">
               Engineered<br/>
-              <span class="text-[#FF4A00]">differently.</span>
+              <span class="text-primary">differently.</span>
             </h2>
           </div>
 
@@ -1013,9 +1031,9 @@ const features = [
                 @mousemove="handleTilt($event, $event.currentTarget as HTMLElement)"
                 @mouseleave="resetTilt($event.currentTarget as HTMLElement)"
             >
-              <div class="absolute inset-0 bg-gradient-to-br from-[#FF4A00]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+              <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
               <span class="font-mono text-[10px] tracking-[0.4em] text-white/15 block mb-6">{{ feat.num }}</span>
-              <div class="text-3xl mb-5 text-white/20 group-hover:text-[#FF4A00] transition-colors duration-500">{{ feat.icon }}</div>
+              <div class="text-3xl mb-5 text-white/20 group-hover:text-primary transition-colors duration-500">{{ feat.icon }}</div>
               <h3 class="text-xl md:text-2xl font-bold text-white mb-4 group-hover:text-white/90 transition-colors">{{ feat.title }}</h3>
               <p class="text-white/40 leading-relaxed text-sm md:text-base">{{ feat.body }}</p>
               <div class="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
@@ -1032,7 +1050,7 @@ const features = [
         <div class="marquee-track flex whitespace-nowrap font-black uppercase tracking-tighter leading-none select-none" style="font-size: clamp(48px, 8vw, 140px)">
           <span class="marquee-text mx-8 block origin-bottom shrink-0">COPY · PASTE · OWN THE CODE ·&nbsp;</span>
           <span class="marquee-text mx-8 block origin-bottom text-transparent shrink-0" style="-webkit-text-stroke: 1.5px #040404;">COPY · PASTE · OWN THE CODE ·&nbsp;</span>
-          <span class="marquee-text mx-8 block origin-bottom text-[#FF4A00] shrink-0">COPY · PASTE · OWN THE CODE ·&nbsp;</span>
+          <span class="marquee-text mx-8 block origin-bottom text-primary shrink-0">COPY · PASTE · OWN THE CODE ·&nbsp;</span>
           <span class="marquee-text mx-8 block origin-bottom shrink-0">COPY · PASTE · OWN THE CODE ·&nbsp;</span>
         </div>
       </section>
@@ -1048,15 +1066,15 @@ const features = [
         <div class="absolute inset-0 opacity-5 pointer-events-none" style="background-image: linear-gradient(#4FC3F7 1px, transparent 1px), linear-gradient(90deg, #4FC3F7 1px, transparent 1px); background-size: 60px 60px;" />
 
         <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-20" viewBox="0 0 1440 900" preserveAspectRatio="none">
-          <path class="bp-line" d="M0 200 Q360 100 720 250 T1440 200" stroke="#FF4A00" stroke-width="0.8" fill="none"/>
+          <path class="bp-line" d="M0 200 Q360 100 720 250 T1440 200" style="stroke:var(--primary)" stroke-width="0.8" fill="none"/>
           <path class="bp-line" d="M0 700 Q360 600 720 650 T1440 700" stroke="#4FC3F7" stroke-width="0.8" fill="none"/>
           <path class="bp-line" d="M200 0 Q300 450 200 900" stroke="#ffffff" stroke-width="0.5" fill="none"/>
         </svg>
 
         <div class="h-track flex items-center gap-6 px-6 md:px-12 w-max">
           <div class="shrink-0 w-[80vw] md:w-[500px] pr-8">
-            <div class="font-mono text-[9px] tracking-[0.4em] uppercase text-[#FF4A00]/70 mb-6 flex items-center gap-3">
-              <svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" stroke="#FF4A00" stroke-width="0.8" fill="none" stroke-dasharray="2 2"/><circle cx="10" cy="10" r="2" fill="#FF4A00" opacity="0.6"/></svg>
+            <div class="font-mono text-[9px] tracking-[0.4em] uppercase text-primary/70 mb-6 flex items-center gap-3">
+              <svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" style="stroke:var(--primary)" stroke-width="0.8" fill="none" stroke-dasharray="2 2"/><circle cx="10" cy="10" r="2" style="fill:var(--primary)" opacity="0.6"/></svg>
               Inventory
             </div>
             <h2 class="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-none text-white mb-6">
@@ -1107,7 +1125,7 @@ const features = [
             <div class="font-mono text-[10px] tracking-[0.3em] uppercase text-white/25">That's the registry</div>
             <NuxtLink
                 to="/components"
-                class="px-6 py-3 border border-white/20 font-mono text-[10px] tracking-[0.2em] uppercase text-white hover:border-[#FF4A00] hover:text-[#FF4A00] transition-all duration-300 hover-target"
+                class="px-6 py-3 border border-white/20 font-mono text-[10px] tracking-[0.2em] uppercase text-white hover:border-primary hover:text-primary transition-all duration-300 hover-target"
             >
               <EncryptedText text="View All →" trigger="hover" />
             </NuxtLink>
@@ -1117,7 +1135,7 @@ const features = [
 
       <section id="aesthetic-section" class="relative py-32 px-6 md:px-12 bg-[#040404] overflow-hidden">
         <div class="absolute inset-0 pointer-events-none">
-          <div class="absolute top-0 left-1/3 w-[800px] h-[800px] rounded-full bg-[#FF4A00]/3 blur-[200px]" />
+          <div class="absolute top-0 left-1/3 w-[800px] h-[800px] rounded-full bg-primary/3 blur-[200px]" />
         </div>
 
         <div class="max-w-7xl mx-auto relative z-10">
@@ -1141,7 +1159,7 @@ const features = [
             <div class="feature-card relative h-80 overflow-hidden group border border-white/8" style="border-radius: 2px;">
               <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
               <div class="absolute inset-0 backdrop-blur-md" />
-              <div class="absolute top-8 left-8 w-24 h-24 rounded-full bg-[#FF4A00]/30 blur-2xl group-hover:scale-150 transition-transform duration-700" />
+              <div class="absolute top-8 left-8 w-24 h-24 rounded-full bg-primary/30 blur-2xl group-hover:scale-150 transition-transform duration-700" />
               <div class="absolute bottom-8 right-8 w-20 h-20 rounded-full bg-blue-500/20 blur-2xl group-hover:scale-150 transition-transform duration-700" />
               <div class="absolute inset-0 flex items-center justify-center">
                 <div class="w-36 h-24 border border-white/15 bg-white/8 backdrop-blur-xl rounded-lg flex items-center justify-center group-hover:border-white/25 transition-all duration-500">
@@ -1155,10 +1173,10 @@ const features = [
 
             <div class="feature-card relative h-80 overflow-hidden group border border-white/8 bg-[#0a0a0a]" style="border-radius: 2px;">
               <div class="absolute inset-0 flex items-center justify-center">
-                <div class="absolute w-40 h-40 rounded-full border border-[#FF4A00]/20 animate-ping" style="animation-duration: 3s;" />
-                <div class="absolute w-28 h-28 rounded-full border border-[#FF4A00]/30 animate-ping" style="animation-duration: 2.5s; animation-delay: 0.5s" />
-                <div class="absolute w-16 h-16 rounded-full border border-[#FF4A00]/50 animate-ping" style="animation-duration: 2s; animation-delay: 1s" />
-                <div class="w-8 h-8 rounded-full bg-[#FF4A00]/80 blur-sm" />
+                <div class="absolute w-40 h-40 rounded-full border border-primary/20 animate-ping" style="animation-duration: 3s;" />
+                <div class="absolute w-28 h-28 rounded-full border border-primary/30 animate-ping" style="animation-duration: 2.5s; animation-delay: 0.5s" />
+                <div class="absolute w-16 h-16 rounded-full border border-primary/50 animate-ping" style="animation-duration: 2s; animation-delay: 1s" />
+                <div class="w-8 h-8 rounded-full bg-primary/80 blur-sm" />
               </div>
               <div class="absolute bottom-6 left-6">
                 <span class="font-mono text-[10px] tracking-[0.3em] uppercase text-white/30">Spring Physics</span>
@@ -1171,10 +1189,10 @@ const features = [
                 <div class="relative">
                   <svg width="120" height="120" viewBox="0 0 120 120" class="opacity-40 group-hover:opacity-70 transition-opacity duration-500">
                     <rect x="20" y="20" width="80" height="80" stroke="white" stroke-width="0.5" fill="none" stroke-dasharray="4 4"/>
-                    <circle cx="60" cy="60" r="20" stroke="#FF4A00" stroke-width="0.5" fill="none"/>
+                    <circle cx="60" cy="60" r="20" style="stroke:var(--primary)" stroke-width="0.5" fill="none"/>
                     <line x1="20" y1="60" x2="100" y2="60" stroke="white" stroke-width="0.5" opacity="0.3"/>
                     <line x1="60" y1="20" x2="60" y2="100" stroke="white" stroke-width="0.5" opacity="0.3"/>
-                    <circle cx="60" cy="60" r="3" fill="#FF4A00" opacity="0.8"/>
+                    <circle cx="60" cy="60" r="3" style="fill:var(--primary)" opacity="0.8"/>
                   </svg>
                 </div>
               </div>
@@ -1191,7 +1209,7 @@ const features = [
           <span class="marquee-text mx-6 block origin-bottom font-mono text-white/10 uppercase tracking-[0.3em] shrink-0">
             WAI-ARIA · ACCESSIBLE · KEYBOARD NATIVE · SCREEN-READER TESTED · TAILWIND CSS · VUE 3.5 · NUXT 4 ·&nbsp;
           </span>
-          <span class="marquee-text mx-6 block origin-bottom font-mono text-[#FF4A00]/20 uppercase tracking-[0.3em] shrink-0">
+          <span class="marquee-text mx-6 block origin-bottom font-mono text-primary/20 uppercase tracking-[0.3em] shrink-0">
             WAI-ARIA · ACCESSIBLE · KEYBOARD NATIVE · SCREEN-READER TESTED · TAILWIND CSS · VUE 3.5 · NUXT 4 ·&nbsp;
           </span>
           <span class="marquee-text mx-6 block origin-bottom font-mono text-white/10 uppercase tracking-[0.3em] shrink-0">
@@ -1202,17 +1220,17 @@ const features = [
 
       <footer id="footer-section" class="relative min-h-screen bg-[#020202] flex flex-col justify-between p-6 md:p-12 pb-[8vh] border-t border-white/5 overflow-hidden">
         <div class="absolute inset-0 pointer-events-none overflow-hidden">
-          <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-px h-full bg-gradient-to-t from-[#FF4A00]/20 to-transparent" />
-          <div class="absolute bottom-0 left-1/3 w-px h-3/4 bg-gradient-to-t from-[#FF4A00]/10 to-transparent rotate-6 origin-bottom" />
-          <div class="absolute bottom-0 right-1/3 w-px h-3/4 bg-gradient-to-t from-[#FF4A00]/10 to-transparent -rotate-6 origin-bottom" />
+          <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-px h-full bg-gradient-to-t from-primary/20 to-transparent" />
+          <div class="absolute bottom-0 left-1/3 w-px h-3/4 bg-gradient-to-t from-primary/10 to-transparent rotate-6 origin-bottom" />
+          <div class="absolute bottom-0 right-1/3 w-px h-3/4 bg-gradient-to-t from-primary/10 to-transparent -rotate-6 origin-bottom" />
           <div class="absolute bottom-0 left-1/4 w-px h-1/2 bg-gradient-to-t from-white/5 to-transparent rotate-12 origin-bottom" />
           <div class="absolute bottom-0 right-1/4 w-px h-1/2 bg-gradient-to-t from-white/5 to-transparent -rotate-12 origin-bottom" />
         </div>
 
         <div class="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-12 mt-16">
           <div class="md:col-span-2">
-            <div class="font-mono text-[10px] tracking-[0.4em] uppercase text-[#FF4A00]/70 mb-8 flex items-center gap-4">
-              <div class="w-8 h-px bg-[#FF4A00]/40" />
+            <div class="font-mono text-[10px] tracking-[0.4em] uppercase text-primary/70 mb-8 flex items-center gap-4">
+              <div class="w-8 h-px bg-primary/40" />
               Initialization
             </div>
 
@@ -1226,14 +1244,14 @@ const features = [
 
             <div class="flex flex-col sm:flex-row items-start gap-4">
               <NuxtLink to="/docs/installation" class="hover-target group">
-                <div class="relative px-8 py-4 border-2 border-dotted border-white/30 bg-transparent hover:border-[#FF4A00] hover:bg-[#FF4A00]/5 transition-all duration-300">
-                  <span class="font-mono text-[11px] tracking-[0.3em] uppercase font-bold text-white group-hover:text-[#FF4A00] transition-colors duration-300">
+                <div class="relative px-8 py-4 border-2 border-dotted border-white/30 bg-transparent hover:border-primary hover:bg-primary/5 transition-all duration-300">
+                  <span class="font-mono text-[11px] tracking-[0.3em] uppercase font-bold text-white group-hover:text-primary transition-colors duration-300">
                     <EncryptedText text="Get Started →" trigger="hover" />
                   </span>
-                  <div class="absolute -top-px -left-px w-2 h-2 border-t border-l border-[#FF4A00] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div class="absolute -top-px -right-px w-2 h-2 border-t border-r border-[#FF4A00] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div class="absolute -bottom-px -left-px w-2 h-2 border-b border-l border-[#FF4A00] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div class="absolute -bottom-px -right-px w-2 h-2 border-b border-r border-[#FF4A00] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div class="absolute -top-px -left-px w-2 h-2 border-t border-l border-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div class="absolute -top-px -right-px w-2 h-2 border-t border-r border-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div class="absolute -bottom-px -left-px w-2 h-2 border-b border-l border-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div class="absolute -bottom-px -right-px w-2 h-2 border-b border-r border-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
               </NuxtLink>
 
@@ -1256,7 +1274,7 @@ const features = [
               <h4 class="font-mono text-[9px] tracking-[0.4em] uppercase text-white/20 mb-4">Network</h4>
               <ul class="space-y-2">
                 <li>
-                  <a href="https://github.com/iman-mohamadi/raya-ui" target="_blank" class="font-mono text-[11px] tracking-[0.15em] uppercase text-white/40 hover:text-[#FF4A00] transition-colors duration-300 hover-target">
+                  <a href="https://github.com/iman-mohamadi/raya-ui" target="_blank" class="font-mono text-[11px] tracking-[0.15em] uppercase text-white/40 hover:text-primary transition-colors duration-300 hover-target">
                     <EncryptedText text="GitHub ↗" trigger="hover" />
                   </a>
                 </li>
@@ -1279,7 +1297,7 @@ const features = [
 
         <p class="absolute bottom-8 left-6 md:left-12 font-mono text-[9px] tracking-[0.3em] uppercase text-white/20">
           © {{ new Date().getFullYear() }} Architected by
-          <a href="https://iman-mhmdi.ir" target="_blank" class="text-[#FF4A00]/60 hover:text-[#FF4A00] transition-colors duration-300"><EncryptedText text="Iman" trigger="hover" /></a>
+          <a href="https://iman-mhmdi.ir" target="_blank" class="text-primary/60 hover:text-primary transition-colors duration-300"><EncryptedText text="Iman" trigger="hover" /></a>
           · MIT License
         </p>
       </footer>
@@ -1288,14 +1306,14 @@ const features = [
       <button
           @click="toggleMute"
           @mouseenter="playAudio(hoverAudioRef, 0.1)"
-          class="fixed bottom-8 right-6 md:right-12 z-[9000] w-12 h-12 flex items-center justify-center rounded-full border border-white/10 bg-[#040404]/50 backdrop-blur-md group hover-target hover:border-[#FF4A00]/50 transition-all duration-300 pointer-events-auto"
+          class="fixed bottom-8 right-6 md:right-12 z-[9000] w-12 h-12 flex items-center justify-center rounded-full border border-white/10 bg-[#040404]/50 backdrop-blur-md group hover-target hover:border-primary/50 transition-all duration-300 pointer-events-auto"
       >
-        <svg v-if="!isAudioMuted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white group-hover:text-[#FF4A00] transition-colors">
+        <svg v-if="!isAudioMuted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white group-hover:text-primary transition-colors">
           <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
           <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
           <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
         </svg>
-        <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white/40 group-hover:text-[#FF4A00] transition-colors">
+        <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white/40 group-hover:text-primary transition-colors">
           <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
           <line x1="23" y1="1" x2="1" y2="23"></line>
         </svg>
@@ -1412,7 +1430,7 @@ html.lenis, html.lenis body {
 /* ── Keyboard accessibility ────────────────────────────────────────────────── */
 :focus:not(:focus-visible) { outline: none; }
 :focus-visible {
-  outline: 2px solid #FF4A00;
+  outline: 2px solid var(--primary);
   outline-offset: 3px;
   border-radius: 2px;
 }

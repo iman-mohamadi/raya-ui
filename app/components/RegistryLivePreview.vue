@@ -3,7 +3,7 @@ import { computed, defineAsyncComponent } from 'vue'
 import WireframeThumbnail from '~/components/WireframeThumbnail.vue'
 
 const props = withDefaults(defineProps<{ component: string; color?: string }>(), {
-  color: '#FF4A00',
+  color: 'var(--primary)',
 })
 
 // Lazily loaded so they stay out of the critical bundle and only spin up
@@ -55,7 +55,7 @@ const isLive = computed(() => LIVE.has(props.component))
 
       <div v-else-if="component === 'Liquid Glass'" class="relative w-36 h-20 flex items-center justify-center">
         <div class="absolute left-2 top-1 size-10 rounded-full blur-xl" :style="{ background: color, opacity: 0.5 }" />
-        <div class="absolute right-3 bottom-1 size-8 rounded-full bg-[#FF4A00]/40 blur-xl" />
+        <div class="absolute right-3 bottom-1 size-8 rounded-full bg-primary/40 blur-xl" />
         <LiquidGlass :radius="16" :scale="-140" class="w-28 h-14 flex items-center justify-center">
           <span class="font-mono text-[8px] tracking-[0.25em] uppercase text-white/70">Glass</span>
         </LiquidGlass>
