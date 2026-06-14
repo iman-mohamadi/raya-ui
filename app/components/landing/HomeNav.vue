@@ -92,11 +92,18 @@ const toggleMenu = () => {
           {
             y: 0, opacity: 1, skewX: '0deg',
             duration: 1.0, ease: 'expo.out', delay: 0.3 + i * 0.14,
-            onStart: () => {
-              if (linkRefs.value[i]) linkRefs.value[i].start()
-            }
           }
       )
+    })
+
+    // Encrypted-text reveal: kicks off after the panel begins opening, then
+    // each link scrambles in one short beat after the previous.
+    const REVEAL_START = 0.5
+    const REVEAL_STAGGER = 0.22
+    linkRefs.value.forEach((linkRef, i) => {
+      gsap.delayedCall(REVEAL_START + i * REVEAL_STAGGER, () => {
+        if (isMenuOpen.value) linkRef?.start()
+      })
     })
 
     gsap.fromTo('.menu-meta-line',
@@ -128,6 +135,8 @@ const toggleMenu = () => {
         ref="menuBtnRef"
         @click="toggleMenu"
         @mouseenter="playAudio(hoverAudioRef, 0.1)"
+        :aria-label="isMenuOpen ? 'Close menu' : 'Open menu'"
+        :aria-expanded="isMenuOpen"
         class="pointer-events-auto relative w-14 h-14 flex items-center justify-center group mix-blend-difference"
     >
       <span class="absolute inset-0 rounded-full border border-white/0 group-hover:border-white/30 group-hover:scale-110 transition-all duration-500 ease-out" />

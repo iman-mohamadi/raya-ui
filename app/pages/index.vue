@@ -805,7 +805,7 @@ const features = [
         <span
             class="font-mono text-[8px] tracking-[0.25em] uppercase transition-all duration-300 text-white"
             :class="activeSection === i ? 'opacity-100' : 'opacity-30 group-hover:opacity-70'"
-        >{{ sec.label }}</span>
+        ><EncryptedText :text="sec.label" trigger="hover" /></span>
         <span
             class="h-px bg-white transition-all duration-300"
             :class="activeSection === i ? 'w-7 opacity-100' : 'w-3 opacity-40 group-hover:w-5'"

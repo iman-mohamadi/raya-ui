@@ -92,7 +92,7 @@ const getCellStyle = (idx: number) => {
       <div
           :key="rippleKey"
           :class="cn(
-          'relative z-[3] mask-radial-from-20% mask-radial-at-top opacity-600',
+          'relative z-[3] ripple-radial-mask',
           'grid mx-auto'
         )"
           :style="{
@@ -140,12 +140,11 @@ const getCellStyle = (idx: number) => {
   animation: cell-ripple var(--duration) linear var(--delay) forwards;
 }
 
-.mask-radial-from-20% {
+/* Radial fade from the top. Defined as a plain class (no "%" in the selector)
+   to keep the emitted CSS valid after minification. */
+.ripple-radial-mask {
   mask-image: radial-gradient(circle at center, black 20%, transparent 100%);
   -webkit-mask-image: radial-gradient(circle at center, black 20%, transparent 100%);
-}
-
-.mask-radial-at-top {
   mask-position: top;
   -webkit-mask-position: top;
 }
