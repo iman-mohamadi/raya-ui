@@ -1,22 +1,27 @@
 {
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "scroll-reveal",
   "type": "registry:ui",
   "dependencies": [],
+  "registryDependencies": [],
   "files": [
     {
       "path": "scroll-reveal/index.ts",
       "content": "export { default as ScrollReveal } from \"./ScrollReveal.vue\"\r\n",
-      "type": "registry:ui"
+      "type": "registry:ui",
+      "target": "components/ui/scroll-reveal/index.ts"
     },
     {
       "path": "scroll-reveal/ScrollReveal.vue",
       "content": "<script lang=\"ts\" setup>\r\nimport { cn } from \"@/lib/utils\";\r\nimport { computed, onMounted, onUnmounted, ref } from \"vue\";\r\nimport ScrollWord from \"./ScrollWord.vue\";\r\n\r\ninterface Props {\r\n  class?: string;\r\n  text: string;\r\n}\r\n\r\nconst props = defineProps<Props>();\r\n\r\nconst containerRef = ref<HTMLElement | null>(null);\r\nconst words = computed(() => props.text.split(\" \").filter(w => w.length > 0));\r\nconst scrollYProgress = ref(0);\r\nlet rafId: number;\r\nlet scrollParent: HTMLElement | Window | null = null;\r\n\r\nconst getScrollParent = (node: HTMLElement | null): HTMLElement | Window => {\r\n  if (!node || node === document.body) return window;\r\n  if (node.hasAttribute(\"data-radix-scroll-area-viewport\")) return node;\r\n\r\n  const overflowY = window.getComputedStyle(node).overflowY;\r\n  if ((overflowY === \"auto\" || overflowY === \"scroll\") && node.scrollHeight > node.clientHeight) {\r\n    return node;\r\n  }\r\n  return getScrollParent(node.parentElement);\r\n};\r\n\r\nfunction updateScrollYProgress() {\r\n  if (!containerRef.value) return;\r\n\r\n  const rect = containerRef.value.getBoundingClientRect();\r\n  let containerTop = 0;\r\n  let containerHeight = window.innerHeight;\r\n\r\n  if (scrollParent && scrollParent !== window) {\r\n    const parentRect = (scrollParent as HTMLElement).getBoundingClientRect();\r\n    containerTop = parentRect.top;\r\n    containerHeight = parentRect.height;\r\n  }\r\n\r\n  // Animation triggers when element enters 85% of viewport\r\n  // Animation finishes when element reaches 45% of viewport\r\n  const startThreshold = containerHeight * 0.85;\r\n  const endThreshold = containerHeight * 0.45;\r\n\r\n  const relativeTop = rect.top - containerTop;\r\n  const currentProgress = (startThreshold - relativeTop) / (startThreshold - endThreshold);\r\n\r\n  scrollYProgress.value = Math.max(0, Math.min(1, currentProgress));\r\n\r\n  rafId = requestAnimationFrame(updateScrollYProgress);\r\n}\r\n\r\nonMounted(() => {\r\n  scrollParent = getScrollParent(containerRef.value);\r\n  rafId = requestAnimationFrame(updateScrollYProgress);\r\n});\r\n\r\nonUnmounted(() => {\r\n  if (rafId) cancelAnimationFrame(rafId);\r\n});\r\n</script>\r\n\r\n<template>\r\n  <p\r\n      ref=\"containerRef\"\r\n      :class=\"cn('flex flex-wrap justify-center text-center text-4xl font-bold tracking-tight leading-relaxed text-foreground', props.class)\"\r\n  >\r\n    <ScrollWord\r\n        v-for=\"(word, i) in words\"\r\n        :key=\"i\"\r\n        :word=\"word\"\r\n        :progress=\"scrollYProgress\"\r\n        :range=\"[i / words.length, (i + 1) / words.length]\"\r\n    />\r\n  </p>\r\n</template>",
-      "type": "registry:ui"
+      "type": "registry:ui",
+      "target": "components/ui/scroll-reveal/ScrollReveal.vue"
     },
     {
       "path": "scroll-reveal/ScrollWord.vue",
       "content": "<script lang=\"ts\" setup>\r\nimport { computed } from \"vue\";\r\n\r\ninterface Props {\r\n  word: string;\r\n  progress: number;\r\n  range: Array<number>;\r\n}\r\n\r\nconst props = defineProps<Props>();\r\n\r\nconst computedOpacity = computed(() => {\r\n  const [start, end] = props.range;\r\n  const progress = props.progress;\r\n\r\n  if (progress < start) return 0.2;\r\n  if (progress > end) return 1;\r\n\r\n  // Interpolate smoothly between 20% and 100% opacity\r\n  const ratio = (progress - start) / (end - start);\r\n  return 0.2 + ratio * 0.8;\r\n});\r\n</script>\r\n\r\n<template>\r\n  <span\r\n      :style=\"{ opacity: computedOpacity }\"\r\n      class=\"relative inline-block mx-[0.15em] text-foreground transition-opacity duration-70\"\r\n  >\r\n    {{ word }}\r\n  </span>\r\n</template>",
-      "type": "registry:ui"
+      "type": "registry:ui",
+      "target": "components/ui/scroll-reveal/ScrollWord.vue"
     }
   ]
 }
