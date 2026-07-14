@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { AnimatedTabs } from '@/components/ui/animated-tabs'
-import { CodeBlock } from '@/components/ui/code-block'
+import { AnimatedTabs } from '@/components/raya/ui/animated-tabs'
+import { CodeBlock } from '@/components/raya/ui/code-block'
 import { User, Shield, Sliders } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'docs' })

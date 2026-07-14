@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import DottedGlowBackground from '@/components/ui/dotted-glow-background/DottedGlowBackground.vue'
-import { CodeBlock } from '@/components/ui/code-block'
+import DottedGlowBackground from '@/components/raya/ui/dotted-glow-background/DottedGlowBackground.vue'
+import { CodeBlock } from '@/components/raya/ui/code-block'
 
 definePageMeta({ layout: 'docs' })
 

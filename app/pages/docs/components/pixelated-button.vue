@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { PixelatedButton } from '@/components/ui/pixelated-button'
-import { CodeBlock } from '@/components/ui/code-block'
+import { PixelatedButton } from '@/components/raya/ui/pixelated-button'
+import { CodeBlock } from '@/components/raya/ui/code-block'
 import { Crown, Ghost, Sword } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'docs' })

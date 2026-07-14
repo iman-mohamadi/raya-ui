@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { Marquee } from '@/components/ui/marquee'
-import { CodeBlock } from '@/components/ui/code-block'
+import { Marquee } from '@/components/raya/ui/marquee'
+import { CodeBlock } from '@/components/raya/ui/code-block'
 import { cn } from '@/lib/utils'
 
 definePageMeta({ layout: 'docs' })

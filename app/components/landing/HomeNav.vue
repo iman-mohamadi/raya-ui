@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, resolveComponent } from 'vue'
 import gsap from 'gsap'
-import EncryptedText from '~/components/ui/encrypted-text/EncryptedText.vue'
+import EncryptedText from '~/components/raya/ui/encrypted-text/EncryptedText.vue'
 
 const menuRef = ref<HTMLDivElement | null>(null)
 const isMenuOpen = ref(false)

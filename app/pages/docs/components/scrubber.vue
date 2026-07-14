@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { Scrubber } from '@/components/ui/scrubber'
-import { CodeBlock } from '@/components/ui/code-block'
+import { Scrubber } from '@/components/raya/ui/scrubber'
+import { CodeBlock } from '@/components/raya/ui/code-block'
 
 definePageMeta({ layout: 'docs' })
 

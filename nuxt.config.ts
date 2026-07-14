@@ -6,6 +6,12 @@ export default defineNuxtConfig({
     devtools: { enabled: true },
     css: ['./app/assets/css/main.css'],
 
+    // Organize components into folders (app/, docs/, common/, raya/ui, …) without
+    // Nuxt prefixing their auto-import names. Mirrors the inspira-ui convention.
+    components: [
+        { path: '~/components', pathPrefix: false },
+    ],
+
     runtimeConfig: {
         public: {
             version: pkg.version

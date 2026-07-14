@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { BackgroundRippleEffect } from '@/components/ui/background-ripple-effect'
-import { CodeBlock } from '@/components/ui/code-block'
+import { BackgroundRippleEffect } from '@/components/raya/ui/background-ripple-effect'
+import { CodeBlock } from '@/components/raya/ui/code-block'
 
 definePageMeta({ layout: 'docs' })
 

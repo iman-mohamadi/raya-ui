@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { AmbientGrid } from '@/components/ui/ambient-grid'
-import { CodeBlock } from '@/components/ui/code-block'
+import { AmbientGrid } from '@/components/raya/ui/ambient-grid'
+import { CodeBlock } from '@/components/raya/ui/code-block'
 
 definePageMeta({ layout: 'docs' })
 

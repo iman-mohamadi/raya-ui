@@ -10,10 +10,10 @@ import {
   FileUploadItemMetadata,
   FileUploadItemProgress,
   FileUploadItemDelete
-} from '@/components/ui/file-upload'
+} from '@/components/raya/ui/file-upload'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { CodeBlock } from '@/components/ui/code-block'
+import { CodeBlock } from '@/components/raya/ui/code-block'
 import { CloudUpload, X, Upload, Paperclip, ArrowUp } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
 

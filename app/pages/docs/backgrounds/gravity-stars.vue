@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { GravityStars } from '@/components/ui/gravity-stars'
-import { LiquidGlass } from '@/components/ui/liquid-glass'
-import { CodeBlock } from '@/components/ui/code-block'
+import { GravityStars } from '@/components/raya/ui/gravity-stars'
+import { LiquidGlass } from '@/components/raya/ui/liquid-glass'
+import { CodeBlock } from '@/components/raya/ui/code-block'
 
 definePageMeta({ layout: 'docs' })
 

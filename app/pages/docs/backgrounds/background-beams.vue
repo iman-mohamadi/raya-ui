@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import {computed, ref} from 'vue'
-import {BackgroundBeams} from '@/components/ui/background-beams'
-import {CodeBlock} from '@/components/ui/code-block'
+import {BackgroundBeams} from '@/components/raya/ui/background-beams'
+import {CodeBlock} from '@/components/raya/ui/code-block'
 
 definePageMeta({layout: 'docs'})
 

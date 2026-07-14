@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { AnimatedBackground } from '@/components/ui/animated-background'
+import { AnimatedBackground } from '@/components/raya/ui/animated-background'
 import { Home, PhoneCall, Settings, User } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'docs' })

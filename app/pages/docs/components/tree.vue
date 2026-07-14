@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { Tree } from '@/components/ui/tree'
-import { CodeBlock } from '@/components/ui/code-block'
+import { Tree } from '@/components/raya/ui/tree'
+import { CodeBlock } from '@/components/raya/ui/code-block'
 import { Folder, File, FileCode, Image as ImageIcon, Archive } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'docs' })

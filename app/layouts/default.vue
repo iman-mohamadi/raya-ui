@@ -13,7 +13,7 @@ import {Motion} from 'motion-v'
         class="fixed inset-y-0 right-[max(0px,calc(50%-var(--breakpoint-2xl)/2-80px))] w-px bg-gradient-to-b from-transparent via-border to-transparent hidden xl:block"/>
 
     <!-- 3. Navigation -->
-    <DefaulAppNav/>
+    <DefaultAppNav/>
 
     <!-- 4. Main Content Wrapper -->
     <main class="relative z-10 pt-32 pb-20">

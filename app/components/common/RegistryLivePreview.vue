@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue'
-import WireframeThumbnail from '~/components/WireframeThumbnail.vue'
+import WireframeThumbnail from '~/components/common/WireframeThumbnail.vue'
 
 const props = withDefaults(defineProps<{ component: string; color?: string }>(), {
   color: 'var(--primary)',
@@ -8,11 +8,11 @@ const props = withDefaults(defineProps<{ component: string; color?: string }>(),
 
 // Lazily loaded so they stay out of the critical bundle and only spin up
 // on the client (inside <ClientOnly>), keeping SSR + ScrollTrigger stable.
-const Magnetic = defineAsyncComponent(() => import('~/components/ui/magnetic/Magnetic.vue'))
-const BarVisualizer = defineAsyncComponent(() => import('~/components/ui/bar-visualizer/BarVisualizer.vue'))
-const GlowingEffect = defineAsyncComponent(() => import('~/components/ui/glowing-effect/GlowingEffect.vue'))
-const MorphingText = defineAsyncComponent(() => import('~/components/ui/morphing-text/MorphingText.vue'))
-const LiquidGlass = defineAsyncComponent(() => import('~/components/ui/liquid-glass/LiquidGlass.vue'))
+const Magnetic = defineAsyncComponent(() => import('~/components/raya/ui/magnetic/Magnetic.vue'))
+const BarVisualizer = defineAsyncComponent(() => import('~/components/raya/ui/bar-visualizer/BarVisualizer.vue'))
+const GlowingEffect = defineAsyncComponent(() => import('~/components/raya/ui/glowing-effect/GlowingEffect.vue'))
+const MorphingText = defineAsyncComponent(() => import('~/components/raya/ui/morphing-text/MorphingText.vue'))
+const LiquidGlass = defineAsyncComponent(() => import('~/components/raya/ui/liquid-glass/LiquidGlass.vue'))
 
 const LIVE = new Set(['Magnetic', 'Bar Visualizer', 'Glowing Effect', 'Morphing Text', 'Liquid Glass'])
 const isLive = computed(() => LIVE.has(props.component))

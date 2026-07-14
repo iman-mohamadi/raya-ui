@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { WheelPicker, WheelPickerWrapper } from '@/components/ui/wheel-picker'
-import { CodeBlock } from '@/components/ui/code-block'
+import { WheelPicker, WheelPickerWrapper } from '@/components/raya/ui/wheel-picker'
+import { CodeBlock } from '@/components/raya/ui/code-block'
 
 definePageMeta({ layout: 'docs' })
 

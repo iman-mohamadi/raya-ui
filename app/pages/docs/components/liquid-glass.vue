@@ -2,9 +2,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { GripVertical } from 'lucide-vue-next'
 import { useElementBounding, useDraggable } from '@vueuse/core'
-import { LiquidGlass } from '@/components/ui/liquid-glass'
-import { AmbientGrid } from '@/components/ui/ambient-grid'
-import { CodeBlock } from '@/components/ui/code-block'
+import { LiquidGlass } from '@/components/raya/ui/liquid-glass'
+import { AmbientGrid } from '@/components/raya/ui/ambient-grid'
+import { CodeBlock } from '@/components/raya/ui/code-block'
 
 definePageMeta({ layout: 'docs' })
 

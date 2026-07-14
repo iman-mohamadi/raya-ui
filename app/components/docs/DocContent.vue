@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import AppNav from '~/components/AppNav.vue'
-import ThemeSwitcher from '~/components/ThemeSwitcher.vue'
+import AppNav from '~/components/app/AppNav.vue'
+import ThemeSwitcher from '~/components/app/ThemeSwitcher.vue'
 
 const isExpanded = ref(false)
 const showCode = ref(false)

@@ -5,8 +5,8 @@ import {
   PartitionBarSegment,
   PartitionBarSegmentTitle,
   PartitionBarSegmentValue
-} from '@/components/ui/partition-bar'
-import { CodeBlock } from '@/components/ui/code-block'
+} from '@/components/raya/ui/partition-bar'
+import { CodeBlock } from '@/components/raya/ui/code-block'
 
 definePageMeta({ layout: 'docs' })
 

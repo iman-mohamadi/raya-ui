@@ -3,15 +3,15 @@ import {computed, ref, onMounted, onBeforeUnmount} from 'vue'
 import {Motion} from 'motion-v'
 import {useNavigationStore} from "~/stores/navigation"
 import { ArrowRight } from 'lucide-vue-next'
-import EncryptedText from '~/components/ui/encrypted-text/EncryptedText.vue'
+import EncryptedText from '~/components/raya/ui/encrypted-text/EncryptedText.vue'
 
 // Import background components for live previews
-import AmbientGrid from '@/components/ui/ambient-grid/AmbientGrid.vue'
-import BackgroundBeams from '@/components/ui/background-beams/BackgroundBeams.vue'
-import DottedGlowBackground from '@/components/ui/dotted-glow-background/DottedGlowBackground.vue'
-import GravityStars from '@/components/ui/gravity-stars/GravityStars.vue'
-import BackgroundRippleEffect from '@/components/ui/background-ripple-effect/BackgroundRippleEffect.vue'
-import SnowEffect from '@/components/ui/snow-effect/SnowEffect.vue'
+import AmbientGrid from '@/components/raya/ui/ambient-grid/AmbientGrid.vue'
+import BackgroundBeams from '@/components/raya/ui/background-beams/BackgroundBeams.vue'
+import DottedGlowBackground from '@/components/raya/ui/dotted-glow-background/DottedGlowBackground.vue'
+import GravityStars from '@/components/raya/ui/gravity-stars/GravityStars.vue'
+import BackgroundRippleEffect from '@/components/raya/ui/background-ripple-effect/BackgroundRippleEffect.vue'
+import SnowEffect from '@/components/raya/ui/snow-effect/SnowEffect.vue'
 
 const navStore = useNavigationStore()
 

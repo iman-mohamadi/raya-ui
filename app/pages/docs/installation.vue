@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { AnimatedTabs } from '@/components/ui/animated-tabs'
-import { CodeBlock } from '@/components/ui/code-block'
+import { AnimatedTabs } from '@/components/raya/ui/animated-tabs'
+import { CodeBlock } from '@/components/raya/ui/code-block'
 import { Terminal, Box, Info } from 'lucide-vue-next'
 
 const config = useAppConfig().raya

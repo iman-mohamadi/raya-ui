@@ -4,9 +4,9 @@ import Lenis from 'lenis'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import HomeNav from "~/components/landing/HomeNav.vue";
-import WireframeThumbnail from "~/components/WireframeThumbnail.vue";
-import RegistryLivePreview from "~/components/RegistryLivePreview.vue";
-import EncryptedText from "~/components/ui/encrypted-text/EncryptedText.vue";
+import WireframeThumbnail from "~/components/common/WireframeThumbnail.vue";
+import RegistryLivePreview from "~/components/common/RegistryLivePreview.vue";
+import EncryptedText from "~/components/raya/ui/encrypted-text/EncryptedText.vue";
 
 definePageMeta({ layout: false })
 
