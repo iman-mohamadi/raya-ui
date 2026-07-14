@@ -1,0 +1,6 @@
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true
+  ffmpeg-static: true
+  sharp: true
+  vue-demi: true
