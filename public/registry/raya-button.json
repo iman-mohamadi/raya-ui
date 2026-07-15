@@ -2,6 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "raya-button",
   "type": "registry:ui",
+  "description": "The signature Raya button with semantic color + variant matrix.",
   "dependencies": [
     "clsx",
     "tailwind-merge",
@@ -28,5 +29,43 @@
       "type": "registry:ui",
       "target": "components/ui/raya-button/index.ts"
     }
-  ]
+  ],
+  "cssVars": {
+    "theme": {
+      "color-primary-content": "var(--primary-foreground)",
+      "color-secondary-content": "var(--secondary-foreground)",
+      "color-success": "var(--success)",
+      "color-success-content": "var(--success-foreground)",
+      "color-info": "var(--info)",
+      "color-info-content": "var(--info-foreground)",
+      "color-warning": "var(--warning)",
+      "color-warning-content": "var(--warning-foreground)",
+      "color-error": "var(--error)",
+      "color-error-content": "var(--error-foreground)",
+      "color-inverted": "var(--foreground)",
+      "color-default": "var(--foreground)",
+      "color-elevated": "var(--muted)",
+      "color-accented": "var(--accent)"
+    },
+    "light": {
+      "success": "oklch(0.62 0.19 145.4)",
+      "success-foreground": "oklch(0.98 0 0)",
+      "info": "oklch(0.60 0.16 255)",
+      "info-foreground": "oklch(0.98 0 0)",
+      "warning": "oklch(0.75 0.15 70)",
+      "warning-foreground": "oklch(0.98 0 0)",
+      "error": "var(--destructive)",
+      "error-foreground": "oklch(1 0 0)"
+    },
+    "dark": {
+      "success": "oklch(0.55 0.18 145.4)",
+      "success-foreground": "oklch(1 0 0)",
+      "info": "oklch(0.55 0.16 255)",
+      "info-foreground": "oklch(1 0 0)",
+      "warning": "oklch(0.70 0.15 70)",
+      "warning-foreground": "oklch(0.1 0 0)",
+      "error": "var(--destructive)",
+      "error-foreground": "oklch(1 0 0)"
+    }
+  }
 }

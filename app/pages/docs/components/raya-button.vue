@@ -52,7 +52,46 @@ const installCommands = computed(() => {
   return {
     cli: cliCmd,
     manual: `npm install class-variance-authority reka-ui lucide-vue-next`,
-    css: `/* Add variables to your root css (Handled in main.css) */`
+    css: `/* The CLI adds these automatically. For a manual install, paste them
+   into your Tailwind CSS entry so the semantic colors resolve. */
+@theme inline {
+  --color-primary-content: var(--primary-foreground);
+  --color-secondary-content: var(--secondary-foreground);
+  --color-success: var(--success);
+  --color-success-content: var(--success-foreground);
+  --color-info: var(--info);
+  --color-info-content: var(--info-foreground);
+  --color-warning: var(--warning);
+  --color-warning-content: var(--warning-foreground);
+  --color-error: var(--error);
+  --color-error-content: var(--error-foreground);
+  --color-inverted: var(--foreground);
+  --color-default: var(--foreground);
+  --color-elevated: var(--muted);
+  --color-accented: var(--accent);
+}
+
+:root {
+  --success: oklch(0.62 0.19 145.4);
+  --success-foreground: oklch(0.98 0 0);
+  --info: oklch(0.60 0.16 255);
+  --info-foreground: oklch(0.98 0 0);
+  --warning: oklch(0.75 0.15 70);
+  --warning-foreground: oklch(0.98 0 0);
+  --error: var(--destructive);
+  --error-foreground: oklch(1 0 0);
+}
+
+.dark {
+  --success: oklch(0.55 0.18 145.4);
+  --success-foreground: oklch(1 0 0);
+  --info: oklch(0.55 0.16 255);
+  --info-foreground: oklch(1 0 0);
+  --warning: oklch(0.70 0.15 70);
+  --warning-foreground: oklch(0.1 0 0);
+  --error: var(--destructive);
+  --error-foreground: oklch(1 0 0);
+}`
   }
 })
 
@@ -139,8 +178,11 @@ import { RayaButton } from '@/components/ui/raya-button'
 
       <!-- CSS Install -->
       <div v-if="activeInstallTab === 'css'" class="flex flex-col gap-4">
-        <div class="rounded-lg border border-warning/20 bg-warning/10 p-4 text-sm text-warning mb-2">
-          <strong class="font-semibold">Required:</strong> You must configure your theme variables in <code>main.css</code> for colors to map properly.
+        <div class="rounded-lg border border-info/20 bg-info/10 p-4 text-sm text-info mb-2">
+          <strong class="font-semibold">Auto-installed:</strong> the <code>add</code> command writes these semantic color tokens into your theme for you. Only paste them manually if you copied the files by hand.
+        </div>
+        <div class="rounded-xl overflow-hidden border border-border bg-background p-1.5">
+          <CodeBlock language="css" :code="installCommands.css" class="border-0 m-0 bg-transparent" />
         </div>
       </div>
     </div>

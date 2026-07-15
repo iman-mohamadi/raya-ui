@@ -213,6 +213,7 @@
     {
       "name": "raya-button",
       "type": "registry:ui",
+      "description": "The signature Raya button with semantic color + variant matrix.",
       "dependencies": [
         "clsx",
         "tailwind-merge",
