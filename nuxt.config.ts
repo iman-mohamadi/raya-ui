@@ -9,7 +9,11 @@ export default defineNuxtConfig({
     // Organize components into folders (app/, docs/, common/, raya/ui, …) without
     // Nuxt prefixing their auto-import names. Mirrors the inspira-ui convention.
     components: [
-        { path: '~/components', pathPrefix: false },
+        // Ignore each component's index.ts barrel: without this, pathPrefix:false
+        // registers both Foo.vue and index.ts under the same auto-import name and
+        // Nuxt warns about the collision. Explicit `@/components/.../` imports still
+        // resolve index.ts through normal module resolution.
+        { path: '~/components', pathPrefix: false, ignore: ['**/index.ts'] },
     ],
 
     runtimeConfig: {

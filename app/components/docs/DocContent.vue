@@ -12,6 +12,15 @@ const previewKey = ref(0)
 const refreshPreview = () => {
   previewKey.value++
 }
+
+// The sidebar is hover-driven on desktop (edge strip opens it, leaving closes it).
+// On touch there is no hover, so it is opened via the toggle and dismissed via the
+// backdrop — auto-closing on mouseleave there would collapse it right after opening.
+const closeSidebarOnLeave = () => {
+  if (typeof window !== 'undefined' && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    isSidebarOpen.value = false
+  }
+}
 </script>
 
 <template>
@@ -26,8 +35,8 @@ const refreshPreview = () => {
     <!-- The Sliding Sidebar -->
     <aside
         class="fixed top-0 left-0 h-full w-65 lg:w-72 z-999 transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]"
-        :class="isSidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-        @mouseleave="isSidebarOpen = false"
+        :style="{ transform: isSidebarOpen ? 'translateX(0)' : 'translateX(-100%)' }"
+        @mouseleave="closeSidebarOnLeave"
     >
       <div class="isolate pointer-events-none absolute inset-0 z-0 w-full h-full">
         <div class="absolute inset-0" style="mask-image: linear-gradient(to left, transparent 0%, black 25%, black 50%, transparent 75%); backdrop-filter: blur(4px);"></div>
@@ -46,7 +55,7 @@ const refreshPreview = () => {
       <div class="relative flex flex-col lg:flex-row h-[calc(100vh)] overflow-hidden w-full bg-transparent">
 
         <!-- Top Header & Breadcrumb -->
-        <div :class="isSidebarOpen ? 'z-[1000]' : 'z-[60]'" class="absolute top-0 left-0 right-0 h-12 flex items-center pointer-events-none select-none w-1/2">
+        <div :class="isSidebarOpen ? 'z-[1000]' : 'z-[110]'" class="absolute top-0 left-0 right-0 h-12 flex items-center pointer-events-none select-none w-full lg:w-1/2">
           <div aria-hidden="true" class="pointer-events-none absolute inset-0 z-50 bg-transparent" style="height: 106px; width: 100%; top: 0px; left: 0px; mask-image: linear-gradient(black 50%, transparent 100%); backdrop-filter: blur(4px);"></div>
 
           <div class="relative flex items-center z-[150] gap-3 pt-6 px-6 pointer-events-auto">
@@ -158,7 +167,7 @@ const refreshPreview = () => {
 
             <!-- Code Block Pane -->
             <div
-                aria-hidden="true"
+                :aria-hidden="!showCode"
                 class="overflow-hidden rounded-2xl flex-shrink-0 bg-background relative transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]"
                 :class="showCode ? 'h-[50%] mt-3 opacity-100 border border-border' : 'h-0 mt-0 opacity-0 border-0'"
             >
