@@ -1,0 +1,303 @@
+{
+  "$schema": "https://shadcn-vue.com/schema.json",
+  "style": "new-york",
+  "baseColor": "neutral",
+  "registry": [
+    {
+      "name": "ambient-grid",
+      "type": "registry:ui",
+      "title": "Ambient Grid",
+      "description": "An animated grid background effect",
+      "dependencies": [
+        "clsx",
+        "tailwind-merge"
+      ]
+    },
+    {
+      "name": "animated-background",
+      "type": "registry:ui",
+      "title": "Animated Background",
+      "description": "Dynamic animated background with smooth transitions",
+      "dependencies": [
+        "motion-v",
+        "clsx",
+        "tailwind-merge"
+      ]
+    },
+    {
+      "name": "animated-input",
+      "type": "registry:ui",
+      "title": "Animated Input",
+      "description": "Input field with animated states",
+      "dependencies": [
+        "@vueuse/core",
+        "clsx",
+        "tailwind-merge"
+      ]
+    },
+    {
+      "name": "animated-tabs",
+      "type": "registry:ui",
+      "title": "Animated Tabs",
+      "description": "Tab component with smooth animations",
+      "dependencies": [
+        "@vueuse/core",
+        "clsx",
+        "tailwind-merge"
+      ]
+    },
+    {
+      "name": "animated-theme-toggler",
+      "type": "registry:ui",
+      "title": "Animated Theme Toggler",
+      "description": "Theme switcher with smooth animation",
+      "dependencies": [
+        "lucide-vue-next",
+        "clsx",
+        "tailwind-merge"
+      ]
+    },
+    {
+      "name": "background-beams",
+      "type": "registry:ui",
+      "title": "Background Beams",
+      "description": "Animated beam effects for backgrounds",
+      "dependencies": [
+        "clsx",
+        "tailwind-merge"
+      ]
+    },
+    {
+      "name": "background-ripple-effect",
+      "type": "registry:ui",
+      "title": "Background Ripple Effect",
+      "description": "Ripple animation effect for backgrounds",
+      "dependencies": [
+        "clsx",
+        "tailwind-merge"
+      ]
+    },
+    {
+      "name": "bar-visualizer",
+      "type": "registry:ui",
+      "title": "Bar Visualizer",
+      "description": "Audio or data bar visualization component",
+      "dependencies": [
+        "@vueuse/core",
+        "clsx",
+        "tailwind-merge"
+      ]
+    },
+    {
+      "name": "code-block",
+      "type": "registry:ui",
+      "title": "Code Block",
+      "description": "Syntax highlighted code block component",
+      "dependencies": [
+        "highlight.js",
+        "lucide-vue-next",
+        "clsx",
+        "tailwind-merge"
+      ]
+    },
+    {
+      "name": "dotted-glow-background",
+      "type": "registry:ui",
+      "title": "Dotted Glow Background",
+      "description": "Background with dotted glow effect",
+      "dependencies": [
+        "clsx",
+        "tailwind-merge"
+      ]
+    },
+    {
+      "name": "encrypted-text",
+      "type": "registry:ui",
+      "title": "Encrypted Text",
+      "description": "Text with encryption/decryption animation",
+      "dependencies": [
+        "@vueuse/core",
+        "clsx",
+        "tailwind-merge"
+      ]
+    },
+    {
+      "name": "file-upload",
+      "type": "registry:ui",
+      "title": "File Upload",
+      "description": "File upload component with drag and drop support",
+      "dependencies": [
+        "lucide-vue-next",
+        "@vueuse/core",
+        "reka-ui"
+      ]
+    },
+    {
+      "name": "flip-clock",
+      "type": "registry:ui",
+      "title": "Flip Clock",
+      "description": "Animated flip clock display",
+      "dependencies": [
+        "clsx",
+        "tailwind-merge",
+        "class-variance-authority"
+      ]
+    },
+    {
+      "name": "floating-dock",
+      "type": "registry:ui",
+      "title": "Floating Dock",
+      "description": "Floating dock navigation component",
+      "dependencies": [
+        "@vueuse/core",
+        "clsx",
+        "tailwind-merge"
+      ]
+    },
+    {
+      "name": "glowing-effect",
+      "type": "registry:ui",
+      "title": "Glowing Effect",
+      "description": "Glowing animation effect component",
+      "dependencies": [
+        "motion-v",
+        "clsx",
+        "tailwind-merge"
+      ]
+    },
+    {
+      "name": "gravity-stars",
+      "type": "registry:ui",
+      "title": "Gravity Stars",
+      "description": "Stars animation with gravity effect",
+      "dependencies": [
+        "clsx",
+        "tailwind-merge"
+      ]
+    },
+    {
+      "name": "liquid-glass",
+      "type": "registry:ui",
+      "title": "Liquid Glass",
+      "description": "Frosted glass morphism effect",
+      "dependencies": []
+    },
+    {
+      "name": "magnetic",
+      "type": "registry:ui",
+      "title": "Magnetic",
+      "description": "Magnetic cursor following effect",
+      "dependencies": [
+        "motion-v",
+        "@vueuse/core"
+      ]
+    },
+    {
+      "name": "marquee",
+      "type": "registry:ui",
+      "title": "Marquee",
+      "description": "Scrolling marquee text component",
+      "dependencies": [
+        "clsx",
+        "tailwind-merge"
+      ]
+    },
+    {
+      "name": "morphing-text",
+      "type": "registry:ui",
+      "title": "Morphing Text",
+      "description": "Text morphing animation component",
+      "dependencies": [
+        "clsx",
+        "tailwind-merge"
+      ]
+    },
+    {
+      "name": "partition-bar",
+      "type": "registry:ui",
+      "title": "Partition Bar",
+      "description": "Segmented progress bar component",
+      "dependencies": [
+        "clsx",
+        "tailwind-merge",
+        "class-variance-authority"
+      ]
+    },
+    {
+      "name": "pixelated-button",
+      "type": "registry:ui",
+      "title": "Pixelated Button",
+      "description": "Retro pixelated style button",
+      "dependencies": [
+        "clsx",
+        "tailwind-merge"
+      ]
+    },
+    {
+      "name": "raya-button",
+      "type": "registry:ui",
+      "title": "Raya Button",
+      "description": "The signature Raya button with semantic color + variant matrix",
+      "dependencies": [
+        "clsx",
+        "tailwind-merge",
+        "class-variance-authority",
+        "lucide-vue-next"
+      ]
+    },
+    {
+      "name": "scroll-reveal",
+      "type": "registry:ui",
+      "title": "Scroll Reveal",
+      "description": "Reveal elements on scroll animation",
+      "dependencies": []
+    },
+    {
+      "name": "scroll-spy",
+      "type": "registry:ui",
+      "title": "Scroll Spy",
+      "description": "Track scroll position and highlight active section",
+      "dependencies": [
+        "@vueuse/core",
+        "clsx",
+        "tailwind-merge"
+      ]
+    },
+    {
+      "name": "scrubber",
+      "type": "registry:ui",
+      "title": "Scrubber",
+      "description": "Media scrubber/slider component",
+      "dependencies": []
+    },
+    {
+      "name": "snow-effect",
+      "type": "registry:ui",
+      "title": "Snow Effect",
+      "description": "Animated snow falling effect",
+      "dependencies": [
+        "@vueuse/core"
+      ]
+    },
+    {
+      "name": "tree",
+      "type": "registry:ui",
+      "title": "Tree",
+      "description": "Nested tree component for hierarchical data",
+      "dependencies": [
+        "lucide-vue-next",
+        "clsx",
+        "tailwind-merge"
+      ]
+    },
+    {
+      "name": "wheel-picker",
+      "type": "registry:ui",
+      "title": "Wheel Picker",
+      "description": "Rotating wheel picker component",
+      "dependencies": [
+        "@vueuse/core"
+      ]
+    }
+  ]
+}
