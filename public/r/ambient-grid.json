@@ -1,0 +1,24 @@
+{
+  "$schema": "https://shadcn-vue.com/schema/registry-item.json",
+  "name": "ambient-grid",
+  "type": "registry:ui",
+  "title": "Ambient Grid",
+  "description": "An animated grid background effect",
+  "dependencies": [
+    "clsx",
+    "tailwind-merge"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "ambient-grid/AmbientGrid.vue",
+      "content": "<script setup lang=\"ts\">\nimport { ref, computed } from 'vue'\nimport { useMouseInElement } from '@vueuse/core'\nimport { cn } from '@/lib/utils'\n\ninterface Props {\n  class?: string\n  /**\n   * The size of the grid pattern in pixels.\n   * @default 24\n   */\n  gridSize?: number\n  /**\n   * Primary glow color (top/mouse follower).\n   * @default \"#a855f7\" (purple-500)\n   */\n  color1?: string\n  /**\n   * Secondary glow color (bottom/static).\n   * @default \"#3b82f6\" (blue-500)\n   */\n  color2?: string\n  /**\n   * Whether the primary glow should follow the mouse.\n   * @default true\n   */\n  interactive?: boolean\n}\n\nconst props = withDefaults(defineProps<Props>(), {\n  gridSize: 24,\n  color1: '#a855f7', // purple-500\n  color2: '#3b82f6', // blue-500\n  interactive: true,\n})\n\nconst container = ref<HTMLElement | null>(null)\nconst { elementX, elementY, isOutside } = useMouseInElement(container)\n\n// Smoothly transition the spotlight position\nconst spotlightPos = computed(() => {\n  if (!props.interactive || isOutside.value) {\n    return { x: '50%', y: '0%' } // Default position (top center)\n  }\n  return { x: `${elementX.value}px`, y: `${elementY.value}px` }\n})\n</script>\n\n<template>\n  <div\n      ref=\"container\"\n      :class=\"cn('absolute inset-0 z-0 overflow-hidden bg-background', props.class)\"\n  >\n    <div\n        class=\"absolute inset-0 z-0 transition-opacity duration-700\"\n        :style=\"{\n        '--grid-size': `${gridSize}px`,\n        '--color-1': color1,\n        '--color-2': color2,\n        '--mouse-x': spotlightPos.x,\n        '--mouse-y': spotlightPos.y\n      }\"\n    >\n      <div\n          class=\"absolute inset-0 h-full w-full opacity-[0.15]\"\n          style=\"background-image: linear-gradient(to right, var(--border) 1px, transparent 1px), linear-gradient(to bottom, var(--border) 1px, transparent 1px); background-size: var(--grid-size) var(--grid-size);\"\n      ></div>\n\n      <div\n          class=\"absolute h-[500px] w-[500px] rounded-full opacity-30 blur-[100px] transition-all duration-100 ease-out will-change-transform\"\n          :style=\"{\n          background: 'var(--color-1)',\n          left: 'var(--mouse-x)',\n          top: 'var(--mouse-y)',\n          transform: 'translate(-50%, -50%)'\n        }\"\n      ></div>\n\n      <div\n          class=\"absolute bottom-0 right-0 h-[400px] w-[400px] translate-x-1/3 translate-y-1/3 rounded-full opacity-20 blur-[100px]\"\n          :style=\"{ background: 'var(--color-2)' }\"\n      ></div>\n    </div>\n\n    <div class=\"relative z-10 h-full w-full\">\n      <slot />\n    </div>\n  </div>\n</template>",
+      "type": "registry:ui"
+    },
+    {
+      "path": "ambient-grid/index.ts",
+      "content": "export { default as AmbientGrid } from './AmbientGrid.vue'",
+      "type": "registry:ui"
+    }
+  ]
+}

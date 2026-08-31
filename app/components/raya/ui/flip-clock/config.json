@@ -1,9 +1,12 @@
 {
+  "title": "Flip Clock",
+  "description": "Animated flip clock display",
   "dependencies": [
     "clsx",
     "tailwind-merge",
     "class-variance-authority"
   ],
+  "registryDependencies": [],
   "files": [
     "FlipClock.vue",
     "FlipUnit.vue"

@@ -1,9 +1,12 @@
 {
+  "title": "Floating Dock",
+  "description": "Floating dock navigation component",
   "dependencies": [
     "@vueuse/core",
     "clsx",
     "tailwind-merge"
   ],
+  "registryDependencies": [],
   "files": [
     "FloatingDock.vue",
     "FloatingDockDesktop.vue",

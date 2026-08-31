@@ -1,9 +1,12 @@
 {
+  "title": "Animated Theme Toggler",
+  "description": "Theme switcher with smooth animation",
   "dependencies": [
     "lucide-vue-next",
     "clsx",
     "tailwind-merge"
   ],
+  "registryDependencies": [],
   "files": [
     "AnimatedThemeToggler.vue"
   ]

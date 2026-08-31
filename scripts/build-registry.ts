@@ -3,6 +3,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import type {
   ComponentConfig,
+  Registry,
+  RegistryFileType,
   RegistryItem,
   RegistryItemFile,
 } from "../registry/schema";
@@ -11,12 +13,27 @@ import type {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const COMPONENTS_DIR = path.join(__dirname, "../app/components/raya/ui");
-const OUTPUT_DIR = path.join(__dirname, "../public/registry");
-const REGISTRY_ITEM_SCHEMA = "https://ui.shadcn.com/schema/registry-item.json";
+const ROOT_DIR = path.join(__dirname, "..");
+const COMPONENTS_DIR = path.join(ROOT_DIR, "app/components/raya/ui");
+/** Served at /r/<name>.json — the path the shadcn-vue CLI and docs assume. */
+const OUTPUT_DIR = path.join(ROOT_DIR, "public/r");
+const SOURCE_MANIFEST = path.join(ROOT_DIR, "registry.json");
+
+const REGISTRY_SCHEMA = "https://shadcn-vue.com/schema/registry.json";
+const REGISTRY_ITEM_SCHEMA = "https://shadcn-vue.com/schema/registry-item.json";
+
+const REGISTRY_NAME = "raya-ui";
+const REGISTRY_HOMEPAGE = "https://raya-ui.com";
 
 /** Files that live in a component folder but must never ship. */
 const IGNORED = new Set(["config.json"]);
+
+/**
+ * Only these types take a `target`. For everything else the CLI resolves the
+ * destination from the consumer's `components.json` aliases, so hardcoding one
+ * would override their project layout.
+ */
+const TYPES_REQUIRING_TARGET = new Set(["registry:file", "registry:page"]);
 
 function readConfig(componentPath: string): ComponentConfig {
   const configPath = path.join(componentPath, "config.json");
@@ -53,54 +70,111 @@ function generateIndexContent(name: string, files: string[]): string {
     : `// Warning: Could not auto-generate export for ${name}\n`;
 }
 
-function buildComponent(componentName: string): RegistryItem {
+/** Resolve the file list a component ships: explicit config list, else auto-scan. */
+function resolveFileNames(componentName: string, config: ComponentConfig): string[] {
   const componentPath = path.join(COMPONENTS_DIR, componentName);
-  const config = readConfig(componentPath);
-
-  // Determine which files to ship: explicit config list, else auto-scan.
-  let componentFiles = config.files?.length
+  const declared = config.files?.length
     ? config.files
     : fs.readdirSync(componentPath).filter((f) => !IGNORED.has(f) && !f.startsWith("."));
 
-  const files: RegistryItemFile[] = [];
-  for (const fileName of componentFiles) {
-    const filePath = path.join(componentPath, fileName);
-    if (!fs.existsSync(filePath)) {
-      if (fileName !== "index.ts") console.warn(`⚠️  File missing: ${fileName} in ${componentName}`);
-      continue;
-    }
-    files.push({
-      path: `${componentName}/${fileName}`,
-      content: fs.readFileSync(filePath, "utf-8"),
-      type: config.type || "registry:ui",
-      // Where the file lands in the consumer's project (standard shadcn ui dir).
-      target: `components/ui/${componentName}/${fileName}`,
-    });
+  const resolved = declared.filter((fileName) => {
+    if (fs.existsSync(path.join(componentPath, fileName))) return true;
+    if (fileName !== "index.ts") console.warn(`⚠️  File missing: ${fileName} in ${componentName}`);
+    return false;
+  });
+
+  // A config `files` list can legitimately omit the barrel; ship the real one
+  // rather than letting the generated fallback shadow it.
+  if (!resolved.includes("index.ts") && fs.existsSync(path.join(componentPath, "index.ts"))) {
+    resolved.push("index.ts");
   }
 
-  // Generate a default index.ts if the folder didn't provide one.
-  if (!files.some((f) => f.path.endsWith("index.ts"))) {
-    const content = generateIndexContent(componentName, componentFiles);
-    files.push({
-      path: `${componentName}/index.ts`,
-      content,
-      type: config.type || "registry:ui",
-      target: `components/ui/${componentName}/index.ts`,
-    });
-  }
+  return resolved;
+}
 
-  const item: RegistryItem = {
-    $schema: REGISTRY_ITEM_SCHEMA,
+/**
+ * The type stamped on each file entry. `registry:font` is valid at item root
+ * but not on a file, so it falls back to the default.
+ */
+function fileTypeFor(componentName: string, config: ComponentConfig): RegistryFileType {
+  if (!config.type) return "registry:ui";
+  if (config.type === "registry:font") {
+    console.warn(`⚠️  ${componentName}: "registry:font" is not a valid file type; using "registry:ui".`);
+    return "registry:ui";
+  }
+  return config.type;
+}
+
+/** Fields shared by the built item and the source manifest entry. */
+function itemMetadata(componentName: string, config: ComponentConfig) {
+  return {
     name: componentName,
-    type: config.type || "registry:ui",
+    type: config.type || ("registry:ui" as const),
     ...(config.title ? { title: config.title } : {}),
     ...(config.description ? { description: config.description } : {}),
     dependencies: config.dependencies || [],
+    ...(config.devDependencies ? { devDependencies: config.devDependencies } : {}),
     registryDependencies: config.registryDependencies || [],
-    files,
     ...(config.cssVars ? { cssVars: config.cssVars } : {}),
+    ...(config.css ? { css: config.css } : {}),
+    ...(config.docs ? { docs: config.docs } : {}),
+    ...(config.categories ? { categories: config.categories } : {}),
+    ...(config.meta ? { meta: config.meta } : {}),
   };
-  return item;
+}
+
+/** The distributable item: file contents inlined so one fetch installs it. */
+function buildComponent(componentName: string, config: ComponentConfig): RegistryItem {
+  const componentPath = path.join(COMPONENTS_DIR, componentName);
+  const fileNames = resolveFileNames(componentName, config);
+  const type = fileTypeFor(componentName, config);
+
+  const files: RegistryItemFile[] = fileNames.map((fileName) => ({
+    path: `${componentName}/${fileName}`,
+    content: fs.readFileSync(path.join(componentPath, fileName), "utf-8"),
+    type,
+    ...(TYPES_REQUIRING_TARGET.has(type)
+      ? { target: `components/ui/${componentName}/${fileName}` }
+      : {}),
+  }));
+
+  // Generate a default index.ts if the folder didn't provide one.
+  if (!files.some((f) => f.path.endsWith("index.ts"))) {
+    files.push({
+      path: `${componentName}/index.ts`,
+      content: generateIndexContent(componentName, fileNames),
+      type,
+      ...(TYPES_REQUIRING_TARGET.has(type)
+        ? { target: `components/ui/${componentName}/index.ts` }
+        : {}),
+    });
+  }
+
+  return {
+    $schema: REGISTRY_ITEM_SCHEMA,
+    ...itemMetadata(componentName, config),
+    files,
+  };
+}
+
+/**
+ * The source-manifest entry: repo-relative paths, no inlined content. This is
+ * what `shadcn-vue add owner/repo/<name>` reads from the repo root.
+ */
+function sourceItem(componentName: string, config: ComponentConfig): RegistryItem {
+  const fileNames = resolveFileNames(componentName, config);
+  const type = fileTypeFor(componentName, config);
+
+  return {
+    ...itemMetadata(componentName, config),
+    files: fileNames.map((fileName) => ({
+      path: `app/components/raya/ui/${componentName}/${fileName}`,
+      type,
+      ...(TYPES_REQUIRING_TARGET.has(type)
+        ? { target: `components/ui/${componentName}/${fileName}` }
+        : {}),
+    })),
+  };
 }
 
 function build() {
@@ -115,33 +189,34 @@ function build() {
 
   const componentFolders = fs
     .readdirSync(COMPONENTS_DIR)
-    .filter((f) => fs.statSync(path.join(COMPONENTS_DIR, f)).isDirectory());
+    .filter((f) => fs.statSync(path.join(COMPONENTS_DIR, f)).isDirectory())
+    .sort((a, b) => a.localeCompare(b));
 
   console.log(`Found ${componentFolders.length} components to process...`);
 
-  const index: Array<Pick<RegistryItem, "name" | "type" | "title" | "description" | "dependencies" | "registryDependencies">> = [];
+  const sourceItems: RegistryItem[] = [];
 
   for (const componentName of componentFolders) {
-    const item = buildComponent(componentName);
+    const config = readConfig(path.join(COMPONENTS_DIR, componentName));
+    const item = buildComponent(componentName, config);
     fs.writeFileSync(path.join(OUTPUT_DIR, `${componentName}.json`), JSON.stringify(item, null, 2));
-    index.push({
-      name: item.name,
-      type: item.type,
-      ...(item.title ? { title: item.title } : {}),
-      ...(item.description ? { description: item.description } : {}),
-      dependencies: item.dependencies,
-      registryDependencies: item.registryDependencies,
-    });
+    sourceItems.push(sourceItem(componentName, config));
     console.log(`✅ Registry built: ${componentName}`);
   }
 
-  // Manifest of every item (useful for a registry index endpoint).
-  index.sort((a, b) => a.name.localeCompare(b.name));
-  fs.writeFileSync(
-    path.join(OUTPUT_DIR, "index.json"),
-    JSON.stringify({ name: "raya-ui", homepage: "https://raya-ui.com", items: index }, null, 2),
-  );
-  console.log(`\n📦 Registry index written with ${index.length} items.`);
+  const manifest: Registry = {
+    $schema: REGISTRY_SCHEMA,
+    name: REGISTRY_NAME,
+    homepage: REGISTRY_HOMEPAGE,
+    items: sourceItems,
+  };
+
+  // Root manifest (source paths) — read by `shadcn-vue add owner/repo/<name>`.
+  fs.writeFileSync(SOURCE_MANIFEST, JSON.stringify(manifest, null, 2) + "\n");
+  // Same manifest served over HTTP as the registry index.
+  fs.writeFileSync(path.join(OUTPUT_DIR, "registry.json"), JSON.stringify(manifest, null, 2));
+
+  console.log(`\n📦 Registry index written with ${sourceItems.length} items.`);
 }
 
 build();

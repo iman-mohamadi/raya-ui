@@ -1,8 +1,11 @@
 {
+  "title": "Background Beams",
+  "description": "Animated beam effects for backgrounds",
   "dependencies": [
     "clsx",
     "tailwind-merge"
   ],
+  "registryDependencies": [],
   "files": [
     "BackgroundBeams.vue"
   ]

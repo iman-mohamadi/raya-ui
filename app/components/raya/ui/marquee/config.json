@@ -1,8 +1,11 @@
 {
+  "title": "Marquee",
+  "description": "Scrolling marquee text component",
   "dependencies": [
     "clsx",
     "tailwind-merge"
   ],
+  "registryDependencies": [],
   "files": [
     "Marquee.vue"
   ]

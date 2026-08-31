@@ -1,9 +1,12 @@
 {
+  "title": "Bar Visualizer",
+  "description": "Audio or data bar visualization component",
   "dependencies": [
     "@vueuse/core",
     "clsx",
     "tailwind-merge"
   ],
+  "registryDependencies": [],
   "files": [
     "BarVisualizer.vue"
   ]

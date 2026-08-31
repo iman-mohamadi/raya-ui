@@ -1,8 +1,11 @@
 {
+  "title": "Ambient Grid",
+  "description": "An animated grid background effect",
   "dependencies": [
     "clsx",
     "tailwind-merge"
   ],
+  "registryDependencies": [],
   "files": [
     "AmbientGrid.vue"
   ]

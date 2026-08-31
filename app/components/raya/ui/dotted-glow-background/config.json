@@ -1,8 +1,11 @@
 {
+  "title": "Dotted Glow Background",
+  "description": "Background with dotted glow effect",
   "dependencies": [
     "clsx",
     "tailwind-merge"
   ],
+  "registryDependencies": [],
   "files": [
     "DottedGlowBackground.vue"
   ]

@@ -1,7 +1,10 @@
 {
+  "title": "File Upload",
+  "description": "File upload component with drag and drop support",
   "dependencies": [
     "lucide-vue-next",
     "@vueuse/core",
     "reka-ui"
-  ]
+  ],
+  "registryDependencies": []
 }

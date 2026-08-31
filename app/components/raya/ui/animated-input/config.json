@@ -1,9 +1,12 @@
 {
+  "title": "Animated Input",
+  "description": "Input field with animated states",
   "dependencies": [
     "@vueuse/core",
     "clsx",
     "tailwind-merge"
   ],
+  "registryDependencies": [],
   "files": [
     "AnimatedInput.vue"
   ]

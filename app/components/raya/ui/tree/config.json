@@ -1,9 +1,12 @@
 {
+  "title": "Tree",
+  "description": "Nested tree component for hierarchical data",
   "dependencies": [
     "lucide-vue-next",
     "clsx",
     "tailwind-merge"
   ],
+  "registryDependencies": [],
   "files": [
     "Tree.vue"
   ]

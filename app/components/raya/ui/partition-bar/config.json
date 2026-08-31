@@ -1,9 +1,12 @@
 {
+  "title": "Partition Bar",
+  "description": "Segmented progress bar component",
   "dependencies": [
     "clsx",
     "tailwind-merge",
     "class-variance-authority"
   ],
+  "registryDependencies": [],
   "files": [
     "PartitionBar.vue",
     "PartitionBarSegment.vue",

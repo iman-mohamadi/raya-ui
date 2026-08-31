@@ -1,3 +1,6 @@
 {
-  "dependencies": []
+  "title": "Scrubber",
+  "description": "Media scrubber/slider component",
+  "dependencies": [],
+  "registryDependencies": []
 }

@@ -1,8 +1,11 @@
 {
+  "title": "Gravity Stars",
+  "description": "Stars animation with gravity effect",
   "dependencies": [
     "clsx",
     "tailwind-merge"
   ],
+  "registryDependencies": [],
   "files": [
     "GravityStars.vue"
   ]

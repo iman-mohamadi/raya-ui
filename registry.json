@@ -1,8 +1,8 @@
 {
-  "$schema": "https://shadcn-vue.com/schema.json",
-  "style": "new-york",
-  "baseColor": "neutral",
-  "registry": [
+  "$schema": "https://shadcn-vue.com/schema/registry.json",
+  "name": "raya-ui",
+  "homepage": "https://raya-ui.com",
+  "items": [
     {
       "name": "ambient-grid",
       "type": "registry:ui",
@@ -11,6 +11,17 @@
       "dependencies": [
         "clsx",
         "tailwind-merge"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/ambient-grid/AmbientGrid.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/ambient-grid/index.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -22,6 +33,17 @@
         "motion-v",
         "clsx",
         "tailwind-merge"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/animated-background/AnimatedBackground.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/animated-background/index.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -33,6 +55,17 @@
         "@vueuse/core",
         "clsx",
         "tailwind-merge"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/animated-input/AnimatedInput.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/animated-input/index.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -44,6 +77,17 @@
         "@vueuse/core",
         "clsx",
         "tailwind-merge"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/animated-tabs/AnimatedTabs.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/animated-tabs/index.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -55,6 +99,17 @@
         "lucide-vue-next",
         "clsx",
         "tailwind-merge"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/animated-theme-toggler/AnimatedThemeToggler.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/animated-theme-toggler/index.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -65,6 +120,17 @@
       "dependencies": [
         "clsx",
         "tailwind-merge"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/background-beams/BackgroundBeams.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/background-beams/index.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -75,6 +141,17 @@
       "dependencies": [
         "clsx",
         "tailwind-merge"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/background-ripple-effect/BackgroundRippleEffect.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/background-ripple-effect/index.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -86,6 +163,17 @@
         "@vueuse/core",
         "clsx",
         "tailwind-merge"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/bar-visualizer/BarVisualizer.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/bar-visualizer/index.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -98,6 +186,17 @@
         "lucide-vue-next",
         "clsx",
         "tailwind-merge"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/code-block/CodeBlock.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/code-block/index.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -108,6 +207,17 @@
       "dependencies": [
         "clsx",
         "tailwind-merge"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/dotted-glow-background/DottedGlowBackground.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/dotted-glow-background/index.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -119,6 +229,17 @@
         "@vueuse/core",
         "clsx",
         "tailwind-merge"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/encrypted-text/EncryptedText.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/encrypted-text/index.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -130,6 +251,53 @@
         "lucide-vue-next",
         "@vueuse/core",
         "reka-ui"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/file-upload/FileUpload.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-upload/FileUploadClear.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-upload/FileUploadDropzone.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-upload/FileUploadItem.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-upload/FileUploadItemDelete.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-upload/FileUploadItemMetadata.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-upload/FileUploadItemPreview.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-upload/FileUploadItemProgress.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-upload/FileUploadList.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-upload/FileUploadTrigger.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-upload/index.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -141,6 +309,21 @@
         "clsx",
         "tailwind-merge",
         "class-variance-authority"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/flip-clock/FlipClock.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/flip-clock/FlipUnit.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/flip-clock/index.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -152,6 +335,29 @@
         "@vueuse/core",
         "clsx",
         "tailwind-merge"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/floating-dock/FloatingDock.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/floating-dock/FloatingDockDesktop.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/floating-dock/FloatingDockMobile.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/floating-dock/FloatingDockIcon.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/floating-dock/index.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -163,6 +369,17 @@
         "motion-v",
         "clsx",
         "tailwind-merge"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/glowing-effect/GlowingEffect.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/glowing-effect/index.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -173,6 +390,17 @@
       "dependencies": [
         "clsx",
         "tailwind-merge"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/gravity-stars/GravityStars.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/gravity-stars/index.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -180,7 +408,18 @@
       "type": "registry:ui",
       "title": "Liquid Glass",
       "description": "Frosted glass morphism effect",
-      "dependencies": []
+      "dependencies": [],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/liquid-glass/LiquidGlass.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/liquid-glass/index.ts",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "magnetic",
@@ -190,6 +429,17 @@
       "dependencies": [
         "motion-v",
         "@vueuse/core"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/magnetic/Magnetic.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/magnetic/index.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -200,6 +450,17 @@
       "dependencies": [
         "clsx",
         "tailwind-merge"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/marquee/Marquee.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/marquee/index.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -210,6 +471,17 @@
       "dependencies": [
         "clsx",
         "tailwind-merge"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/morphing-text/MorphingText.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/morphing-text/index.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -221,6 +493,29 @@
         "clsx",
         "tailwind-merge",
         "class-variance-authority"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/partition-bar/PartitionBar.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/partition-bar/PartitionBarSegment.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/partition-bar/PartitionBarSegmentTitle.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/partition-bar/PartitionBarSegmentValue.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/partition-bar/index.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -231,18 +526,82 @@
       "dependencies": [
         "clsx",
         "tailwind-merge"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/pixelated-button/PixelatedButton.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/pixelated-button/index.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
       "name": "raya-button",
       "type": "registry:ui",
       "title": "Raya Button",
-      "description": "The signature Raya button with semantic color + variant matrix",
+      "description": "The signature Raya button with semantic color + variant matrix.",
       "dependencies": [
         "clsx",
         "tailwind-merge",
         "class-variance-authority",
         "lucide-vue-next"
+      ],
+      "registryDependencies": [],
+      "cssVars": {
+        "theme": {
+          "color-primary-content": "var(--primary-foreground)",
+          "color-secondary-content": "var(--secondary-foreground)",
+          "color-success": "var(--success)",
+          "color-success-content": "var(--success-foreground)",
+          "color-info": "var(--info)",
+          "color-info-content": "var(--info-foreground)",
+          "color-warning": "var(--warning)",
+          "color-warning-content": "var(--warning-foreground)",
+          "color-error": "var(--error)",
+          "color-error-content": "var(--error-foreground)",
+          "color-inverted": "var(--foreground)",
+          "color-default": "var(--foreground)",
+          "color-elevated": "var(--muted)",
+          "color-accented": "var(--accent)"
+        },
+        "light": {
+          "success": "oklch(0.62 0.19 145.4)",
+          "success-foreground": "oklch(0.98 0 0)",
+          "info": "oklch(0.60 0.16 255)",
+          "info-foreground": "oklch(0.98 0 0)",
+          "warning": "oklch(0.75 0.15 70)",
+          "warning-foreground": "oklch(0.98 0 0)",
+          "error": "var(--destructive)",
+          "error-foreground": "oklch(1 0 0)"
+        },
+        "dark": {
+          "success": "oklch(0.55 0.18 145.4)",
+          "success-foreground": "oklch(1 0 0)",
+          "info": "oklch(0.55 0.16 255)",
+          "info-foreground": "oklch(1 0 0)",
+          "warning": "oklch(0.70 0.15 70)",
+          "warning-foreground": "oklch(0.1 0 0)",
+          "error": "var(--destructive)",
+          "error-foreground": "oklch(1 0 0)"
+        }
+      },
+      "files": [
+        {
+          "path": "app/components/raya/ui/raya-button/RayaButton.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/raya-button/variants.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/raya-button/index.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -250,7 +609,22 @@
       "type": "registry:ui",
       "title": "Scroll Reveal",
       "description": "Reveal elements on scroll animation",
-      "dependencies": []
+      "dependencies": [],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/scroll-reveal/ScrollReveal.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/scroll-reveal/ScrollWord.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/scroll-reveal/index.ts",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "scroll-spy",
@@ -261,6 +635,33 @@
         "@vueuse/core",
         "clsx",
         "tailwind-merge"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/scroll-spy/ScrollSpy.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/scroll-spy/ScrollSpyNav.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/scroll-spy/ScrollSpyLink.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/scroll-spy/ScrollSpyViewport.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/scroll-spy/ScrollSpySection.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/scroll-spy/index.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -268,7 +669,18 @@
       "type": "registry:ui",
       "title": "Scrubber",
       "description": "Media scrubber/slider component",
-      "dependencies": []
+      "dependencies": [],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/scrubber/Scrubber.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/scrubber/index.ts",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "snow-effect",
@@ -277,6 +689,17 @@
       "description": "Animated snow falling effect",
       "dependencies": [
         "@vueuse/core"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/snow-effect/SnowEffect.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/snow-effect/index.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -288,6 +711,17 @@
         "lucide-vue-next",
         "clsx",
         "tailwind-merge"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/tree/Tree.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/tree/index.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -297,6 +731,21 @@
       "description": "Rotating wheel picker component",
       "dependencies": [
         "@vueuse/core"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/wheel-picker/WheelPicker.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/wheel-picker/WheelPickerWrapper.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/wheel-picker/index.ts",
+          "type": "registry:ui"
+        }
       ]
     }
   ]

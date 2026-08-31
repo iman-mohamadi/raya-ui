@@ -1,9 +1,12 @@
 {
+  "title": "Glowing Effect",
+  "description": "Glowing animation effect component",
   "dependencies": [
     "motion-v",
     "clsx",
     "tailwind-merge"
   ],
+  "registryDependencies": [],
   "files": [
     "GlowingEffect.vue"
   ]

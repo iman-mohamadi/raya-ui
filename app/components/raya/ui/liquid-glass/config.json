@@ -1,5 +1,8 @@
 {
+  "title": "Liquid Glass",
+  "description": "Frosted glass morphism effect",
   "dependencies": [],
+  "registryDependencies": [],
   "files": [
     "LiquidGlass.vue"
   ]

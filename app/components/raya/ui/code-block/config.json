@@ -1,10 +1,13 @@
 {
+  "title": "Code Block",
+  "description": "Syntax highlighted code block component",
   "dependencies": [
     "highlight.js",
     "lucide-vue-next",
     "clsx",
     "tailwind-merge"
   ],
+  "registryDependencies": [],
   "files": [
     "CodeBlock.vue"
   ]

@@ -1,7 +1,10 @@
 {
+  "title": "Snow Effect",
+  "description": "Animated snow falling effect",
   "dependencies": [
     "@vueuse/core"
   ],
+  "registryDependencies": [],
   "files": [
     "SnowEffect.vue"
   ]

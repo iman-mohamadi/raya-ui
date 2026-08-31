@@ -1,8 +1,11 @@
 {
+  "title": "Pixelated Button",
+  "description": "Retro pixelated style button",
   "dependencies": [
     "clsx",
     "tailwind-merge"
   ],
+  "registryDependencies": [],
   "files": [
     "PixelatedButton.vue"
   ]

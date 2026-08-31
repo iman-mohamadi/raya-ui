@@ -1,0 +1,23 @@
+{
+  "$schema": "https://shadcn-vue.com/schema/registry-item.json",
+  "name": "snow-effect",
+  "type": "registry:ui",
+  "title": "Snow Effect",
+  "description": "Animated snow falling effect",
+  "dependencies": [
+    "@vueuse/core"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "snow-effect/SnowEffect.vue",
+      "content": "<script setup lang=\"ts\">\nimport { onMounted, onBeforeUnmount, ref, reactive, computed } from \"vue\";\nimport { useDevicePixelRatio } from \"@vueuse/core\";\nimport { cn } from \"@/lib/utils\";\n\ntype Snowflake = {\n  x: number;\n  y: number;\n  size: number;\n  alpha: number;\n  dx: number; // Horizontal drift\n  dy: number; // Vertical fall speed\n};\n\ntype Props = {\n  color?: string;\n  quantity?: number;\n  speed?: number;\n  maxRadius?: number;\n  minRadius?: number;\n  class?: string;\n};\n\nconst props = withDefaults(defineProps<Props>(), {\n  color: \"#FFF\",\n  quantity: 100,\n  speed: 1, // Controls how fast the snowflakes fall\n  maxRadius: 3, // Default max radius\n  minRadius: 1, // Default min radius\n  class: \"\",\n});\n\nconst canvasRef = ref<HTMLCanvasElement | null>(null);\nconst canvasContainerRef = ref<HTMLDivElement | null>(null);\nconst context = ref<CanvasRenderingContext2D | null>(null);\nconst snowflakes = ref<Snowflake[]>([]);\nconst canvasSize = reactive<{ w: number; h: number }>({ w: 0, h: 0 });\nconst { pixelRatio } = useDevicePixelRatio();\n\nconst color = computed(() => {\n  const hex = props.color.replace(/^#/, \"\").padStart(6, \"0\");\n  const bigint = parseInt(hex, 16);\n  const r = (bigint >> 16) & 255;\n  const g = (bigint >> 8) & 255;\n  const b = bigint & 255;\n  return `${r} ${g} ${b}`;\n});\n\nonMounted(() => {\n  if (canvasRef.value) {\n    context.value = canvasRef.value.getContext(\"2d\");\n  }\n  initCanvas();\n  animate();\n  window.addEventListener(\"resize\", initCanvas);\n});\n\nonBeforeUnmount(() => {\n  window.removeEventListener(\"resize\", initCanvas);\n});\n\nfunction initCanvas() {\n  resizeCanvas();\n  createSnowflakes();\n}\n\nfunction resizeCanvas() {\n  if (canvasContainerRef.value && canvasRef.value && context.value) {\n    snowflakes.value.length = 0;\n    canvasSize.w = canvasContainerRef.value.offsetWidth;\n    canvasSize.h = canvasContainerRef.value.offsetHeight;\n    canvasRef.value.width = canvasSize.w * pixelRatio.value;\n    canvasRef.value.height = canvasSize.h * pixelRatio.value;\n    canvasRef.value.style.width = `${canvasSize.w}px`;\n    canvasRef.value.style.height = `${canvasSize.h}px`;\n    context.value.scale(pixelRatio.value, pixelRatio.value);\n  }\n}\n\nfunction createSnowflakes() {\n  for (let i = 0; i < props.quantity; i++) {\n    const snowflake = createSnowflake();\n    snowflakes.value.push(snowflake);\n  }\n}\n\nfunction createSnowflake(): Snowflake {\n  const x = Math.random() * canvasSize.w;\n  const y = Math.random() * canvasSize.h;\n  const size = Math.random() * (props.maxRadius! - props.minRadius!) + props.minRadius!; // Random size between min and max radius\n  const alpha = Math.random() * 0.5 + 0.5; // Opacity between 0.5 and 1\n  const dx = (Math.random() - 0.5) * 0.5; // Slight horizontal drift\n  const dy = Math.random() * 0.25 + props.speed; // Falling speed\n\n  return { x, y, size, alpha, dx, dy };\n}\n\nfunction drawSnowflake(snowflake: Snowflake) {\n  if (context.value) {\n    const { x, y, size, alpha } = snowflake;\n    context.value.beginPath();\n    context.value.arc(x, y, size, 0, Math.PI * 2);\n    context.value.fillStyle = `rgba(${color.value.split(\" \").join(\", \")}, ${alpha})`;\n    context.value.fill();\n  }\n}\n\nfunction animate() {\n  if (context.value) {\n    context.value.clearRect(0, 0, canvasSize.w, canvasSize.h);\n  }\n\n  snowflakes.value.forEach((snowflake) => {\n    snowflake.x += snowflake.dx; // Drift horizontally\n    snowflake.y += snowflake.dy; // Fall down\n\n    // Reset snowflake when it moves out of the canvas\n    if (snowflake.y > canvasSize.h) {\n      snowflake.y = -snowflake.size; // Reset to the top\n      snowflake.x = Math.random() * canvasSize.w; // Random horizontal position\n    }\n\n    drawSnowflake(snowflake);\n  });\n\n  requestAnimationFrame(animate);\n}\n</script>\n\n<template>\n  <div\n      ref=\"canvasContainerRef\"\n      :class=\"cn('pointer-events-none absolute inset-0', props.class)\"\n      aria-hidden=\"true\"\n  >\n    <canvas ref=\"canvasRef\"></canvas>\n  </div>\n</template>",
+      "type": "registry:ui"
+    },
+    {
+      "path": "snow-effect/index.ts",
+      "content": "export { default as SnowEffect } from './SnowEffect.vue'",
+      "type": "registry:ui"
+    }
+  ]
+}

@@ -18,5 +18,7 @@
     "lib": "@/lib",
     "composables": "@/composables"
   },
-  "registries": {}
+  "registries": {
+    "@raya": "https://raya-ui.com/r/{name}.json"
+  }
 }

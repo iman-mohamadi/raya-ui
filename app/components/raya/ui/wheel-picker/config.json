@@ -1,7 +1,10 @@
 {
+  "title": "Wheel Picker",
+  "description": "Rotating wheel picker component",
   "dependencies": [
     "@vueuse/core"
   ],
+  "registryDependencies": [],
   "files": [
     "WheelPicker.vue",
     "WheelPickerWrapper.vue"

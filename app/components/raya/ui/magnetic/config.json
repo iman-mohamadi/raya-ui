@@ -1,8 +1,11 @@
 {
+  "title": "Magnetic",
+  "description": "Magnetic cursor following effect",
   "dependencies": [
     "motion-v",
     "@vueuse/core"
   ],
+  "registryDependencies": [],
   "files": [
     "Magnetic.vue"
   ]

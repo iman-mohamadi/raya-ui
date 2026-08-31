@@ -1,9 +1,12 @@
 {
+  "title": "Encrypted Text",
+  "description": "Text with encryption/decryption animation",
   "dependencies": [
     "@vueuse/core",
     "clsx",
     "tailwind-merge"
   ],
+  "registryDependencies": [],
   "files": [
     "EncryptedText.vue"
   ]

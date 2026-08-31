@@ -1,9 +1,12 @@
 {
+  "title": "Scroll Spy",
+  "description": "Track scroll position and highlight active section",
   "dependencies": [
     "@vueuse/core",
     "clsx",
     "tailwind-merge"
   ],
+  "registryDependencies": [],
   "files": [
     "ScrollSpy.vue",
     "ScrollSpyNav.vue",

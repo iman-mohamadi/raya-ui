@@ -1,9 +1,12 @@
 {
+  "title": "Animated Background",
+  "description": "Dynamic animated background with smooth transitions",
   "dependencies": [
     "motion-v",
     "clsx",
     "tailwind-merge"
   ],
+  "registryDependencies": [],
   "files": [
     "AnimatedBackground.vue"
   ]
