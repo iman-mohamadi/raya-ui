@@ -1,7 +1,9 @@
 {
-  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "$schema": "https://shadcn-vue.com/schema/registry-item.json",
   "name": "morphing-text",
   "type": "registry:ui",
+  "title": "Morphing Text",
+  "description": "Text morphing animation component",
   "dependencies": [
     "clsx",
     "tailwind-merge"
@@ -11,14 +13,12 @@
     {
       "path": "morphing-text/MorphingText.vue",
       "content": "<script setup lang=\"ts\">\nimport { cn } from \"@/lib/utils\";\nimport { ref, onMounted, onUnmounted } from \"vue\";\n\nconst TEXT_CLASSES = \"absolute inset-x-0 top-0 m-auto inline-block w-full\";\n\ninterface Props {\n  class?: string;\n  texts: string[];\n  morphTime?: number;\n  coolDownTime?: number;\n}\n\nconst props = withDefaults(defineProps<Props>(), {\n  morphTime: 1.5,\n  coolDownTime: 0.5,\n});\n\nconst textIndex = ref(0);\nconst morph = ref(0);\nconst coolDown = ref(0);\nconst time = ref(new Date());\n\nconst text1Ref = ref<HTMLSpanElement>();\nconst text2Ref = ref<HTMLSpanElement>();\n\nfunction setStyles(fraction: number) {\n  if (!text1Ref.value || !text2Ref.value) return;\n\n  text2Ref.value.style.filter = `blur(${Math.min(8 / fraction - 8, 100)}px)`;\n  text2Ref.value.style.opacity = `${Math.pow(fraction, 0.4) * 100}%`;\n\n  const invertedFraction = 1 - fraction;\n  text1Ref.value.style.filter = `blur(${Math.min(8 / invertedFraction - 8, 100)}px)`;\n  text1Ref.value.style.opacity = `${Math.pow(invertedFraction, 0.4) * 100}%`;\n\n  text1Ref.value.textContent = props.texts[textIndex.value % props.texts.length];\n  text2Ref.value.textContent = props.texts[(textIndex.value + 1) % props.texts.length];\n}\n\nfunction doMorph() {\n  morph.value -= coolDown.value;\n  coolDown.value = 0;\n\n  let fraction = morph.value / props.morphTime;\n\n  if (fraction > 1) {\n    coolDown.value = props.coolDownTime;\n    fraction = 1;\n  }\n\n  setStyles(fraction);\n\n  if (fraction === 1) {\n    textIndex.value++;\n  }\n}\n\nfunction doCoolDown() {\n  morph.value = 0;\n\n  if (text1Ref.value && text2Ref.value) {\n    text2Ref.value.style.filter = \"none\";\n    text2Ref.value.style.opacity = \"100%\";\n    text1Ref.value.style.filter = \"none\";\n    text1Ref.value.style.opacity = \"0%\";\n  }\n}\n\nlet animationFrameId: number = 0;\nfunction animate() {\n  animationFrameId = requestAnimationFrame(animate);\n\n  const newTime = new Date();\n  const dt = (newTime.getTime() - time.value.getTime()) / 1000;\n  time.value = newTime;\n\n  coolDown.value -= dt;\n\n  if (coolDown.value <= 0) {\n    doMorph();\n  } else {\n    doCoolDown();\n  }\n}\n\nonMounted(() => {\n  animate();\n});\n\nonUnmounted(() => {\n  cancelAnimationFrame(animationFrameId);\n});\n</script>\n\n<template>\n  <div\n      :class=\"\n      cn(\n        'relative mx-auto h-16 w-full max-w-screen-md text-center font-sans font-bold leading-none [filter:url(#threshold)_blur(0.6px)]',\n        'text-5xl',\n        props.class,\n      )\n    \"\n  >\n    <span\n        ref=\"text1Ref\"\n        :class=\"cn(TEXT_CLASSES)\"\n    />\n    <span\n        ref=\"text2Ref\"\n        :class=\"cn(TEXT_CLASSES)\"\n    />\n\n    <svg\n        id=\"filters\"\n        class=\"fixed size-0\"\n        preserveAspectRatio=\"xMidYMid slice\"\n    >\n      <defs>\n        <filter id=\"threshold\">\n          <feColorMatrix\n              in=\"SourceGraphic\"\n              type=\"matrix\"\n              values=\"1 0 0 0 0\n                  0 1 0 0 0\n                  0 0 1 0 0\n                  0 0 0 255 -140\"\n          />\n        </filter>\n      </defs>\n    </svg>\n  </div>\n</template>",
-      "type": "registry:ui",
-      "target": "components/ui/morphing-text/MorphingText.vue"
+      "type": "registry:ui"
     },
     {
       "path": "morphing-text/index.ts",
-      "content": "export { default as MorphingText } from './MorphingText.vue'\n",
-      "type": "registry:ui",
-      "target": "components/ui/morphing-text/index.ts"
+      "content": "export { default as MorphingText } from './MorphingText.vue'",
+      "type": "registry:ui"
     }
   ]
 }

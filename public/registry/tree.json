@@ -1,7 +1,9 @@
 {
-  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "$schema": "https://shadcn-vue.com/schema/registry-item.json",
   "name": "tree",
   "type": "registry:ui",
+  "title": "Tree",
+  "description": "Nested tree component for hierarchical data",
   "dependencies": [
     "lucide-vue-next",
     "clsx",
@@ -12,14 +14,12 @@
     {
       "path": "tree/Tree.vue",
       "content": "<script setup lang=\"ts\" generic=\"T extends Record<string, any>\">\nimport { computed } from 'vue'\nimport { TreeRoot, TreeItem, useForwardPropsEmits, type TreeRootEmits, type TreeRootProps } from 'reka-ui'\nimport { ChevronRight, ChevronDown } from 'lucide-vue-next'\nimport { cn } from '@/lib/utils'\n\n// Use Omit to exclude the mandatory 'getKey' from TreeRootProps\n// and redefine it as optional in our component props.\nconst props = withDefaults(defineProps<Omit<TreeRootProps, 'getKey'> & {\n  class?: string\n  items?: T[]\n  labelKey?: string\n  childrenKey?: string\n  iconKey?: string\n  getKey?: (item: T) => string\n}>(), {\n  items: () => [],\n  labelKey: 'label',\n  childrenKey: 'children',\n  iconKey: 'icon',\n  selectionBehavior: 'toggle',\n})\n\nconst emits = defineEmits<TreeRootEmits>()\n\nconst delegatedProps = computed(() => {\n  // Destructure 'getKey' out so we don't forward it (we bind it explicitly)\n  const { class: _, items, labelKey, childrenKey, iconKey, getKey, ...delegated } = props\n  return delegated\n})\n\nconst forwarded = useForwardPropsEmits(delegatedProps, emits)\n\n// Helper to resolve the key for an item, matching TreeRoot's logic\nconst getKeyResolver = (item: T) => {\n  if (props.getKey) return props.getKey(item)\n  return item[props.labelKey] as string\n}\n\n// Manually handle expansion toggling for parents\nconst handleToggle = (item: any) => {\n  if (!item.hasChildren) return\n\n  const key = getKeyResolver(item.value)\n  const currentExpanded = props.expanded ? [...props.expanded] : []\n  const index = currentExpanded.indexOf(key)\n\n  if (index > -1) {\n    currentExpanded.splice(index, 1)\n  } else {\n    currentExpanded.push(key)\n  }\n\n  emits('update:expanded', currentExpanded)\n}\n</script>\n\n<template>\n  <TreeRoot\n      v-bind=\"forwarded\"\n      :class=\"cn('w-full select-none list-none', props.class)\"\n      :items=\"items\"\n      :get-key=\"getKeyResolver\"\n      :get-children=\"(item) => item[childrenKey]\"\n      v-slot=\"{ flattenItems }\"\n  >\n    <TreeItem\n        v-for=\"item in flattenItems\"\n        :key=\"item._id\"\n        v-bind=\"item.bind\"\n        v-slot=\"{ isExpanded, isSelected, isIndeterminate }\"\n        :class=\"cn(\n        'group relative flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium outline-none transition-colors',\n        'hover:bg-accent hover:text-accent-foreground',\n        'focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-accent',\n        'data-[selected]:bg-accent data-[selected]:text-accent-foreground',\n        'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',\n        'cursor-pointer'\n      )\"\n        :style=\"{ paddingLeft: `${item.level * 1.5}rem` }\"\n        @select=\"(event) => {\n        // Prevent selection for items with children (parents)\n        if (item.hasChildren) {\n            event.preventDefault()\n        }\n      }\"\n        @click=\"handleToggle(item)\"\n    >\n      <component\n          :is=\"isExpanded ? ChevronDown : ChevronRight\"\n          v-if=\"item.hasChildren\"\n          class=\"h-4 w-4 shrink-0 text-muted-foreground group-hover:text-accent-foreground/80 transition-transform\"\n      />\n      <span v-else class=\"h-4 w-4 shrink-0\" />\n\n      <slot\n          name=\"item\"\n          :item=\"item.value\"\n          :expanded=\"isExpanded\"\n          :selected=\"isSelected\"\n          :indeterminate=\"isIndeterminate\"\n      >\n        <component\n            :is=\"item.value[iconKey]\"\n            v-if=\"item.value[iconKey]\"\n            class=\"h-4 w-4 shrink-0 text-muted-foreground group-hover:text-accent-foreground\"\n            :class=\"{ 'text-accent-foreground': isSelected }\"\n        />\n\n        <span class=\"truncate\">\n          {{ item.value[labelKey] }}\n        </span>\n      </slot>\n    </TreeItem>\n  </TreeRoot>\n</template>",
-      "type": "registry:ui",
-      "target": "components/ui/tree/Tree.vue"
+      "type": "registry:ui"
     },
     {
       "path": "tree/index.ts",
-      "content": "export { default as Tree } from './Tree.vue'\n",
-      "type": "registry:ui",
-      "target": "components/ui/tree/index.ts"
+      "content": "export { default as Tree } from './Tree.vue'",
+      "type": "registry:ui"
     }
   ]
 }

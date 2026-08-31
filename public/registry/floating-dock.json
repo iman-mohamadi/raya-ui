@@ -1,7 +1,9 @@
 {
-  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "$schema": "https://shadcn-vue.com/schema/registry-item.json",
   "name": "floating-dock",
   "type": "registry:ui",
+  "title": "Floating Dock",
+  "description": "Floating dock navigation component",
   "dependencies": [
     "@vueuse/core",
     "clsx",
@@ -12,32 +14,27 @@
     {
       "path": "floating-dock/FloatingDock.vue",
       "content": "<script setup lang=\"ts\">\nimport FloatingDockDesktop from './FloatingDockDesktop.vue'\nimport FloatingDockMobile from './FloatingDockMobile.vue'\n\ninterface DockItem {\n  title: string\n  icon: any\n  href: string\n}\n\ndefineProps<{\n  items: DockItem[]\n  desktopClass?: string\n  mobileClass?: string\n}>()\n</script>\n\n<template>\n  <FloatingDockDesktop :items=\"items\" :class=\"desktopClass\" />\n  <FloatingDockMobile :items=\"items\" :class=\"mobileClass\" />\n</template>",
-      "type": "registry:ui",
-      "target": "components/ui/floating-dock/FloatingDock.vue"
+      "type": "registry:ui"
     },
     {
       "path": "floating-dock/FloatingDockDesktop.vue",
       "content": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nimport { cn } from '@/lib/utils'\nimport FloatingDockIcon from './FloatingDockIcon.vue'\n\ninterface DockItem {\n  title: string\n  icon: any\n  href: string\n}\n\nconst props = defineProps<{\n  items: DockItem[]\n  class?: string\n}>()\n\nconst mouseX = ref<number>(Infinity)\n</script>\n\n<template>\n  <div\n      :class=\"cn(\n      'mx-auto hidden h-16 items-end gap-4 rounded-2xl bg-gray-50 px-4 pb-3 md:flex dark:bg-neutral-900',\n      props.class\n    )\"\n      @mousemove=\"(e) => mouseX = e.pageX\"\n      @mouseleave=\"() => mouseX = Infinity\"\n  >\n    <FloatingDockIcon\n        v-for=\"item in items\"\n        :key=\"item.title\"\n        :mouse-x=\"mouseX\"\n        :title=\"item.title\"\n        :icon=\"item.icon\"\n        :href=\"item.href\"\n    />\n  </div>\n</template>",
-      "type": "registry:ui",
-      "target": "components/ui/floating-dock/FloatingDockDesktop.vue"
+      "type": "registry:ui"
     },
     {
       "path": "floating-dock/FloatingDockMobile.vue",
       "content": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nimport { LayoutGrid } from 'lucide-vue-next' // Generic fallback icon\nimport { cn } from '@/lib/utils'\n\ninterface DockItem {\n  title: string\n  icon: any\n  href: string\n}\n\nconst props = defineProps<{\n  items: DockItem[]\n  class?: string\n}>()\n\nconst open = ref(false)\n</script>\n\n<template>\n  <div :class=\"cn('relative block md:hidden', props.class)\">\n    <Transition\n        enter-active-class=\"transition duration-300 ease-out\"\n        enter-from-class=\"opacity-0 translate-y-4\"\n        enter-to-class=\"opacity-100 translate-y-0\"\n        leave-active-class=\"transition duration-200 ease-in\"\n        leave-from-class=\"opacity-100 translate-y-0\"\n        leave-to-class=\"opacity-0 translate-y-4\"\n    >\n      <div v-if=\"open\" class=\"absolute bottom-full mb-4 inset-x-0 flex flex-col gap-2 items-center\">\n        <a\n            v-for=\"(item, idx) in items\"\n            :key=\"item.title\"\n            :href=\"item.href\"\n            class=\"flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 shadow-sm\"\n        >\n          <component :is=\"item.icon\" class=\"h-4 w-4 text-neutral-500 dark:text-neutral-300\" />\n        </a>\n      </div>\n    </Transition>\n\n    <button\n        @click=\"open = !open\"\n        class=\"flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700\"\n    >\n      <LayoutGrid class=\"h-5 w-5 text-neutral-500 dark:text-neutral-400\" />\n    </button>\n  </div>\n</template>",
-      "type": "registry:ui",
-      "target": "components/ui/floating-dock/FloatingDockMobile.vue"
+      "type": "registry:ui"
     },
     {
       "path": "floating-dock/FloatingDockIcon.vue",
       "content": "<script setup lang=\"ts\">\nimport { ref, computed, onMounted, onUnmounted, watch } from 'vue'\n\nconst props = defineProps<{\n  mouseX: number\n  title: string\n  icon: any\n  href: string\n}>()\n\nconst elRef = ref<HTMLElement | null>(null)\nconst bounds = ref({ x: 0, width: 0 })\nconst hover = ref(false)\n\n// 1. Efficiently get bounds\nconst updateBounds = () => {\n  if (elRef.value) {\n    const rect = elRef.value.getBoundingClientRect()\n    bounds.value = {\n      // Add scrollX to ensure position is correct relative to the document\n      x: rect.left + window.scrollX,\n      width: rect.width\n    }\n  }\n}\n\nonMounted(() => {\n  updateBounds()\n  window.addEventListener('resize', updateBounds)\n  window.addEventListener('scroll', updateBounds)\n})\n\nonUnmounted(() => {\n  window.removeEventListener('resize', updateBounds)\n  window.removeEventListener('scroll', updateBounds)\n})\n\n// 2. Calculate Target Dimensions\nconst baseWidth = 40\nconst distanceLimit = 150\nconst distanceInput = computed(() => {\n  if (props.mouseX === Infinity) return Infinity\n  // Distance from center of the icon\n  return props.mouseX - (bounds.value.x + bounds.value.width / 2)\n})\n\nconst targetWidth = computed(() => {\n  const distance = distanceInput.value\n  if (Math.abs(distance) > distanceLimit) return baseWidth\n\n  // Cosine interpolation for a smoother bell-curve feel than linear\n  const percent = (1 - Math.abs(distance) / distanceLimit)\n  // Maps -150..0..150 to 0..1..0\n\n  // Using simple easing for better feel\n  const eased = percent * percent // Ease in-outish\n\n  return baseWidth + (40 * percent) // 40px base + up to 40px growth\n})\n\n// 3. Stable Spring Physics (Mass-Spring-Damper)\n// We increase mass to 1.0 to prevent instability explosions.\nconst width = ref(baseWidth)\nlet velocity = 0\n\n// Constants tuned for \"Bouncy but Stable\"\nconst mass = 1\nconst stiffness = 150 // Tension\nconst damping = 15    // Friction\n\nlet rafId: number | null = null\nlet lastTime = 0\n\nconst animate = (time: number) => {\n  if (!lastTime) lastTime = time\n\n  // Calculate Delta Time in seconds (capped at 0.1s to prevent explosion on lag)\n  const dt = Math.min((time - lastTime) / 1000, 0.1)\n  lastTime = time\n\n  const current = width.value\n  const target = targetWidth.value\n\n  // Spring Force: F = -k(x - target)\n  const springForce = -stiffness * (current - target)\n\n  // Damping Force: F = -d * v\n  const dampingForce = -damping * velocity\n\n  // Acceleration: a = F / m\n  const acceleration = (springForce + dampingForce) / mass\n\n  // Euler Integration\n  velocity += acceleration * dt\n  width.value += velocity * dt\n\n  // Clamp width to sane values to absolutely prevent the 3.4e38px bug\n  if (width.value < baseWidth) width.value = baseWidth\n  if (width.value > 150) width.value = 150\n\n  // Stop condition: low velocity and close to target\n  if (Math.abs(velocity) < 0.05 && Math.abs(current - target) < 0.05) {\n    width.value = target\n    velocity = 0\n    rafId = null\n    lastTime = 0 // Reset time for next run\n  } else {\n    rafId = requestAnimationFrame(animate)\n  }\n}\n\n// Trigger animation loop\nwatch(targetWidth, () => {\n  if (rafId === null) {\n    lastTime = 0\n    rafId = requestAnimationFrame(animate)\n  }\n})\n\n// Styles\nconst widthPx = computed(() => `${width.value.toFixed(2)}px`) // Limit decimals for CSS\nconst iconScale = computed(() => {\n  // Map width (40..80) to scale (1..1.5)\n  const ratio = (width.value - baseWidth) / 40\n  // returns 0 at rest, 1 at max\n  return 1 + (ratio * 0.5) // Scale from 1.0 to 1.5\n})\n</script>\n\n<template>\n  <a :href=\"href\" class=\"relative group\">\n    <div\n        ref=\"elRef\"\n        class=\"relative flex aspect-square cursor-pointer items-center justify-center rounded-full bg-gray-200 dark:bg-neutral-800 will-change-[width,height,transform]\"\n        :style=\"{ width: widthPx, height: widthPx }\"\n        @mouseenter=\"hover = true\"\n        @mouseleave=\"hover = false\"\n    >\n      <Transition\n          enter-active-class=\"transition duration-200 ease-out\"\n          enter-from-class=\"opacity-0 translate-y-2\"\n          enter-to-class=\"opacity-100 translate-y-0\"\n          leave-active-class=\"transition duration-150 ease-in\"\n          leave-from-class=\"opacity-100 translate-y-0\"\n          leave-to-class=\"opacity-0 translate-y-2\"\n      >\n        <div\n            v-if=\"hover\"\n            class=\"absolute -top-10 left-1/2 -translate-x-1/2 w-fit whitespace-pre rounded-md border border-gray-200 bg-gray-100 px-2 py-0.5 text-xs text-neutral-700 dark:border-neutral-900 dark:bg-neutral-800 dark:text-white z-50 shadow-sm\"\n        >\n          {{ title }}\n        </div>\n      </Transition>\n\n      <div\n          class=\"flex items-center justify-center will-change-transform\"\n          :style=\"{ transform: `scale(${iconScale})` }\"\n      >\n        <component :is=\"icon\" class=\"h-5 w-5 text-neutral-500 dark:text-neutral-300\" />\n      </div>\n    </div>\n  </a>\n</template>",
-      "type": "registry:ui",
-      "target": "components/ui/floating-dock/FloatingDockIcon.vue"
+      "type": "registry:ui"
     },
     {
       "path": "floating-dock/index.ts",
-      "content": "export { default as FloatingDock } from './FloatingDock.vue'\n",
-      "type": "registry:ui",
-      "target": "components/ui/floating-dock/index.ts"
+      "content": "export { default as FloatingDock } from './FloatingDock.vue'\nexport { default as FloatingDockDesktop } from './FloatingDockDesktop.vue'\nexport { default as FloatingDockMobile } from './FloatingDockMobile.vue'\nexport { default as FloatingDockIcon } from './FloatingDockIcon.vue'",
+      "type": "registry:ui"
     }
   ]
 }

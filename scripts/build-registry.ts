@@ -15,8 +15,18 @@ const __dirname = path.dirname(__filename);
 
 const ROOT_DIR = path.join(__dirname, "..");
 const COMPONENTS_DIR = path.join(ROOT_DIR, "app/components/raya/ui");
-/** Served at /r/<name>.json — the path the shadcn-vue CLI and docs assume. */
-const OUTPUT_DIR = path.join(ROOT_DIR, "public/r");
+/**
+ * Every directory the built items are written to.
+ *
+ * `public/r` is the conventional path the shadcn-vue CLI and docs assume.
+ * `public/registry` is kept as a mirror because the published `raya-ui` CLI
+ * fetches `public/registry/<name>.json` from GitHub raw on `main`; dropping it
+ * would break `npx raya-ui@latest add` for everyone on the current CLI.
+ */
+const OUTPUT_DIRS = [
+  path.join(ROOT_DIR, "public/r"),
+  path.join(ROOT_DIR, "public/registry"),
+];
 const SOURCE_MANIFEST = path.join(ROOT_DIR, "registry.json");
 
 const REGISTRY_SCHEMA = "https://shadcn-vue.com/schema/registry.json";
@@ -177,14 +187,23 @@ function sourceItem(componentName: string, config: ComponentConfig): RegistryIte
   };
 }
 
+/** Write one file into every output directory. */
+function writeToOutputs(fileName: string, contents: string) {
+  for (const dir of OUTPUT_DIRS) {
+    fs.writeFileSync(path.join(dir, fileName), contents);
+  }
+}
+
 function build() {
-  // Start from a clean output dir so removed components don't leave stale JSON.
-  if (fs.existsSync(OUTPUT_DIR)) {
-    for (const f of fs.readdirSync(OUTPUT_DIR)) {
-      if (f.endsWith(".json")) fs.unlinkSync(path.join(OUTPUT_DIR, f));
+  // Start from clean output dirs so removed components don't leave stale JSON.
+  for (const dir of OUTPUT_DIRS) {
+    if (fs.existsSync(dir)) {
+      for (const f of fs.readdirSync(dir)) {
+        if (f.endsWith(".json")) fs.unlinkSync(path.join(dir, f));
+      }
+    } else {
+      fs.mkdirSync(dir, { recursive: true });
     }
-  } else {
-    fs.mkdirSync(OUTPUT_DIR, { recursive: true });
   }
 
   const componentFolders = fs
@@ -199,7 +218,7 @@ function build() {
   for (const componentName of componentFolders) {
     const config = readConfig(path.join(COMPONENTS_DIR, componentName));
     const item = buildComponent(componentName, config);
-    fs.writeFileSync(path.join(OUTPUT_DIR, `${componentName}.json`), JSON.stringify(item, null, 2));
+    writeToOutputs(`${componentName}.json`, JSON.stringify(item, null, 2));
     sourceItems.push(sourceItem(componentName, config));
     console.log(`✅ Registry built: ${componentName}`);
   }
@@ -214,9 +233,11 @@ function build() {
   // Root manifest (source paths) — read by `shadcn-vue add owner/repo/<name>`.
   fs.writeFileSync(SOURCE_MANIFEST, JSON.stringify(manifest, null, 2) + "\n");
   // Same manifest served over HTTP as the registry index.
-  fs.writeFileSync(path.join(OUTPUT_DIR, "registry.json"), JSON.stringify(manifest, null, 2));
+  writeToOutputs("registry.json", JSON.stringify(manifest, null, 2));
 
-  console.log(`\n📦 Registry index written with ${sourceItems.length} items.`);
+  console.log(
+    `\n📦 Registry index written with ${sourceItems.length} items to ${OUTPUT_DIRS.map((d) => path.relative(ROOT_DIR, d)).join(", ")}.`,
+  );
 }
 
 build();
