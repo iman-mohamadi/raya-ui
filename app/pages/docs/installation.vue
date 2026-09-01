@@ -87,7 +87,7 @@ const frameworkTabs = [
           <div class="h-px flex-1 bg-border" />
         </div>
 
-        <AnimatedTabs :items="frameworkTabs" class="space-y-10">
+        <AnimatedTabs :items="frameworkTabs" variant="link" color="neutral" class="space-y-10">
 
           <!-- NUXT -->
           <template #nuxt>

@@ -17,7 +17,8 @@ const useCustomHeader = ref(false)
 
 // State for custom header demo
 const frameworks = ['npm', 'pnpm', 'bun', 'yarn']
-const currentFramework = ref(0)
+// AnimatedTabs identifies items by their index as a string when no `value` is set.
+const currentFramework = ref('0')
 const tabItems = frameworks.map(fw => ({ label: fw }))
 const commands = [
   'npm install raya-ui',
@@ -30,7 +31,7 @@ const resetSettings = () => {
   codeLanguage.value = 'typescript'
   fileName.value = 'app.ts'
   useCustomHeader.value = false
-  currentFramework.value = 0
+  currentFramework.value = '0'
 }
 
 // --- Preview Code Content ---
@@ -80,7 +81,7 @@ import { ref } from 'vue'
 import { CodeBlock } from '@/components/ui/code-block'
 import { AnimatedTabs } from '@/components/ui/animated-tabs'
 
-const currentFramework = ref(0)
+const currentFramework = ref('0')
 const tabItems = [{ label: 'npm' }, { label: 'pnpm' }, { label: 'bun' }, { label: 'yarn' }]
 const commands = [
   'npm install raya-ui', 'pnpm add raya-ui', 'bun add raya-ui', 'yarn add raya-ui'
@@ -88,7 +89,7 @@ const commands = [
 <\/script>
 
 <template>
-  <CodeBlock :code="commands[currentFramework]" lang="bash">
+  <CodeBlock :code="commands[Number(currentFramework)]" lang="bash">
     <template #header>
       <AnimatedTabs
         v-model="currentFramework"
@@ -307,7 +308,7 @@ const code = \`${previewCodeContent.value}\`
         <!-- Custom Header with AnimatedTabs Preview -->
         <CodeBlock
             v-else
-            :code="commands[currentFramework]"
+            :code="commands[Number(currentFramework)]"
             lang="bash"
             class="w-full"
         >
