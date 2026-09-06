@@ -394,7 +394,8 @@ function channelScale(direction: number) {
   return maps.value.scale * props.refraction * (1 + direction * props.aberration)
 }
 
-let frame = 0
+let pending = 0
+let pendingIsFrame = false
 
 function render() {
   const width = Math.round(size.value.width)
@@ -414,22 +415,48 @@ function render() {
   })
 }
 
+function cancelPending() {
+  if (!pending) return
+  if (pendingIsFrame) cancelAnimationFrame(pending)
+  else clearTimeout(pending)
+  pending = 0
+}
+
 /**
  * Rebuilding the map is a full per-pixel pass, so never do it more than once
  * per frame — resize observers and prop churn both land here.
+ *
+ * A hidden document paints no frames, so requestAnimationFrame would never run
+ * and the panel would sit unrefracted until the tab was focused. Fall back to a
+ * timeout in that case.
  */
 function scheduleRender() {
-  if (frame) cancelAnimationFrame(frame)
-  frame = requestAnimationFrame(() => {
-    frame = 0
+  cancelPending()
+  const run = () => {
+    pending = 0
     render()
-  })
+  }
+
+  if (typeof document !== 'undefined' && document.hidden) {
+    pendingIsFrame = false
+    pending = window.setTimeout(run, 0)
+  } else {
+    pendingIsFrame = true
+    pending = requestAnimationFrame(run)
+  }
 }
 
 let observer: ResizeObserver | null = null
 
 onMounted(() => {
   if (!rootEl.value) return
+
+  // Measure up front rather than waiting on the observer's first delivery:
+  // ResizeObserver callbacks are part of the frame lifecycle, so a hidden
+  // document would never deliver one and the panel would never build its map.
+  const rect = rootEl.value.getBoundingClientRect()
+  size.value = { width: rect.width, height: rect.height }
+  scheduleRender()
 
   observer = new ResizeObserver((entries) => {
     const entry = entries[0]
@@ -449,7 +476,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   observer?.disconnect()
-  if (frame) cancelAnimationFrame(frame)
+  cancelPending()
 })
 
 // `refraction` and `aberration` only touch filter attributes, so they animate
