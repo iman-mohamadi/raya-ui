@@ -497,7 +497,7 @@
       "name": "liquid-glass",
       "type": "registry:ui",
       "title": "Liquid Glass",
-      "description": "Frosted glass morphism effect",
+      "description": "Physically-based Apple Liquid Glass: Snell's law refraction baked into an SVG displacement map",
       "dependencies": [],
       "registryDependencies": [],
       "files": [
