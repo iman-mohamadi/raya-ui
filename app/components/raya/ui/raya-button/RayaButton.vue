@@ -284,7 +284,7 @@ const elementProps = computed(() => {
     return {
       ...shared,
       href: isDisabled.value ? undefined : (linkTo.value as string),
-      download: props.download
+      download: props.download === false ? undefined : props.download
     }
   }
 
