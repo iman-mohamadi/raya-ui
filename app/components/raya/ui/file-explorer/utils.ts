@@ -289,3 +289,24 @@ export function getAncestorIds<TData>(index: FileExplorerIndex<TData>, id: strin
   }
   return ids
 }
+
+/**
+ * Checks a new name for `item`: not empty, no separators, and unique among its
+ * siblings (case-insensitively, as on Windows and macOS). Returns an error message.
+ */
+export function validateItemName<TData>(
+  index: FileExplorerIndex<TData>,
+  rootItems: FileExplorerItem<TData>[],
+  item: FileExplorerItem<TData>,
+  name: string,
+): string | undefined {
+  const trimmed = name.trim()
+  if (!trimmed) return 'A name is required.'
+  if (/[\\/]/.test(trimmed)) return 'Names cannot contain / or \\.'
+  const parentId = index.get(item.id)?.parentId ?? null
+  const siblings = parentId === null ? rootItems : index.get(parentId)?.item.children ?? []
+  const lower = trimmed.toLowerCase()
+  if (siblings.some(sibling => sibling.id !== item.id && sibling.name.toLowerCase() === lower))
+    return `An item named “${trimmed}” already exists here.`
+  return undefined
+}

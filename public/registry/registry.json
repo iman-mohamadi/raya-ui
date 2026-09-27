@@ -383,6 +383,14 @@
           "type": "registry:ui"
         },
         {
+          "path": "app/components/raya/ui/file-explorer/FileExplorerRenameInput.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/FileExplorerDeleteDialog.vue",
+          "type": "registry:ui"
+        },
+        {
           "path": "app/components/raya/ui/file-explorer/FileTree.vue",
           "type": "registry:ui"
         },
@@ -424,6 +432,10 @@
         },
         {
           "path": "app/components/raya/ui/file-explorer/useFileExplorerItem.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/useFileExplorerActions.ts",
           "type": "registry:ui"
         },
         {

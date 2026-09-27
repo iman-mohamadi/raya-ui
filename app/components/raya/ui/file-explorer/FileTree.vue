@@ -1,12 +1,14 @@
 <script setup lang="ts" generic="TData = unknown">
-import { computed, ref, toRef, useSlots, useTemplateRef, watch } from 'vue'
+import { computed, nextTick, ref, toRef, useSlots, useTemplateRef, watch } from 'vue'
 import { ContextMenuContent, ContextMenuPortal, ContextMenuRoot, ContextMenuTrigger } from 'reka-ui'
 import { useVModel } from '@vueuse/core'
 import { FolderOpen, Search, X } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
+import FileExplorerDeleteDialog from './FileExplorerDeleteDialog.vue'
 import FileTreeRoot from './FileTreeRoot.vue'
 import { injectSharedDragDrop, provideFileTreeContext, type FileExplorerDragDrop } from './context'
 import type { FileTreeEmits, FileTreeProps, FileTreeSlots } from './types'
+import { useFileExplorerActions } from './useFileExplorerActions'
 import { useFileExplorerDragDrop } from './useFileExplorerDragDrop'
 import { useFileExplorerSearch } from './useFileExplorerSearch'
 import { useFileExplorerSelection } from './useFileExplorerSelection'
@@ -22,6 +24,7 @@ const props = withDefaults(defineProps<FileTreeProps<TData>>(), {
   guides: true,
   expandOnClick: true,
   label: 'Files',
+  confirmDelete: true,
 })
 
 const emit = defineEmits<FileTreeEmits<TData>>()
@@ -132,6 +135,35 @@ function onItemContextMenu(id: string) {
     selection.replace(id)
 }
 
+// --- Rename & delete ----------------------------------------------------------------
+
+const viewport = useTemplateRef<HTMLElement>('viewport')
+
+function focusItem(id: string) {
+  nextTick(() => {
+    const items = viewport.value?.querySelectorAll<HTMLElement>('[role="treeitem"][data-item-id]') ?? []
+    Array.from(items).find(el => el.dataset.itemId === id)?.focus()
+  })
+}
+
+const actions = useFileExplorerActions({
+  index,
+  rootItems: () => props.items,
+  selected: selectedIds,
+  onRename: () => props.onRename,
+  validateName: () => props.validateName,
+  onDelete: () => props.onDelete,
+  confirmDelete: () => props.confirmDelete,
+  disabled: () => props.disabled,
+  focus: focusItem,
+})
+
+/** Delete acts on the selection when the focused item is part of it, else on the focused item. */
+function deleteFrom(id: string) {
+  const item = index.value.get(id)?.item
+  if (item) actions.requestDelete(actions.targetsOf(item))
+}
+
 // --- Drag and drop --------------------------------------------------------------
 
 const dragDropEnabled = computed(() => props.draggable && !props.disabled)
@@ -148,8 +180,6 @@ const dragDrop: FileExplorerDragDrop = injectSharedDragDrop(null) ?? useFileExpl
 })
 
 // --- Search field ---------------------------------------------------------------
-
-const viewport = useTemplateRef<HTMLElement>('viewport')
 
 function onSearchKeydown(event: KeyboardEvent) {
   if (event.key === 'ArrowDown') {
@@ -188,6 +218,12 @@ provideFileTreeContext({
   onItemContextMenu,
   extendSelection: selection.extend,
   selectAll: selection.selectAll,
+  startRename: actions.startRename,
+  deleteFrom,
+  renamingId: actions.renamingId,
+  validateRename: actions.validateRename,
+  commitRename: actions.commitRename,
+  cancelRename: actions.cancelRename,
 })
 </script>
 
@@ -301,6 +337,7 @@ provideFileTreeContext({
       <ContextMenuPortal v-if="hasContextMenu">
         <ContextMenuContent
           data-slot="file-tree-context-menu"
+          @close-auto-focus="actions.onMenuCloseAutoFocus"
           :class="cn(
             'z-50 max-h-(--reka-context-menu-content-available-height) min-w-[8rem] origin-(--reka-context-menu-content-transform-origin) overflow-x-hidden overflow-y-auto',
             'rounded-md border bg-popover p-1 text-popover-foreground shadow-md',
@@ -308,9 +345,19 @@ provideFileTreeContext({
             'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
           )"
         >
-          <slot name="context-menu" :item="contextItem" />
+          <slot name="context-menu" v-bind="actions.menuScope(contextItem)" />
         </ContextMenuContent>
       </ContextMenuPortal>
     </ContextMenuRoot>
+
+    <FileExplorerDeleteDialog
+      :items="actions.pendingDelete.value"
+      @confirm="actions.confirmDelete"
+      @close="actions.closeDelete"
+    >
+      <template v-if="$slots['delete-description']" #description="scope">
+        <slot name="delete-description" v-bind="scope" />
+      </template>
+    </FileExplorerDeleteDialog>
   </div>
 </template>

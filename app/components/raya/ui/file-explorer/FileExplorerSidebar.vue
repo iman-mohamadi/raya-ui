@@ -1,6 +1,12 @@
 <script setup lang="ts" generic="TData">
 import FileTree from './FileTree.vue'
-import type { FileExplorerIconResolver, FileExplorerItem, FileExplorerSelectEvent } from './types'
+import type {
+  FileExplorerContextMenuSlotProps,
+  FileExplorerIconResolver,
+  FileExplorerItem,
+  FileExplorerNameValidator,
+  FileExplorerSelectEvent,
+} from './types'
 
 defineProps<{
   items: FileExplorerItem<TData>[]
@@ -12,6 +18,10 @@ defineProps<{
   draggable: boolean
   disabled: boolean
   getIcon?: FileExplorerIconResolver<TData>
+  onRename?: (item: FileExplorerItem<TData>, name: string) => void
+  validateName?: FileExplorerNameValidator<TData>
+  /** The explorer's own delete flow, which already confirms. */
+  onDelete?: (items: FileExplorerItem<TData>[]) => void
 }>()
 
 const expanded = defineModel<string[]>('expanded', { required: true })
@@ -21,7 +31,7 @@ const emit = defineEmits<{
 }>()
 
 defineSlots<{
-  'context-menu'?: (props: { item: FileExplorerItem<TData> | null }) => unknown
+  'context-menu'?: (props: FileExplorerContextMenuSlotProps<TData>) => unknown
 }>()
 
 function onSelect(event: FileExplorerSelectEvent<TData>) {
@@ -45,6 +55,10 @@ function onSelect(event: FileExplorerSelectEvent<TData>) {
       :draggable="draggable"
       :disabled="disabled"
       :get-icon="getIcon"
+      :on-rename="onRename"
+      :validate-name="validateName"
+      :on-delete="onDelete"
+      :confirm-delete="false"
       :expand-on-click="false"
       folders-only
       label="Folders"

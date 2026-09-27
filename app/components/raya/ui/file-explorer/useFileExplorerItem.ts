@@ -15,6 +15,7 @@ export function useFileExplorerItem<TData>(item: () => FileExplorerItem<TData>) 
   const selected = computed(() => ctx.selected.value.has(id.value))
   const disabled = computed(() => Boolean(item().disabled))
   const dropTarget = computed(() => ctx.dragDrop.dropTargetId.value === id.value)
+  const renaming = computed(() => ctx.renamingId.value === id.value)
 
   const attrs = computed(() => ({
     'role': 'option',
@@ -26,7 +27,8 @@ export function useFileExplorerItem<TData>(item: () => FileExplorerItem<TData>) 
     'data-disabled': disabled.value ? '' : undefined,
     'data-dragging': ctx.dragDrop.draggingIds.value.includes(id.value) ? '' : undefined,
     'data-drop-target': dropTarget.value ? '' : undefined,
-    'draggable': ctx.draggable.value && !disabled.value ? true : undefined,
+    // Paused while renaming, so selecting text in the input does not start a drag.
+    'draggable': ctx.draggable.value && !disabled.value && !renaming.value ? true : undefined,
     'onClick': (event: MouseEvent) => ctx.onItemClick(id.value, event),
     'onDblclick': () => ctx.onItemOpen(id.value),
     'onContextmenu': () => ctx.onItemContextMenu(id.value),
@@ -46,5 +48,11 @@ export function useFileExplorerItem<TData>(item: () => FileExplorerItem<TData>) 
     'onDragend': () => ctx.dragDrop.onDragEnd(),
   }))
 
-  return { selected, disabled, attrs, now: ctx.now }
+  const rename = {
+    validate: (name: string) => ctx.validateRename(id.value, name),
+    commit: (name: string) => ctx.commitRename(id.value, name),
+    cancel: () => ctx.cancelRename(id.value),
+  }
+
+  return { selected, disabled, renaming, rename, attrs, now: ctx.now }
 }

@@ -3,6 +3,15 @@ import { createContext } from 'reka-ui'
 import type { FileTreeSize } from './types'
 
 /** One drag session. Shared by every drop target inside a `FileExplorer`. */
+/** Inline rename, shared by tree nodes, cards and rows. */
+export interface FileExplorerRenameContext {
+  /** The item showing a rename input, if any. */
+  renamingId: Readonly<Ref<string | null>>
+  validateRename: (id: string, name: string) => string | undefined
+  commitRename: (id: string, name: string) => void
+  cancelRename: (id: string) => void
+}
+
 export interface FileExplorerDragDrop {
   draggingIds: Readonly<Ref<readonly string[]>>
   /** Folder currently under the pointer; `null` is the root, `undefined` is none. */
@@ -19,7 +28,7 @@ export interface FileExplorerDragDrop {
  * purpose: nodes receive their item as a prop, so nothing here depends on the
  * consumer's `data` type, and a node never needs a watcher of its own.
  */
-export interface FileTreeContext {
+export interface FileTreeContext extends FileExplorerRenameContext {
   /** Trimmed search query, used to highlight matches. */
   query: Readonly<Ref<string>>
   size: Readonly<Ref<FileTreeSize>>
@@ -34,6 +43,10 @@ export interface FileTreeContext {
   expandOnClick: Readonly<Ref<boolean>>
   extendSelection: (id: string) => void
   selectAll: () => void
+  /** F2 on a node. */
+  startRename: (id: string) => void
+  /** Delete on a node. */
+  deleteFrom: (id: string) => void
 }
 
 export const [injectFileTreeContext, provideFileTreeContext]
@@ -48,7 +61,7 @@ export const [injectSharedDragDrop, provideSharedDragDrop]
   = createContext<FileExplorerDragDrop>('FileExplorerDragDrop')
 
 /** State shared from `FileExplorer` with its toolbar, cards, rows and status bar. */
-export interface FileExplorerContext {
+export interface FileExplorerContext extends FileExplorerRenameContext {
   selected: Readonly<Ref<ReadonlySet<string>>>
   /** The item holding the roving tab stop in the content area. */
   focusedId: Readonly<Ref<string | null>>

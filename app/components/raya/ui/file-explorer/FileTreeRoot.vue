@@ -43,6 +43,15 @@ function focusedItemId(): string | undefined {
 }
 
 function onKeydown(event: KeyboardEvent) {
+  if (event.key === 'F2' || event.key === 'Delete') {
+    const id = focusedItemId()
+    if (id === undefined) return
+    event.preventDefault()
+    if (event.key === 'F2') ctx.startRename(id)
+    else ctx.deleteFrom(id)
+    return
+  }
+
   if (!props.multiple) return
 
   if (event.shiftKey && RANGE_KEYS.has(event.key)) {

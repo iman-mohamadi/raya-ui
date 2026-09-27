@@ -4,6 +4,7 @@ import { ContextMenuContent, ContextMenuPortal, ContextMenuRoot, ContextMenuTrig
 import { useNow, useVModel } from '@vueuse/core'
 import { cn } from '@/lib/utils'
 import FileExplorerContent from './FileExplorerContent.vue'
+import FileExplorerDeleteDialog from './FileExplorerDeleteDialog.vue'
 import FileExplorerSidebar from './FileExplorerSidebar.vue'
 import FileExplorerStatusBar from './FileExplorerStatusBar.vue'
 import FileExplorerToolbar from './FileExplorerToolbar.vue'
@@ -16,6 +17,7 @@ import type {
   FileExplorerSort,
   FileExplorerView,
 } from './types'
+import { useFileExplorerActions } from './useFileExplorerActions'
 import { useFileExplorerDragDrop } from './useFileExplorerDragDrop'
 import { useFileExplorerKeyboard } from './useFileExplorerKeyboard'
 import { useFileExplorerNavigation } from './useFileExplorerNavigation'
@@ -33,6 +35,7 @@ const props = withDefaults(defineProps<FileExplorerProps<TData>>(), {
   sidebar: true,
   rootLabel: 'root',
   label: 'Files',
+  confirmDelete: true,
 })
 
 const emit = defineEmits<FileExplorerEmits<TData>>()
@@ -148,6 +151,31 @@ function gridColumns(): number {
   return Math.max(1, perRow)
 }
 
+// --- Rename & delete ----------------------------------------------------------------
+
+const actions = useFileExplorerActions({
+  index,
+  rootItems: () => props.items,
+  selected: selectedIds,
+  onRename: () => props.onRename,
+  validateName: () => props.validateName,
+  onDelete: () => props.onDelete,
+  confirmDelete: () => props.confirmDelete,
+  disabled: () => props.disabled,
+  focus: focusItem,
+})
+
+// After a delete, put focus back on the nearest remaining item rather than the page.
+function onDeleteDialogCloseAutoFocus(event: Event) {
+  event.preventDefault()
+  nextTick(() => {
+    const id = focusedId.value
+    const target = id === null ? undefined : findItemElement(id)
+    if (target) target.focus()
+    else contentElement.value?.focus()
+  })
+}
+
 // --- Navigation --------------------------------------------------------------------
 
 // Leaving a folder resets the selection; going Up selects the folder you came from.
@@ -159,6 +187,7 @@ watch(navigation.current, () => {
   selection.anchor.value = pendingSelection
   pendingSelection = null
   search.value = ''
+  actions.renamingId.value = null
   if (hadFocus) {
     nextTick(() => {
       const id = focusedId.value
@@ -221,15 +250,14 @@ const keyboard = useFileExplorerKeyboard({
   back: navigation.back,
   forward: navigation.forward,
   up: goUp,
-  remove: () => {
-    if (props.onDelete && selectedItems.value.length) props.onDelete(selectedItems.value)
-  },
+  remove: () => actions.requestDelete(selectedItems.value),
+  rename: () => actions.startRename(focusedId.value),
 })
 
 function onContentKeydown(event: KeyboardEvent) {
   if (props.disabled || props.loading) return
-  // Let buttons (the drop tile, sort headers) handle their own keys.
-  if (event.target instanceof Element && event.target.closest('button')) return
+  // Let buttons (the drop tile, sort headers) and the rename input handle their own keys.
+  if (event.target instanceof Element && event.target.closest('button, input')) return
   keyboard.onKeydown(event)
 }
 
@@ -319,6 +347,20 @@ provideFileExplorerContext({
   onItemClick,
   onItemOpen: openItem,
   onItemContextMenu,
+  renamingId: actions.renamingId,
+  validateRename: actions.validateRename,
+  commitRename: actions.commitRename,
+  cancelRename: actions.cancelRename,
+})
+
+defineExpose({
+  /** Starts renaming an item inline, if `onRename` is provided. */
+  rename: (id: string) => actions.startRename(id),
+  /** Deletes items by id, through the confirmation dialog when enabled. */
+  remove: (ids: string[]) => actions.requestDelete(ids.flatMap((id) => {
+    const item = index.value.get(id)?.item
+    return item ? [item] : []
+  })),
 })
 </script>
 
@@ -367,6 +409,9 @@ provideFileExplorerContext({
         :draggable="dragDropEnabled"
         :disabled="disabled"
         :get-icon="getIcon"
+        :on-rename="onRename"
+        :validate-name="validateName"
+        :on-delete="onDelete ? actions.requestDelete : undefined"
         @navigate="navigation.navigate"
       >
         <template v-if="hasContextMenu" #context-menu="scope">
@@ -413,6 +458,7 @@ provideFileExplorerContext({
           <ContextMenuPortal v-if="hasContextMenu">
             <ContextMenuContent
               data-slot="file-explorer-context-menu"
+              @close-auto-focus="actions.onMenuCloseAutoFocus"
               :class="cn(
                 'z-50 max-h-(--reka-context-menu-content-available-height) min-w-[8rem] origin-(--reka-context-menu-content-transform-origin) overflow-x-hidden overflow-y-auto',
                 'rounded-md border bg-popover p-1 text-popover-foreground shadow-md',
@@ -420,7 +466,7 @@ provideFileExplorerContext({
                 'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
               )"
             >
-              <slot name="context-menu" :item="contextItem" />
+              <slot name="context-menu" v-bind="actions.menuScope(contextItem)" />
             </ContextMenuContent>
           </ContextMenuPortal>
         </ContextMenuRoot>
@@ -432,6 +478,17 @@ provideFileExplorerContext({
         </FileExplorerStatusBar>
       </div>
     </div>
+
+    <FileExplorerDeleteDialog
+      :items="actions.pendingDelete.value"
+      @confirm="actions.confirmDelete"
+      @close="actions.closeDelete"
+      @close-auto-focus="onDeleteDialogCloseAutoFocus"
+    >
+      <template v-if="$slots['delete-description']" #description="scope">
+        <slot name="delete-description" v-bind="scope" />
+      </template>
+    </FileExplorerDeleteDialog>
 
     <input
       v-if="uploadable"

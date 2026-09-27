@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { CircleCheck } from 'lucide-vue-next'
 import FileExplorerFileIcon from './FileExplorerFileIcon.vue'
+import FileExplorerRenameInput from './FileExplorerRenameInput.vue'
 import type { FileExplorerIconResolver, FileExplorerItem } from './types'
 import { useFileExplorerItem } from './useFileExplorerItem'
 import {
@@ -24,7 +25,7 @@ defineSlots<{
   preview?: (props: { item: FileExplorerItem<TData> }) => unknown
 }>()
 
-const { selected, attrs, now } = useFileExplorerItem(() => props.item)
+const { selected, renaming, rename, attrs, now } = useFileExplorerItem(() => props.item)
 
 const folder = computed(() => isFolder(props.item))
 const kind = computed(() => getFileKind(props.item))
@@ -59,7 +60,16 @@ const TOKEN_CLASSES: Record<CodeTokenKind, string> = {
     <div class="flex min-w-0 items-start gap-2.5">
       <FileExplorerFileIcon :item="item" :get-icon="getIcon" />
       <div class="min-w-0 flex-1">
-        <p class="truncate text-sm font-medium leading-5 text-foreground">{{ item.name }}</p>
+        <FileExplorerRenameInput
+          v-if="renaming"
+          :name="item.name"
+          :is-folder="folder"
+          :validate="rename.validate"
+          class="-ms-1 h-5 font-medium"
+          @commit="rename.commit"
+          @cancel="rename.cancel"
+        />
+        <p v-else class="truncate text-sm font-medium leading-5 text-foreground">{{ item.name }}</p>
         <p class="truncate font-mono text-[11px] leading-4 text-muted-foreground">{{ item.description ?? kind.label }}</p>
       </div>
       <CircleCheck v-if="selected" aria-hidden="true" class="size-4 shrink-0 text-primary" />

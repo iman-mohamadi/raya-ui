@@ -23,6 +23,7 @@ interface UseFileExplorerKeyboardOptions {
   forward: () => void
   up: () => void
   remove?: () => void
+  rename?: () => void
 }
 
 const TYPEAHEAD_RESET = 700
@@ -130,6 +131,12 @@ export function useFileExplorerKeyboard(options: UseFileExplorerKeyboardOptions)
         if (options.remove) {
           event.preventDefault()
           options.remove()
+        }
+        return
+      case 'F2':
+        if (options.rename) {
+          event.preventDefault()
+          options.rename()
         }
         return
     }

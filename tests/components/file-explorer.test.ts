@@ -63,6 +63,18 @@ const lastEmit = <T>(w: VueWrapper, event: string) => w.emitted<[T]>(event)?.at(
 const statusBar = (w: VueWrapper) => w.find('[data-slot="file-explorer-status-bar"]')
 const crumbs = (w: VueWrapper) => w.findAll('nav[aria-label="Folder path"] li:not([aria-hidden])').map(el => el.text())
 
+/** The rename input focuses on the next animation frame. */
+async function settleFrame() {
+  await settle()
+  await new Promise(resolve => setTimeout(resolve, 40))
+  await nextTick()
+}
+
+const renameInput = (w: VueWrapper) => w.find<HTMLInputElement>('[data-slot="file-explorer-rename-input"]')
+const dialog = () => document.body.querySelector<HTMLElement>('[data-slot="file-explorer-delete-dialog"]')
+const dialogButton = (label: string) =>
+  Array.from(dialog()?.querySelectorAll('button') ?? []).find(button => button.textContent?.trim() === label)
+
 async function press(w: VueWrapper, key: string, init: KeyboardEventInit = {}) {
   await content(w).trigger('keydown', { key, ...init })
   await settle()
@@ -243,13 +255,6 @@ describe('FileExplorer: keyboard', () => {
     expect(lastEmit<FileExplorerItem>(w, 'open')?.id).toBe('src/App.vue')
   })
 
-  it('calls `onDelete` with the selection on Delete', async () => {
-    const onDelete = vi.fn()
-    const w = render({ defaultFolder: 'src', onDelete })
-    await option(w, 'src/App.vue').trigger('click')
-    await press(w, 'Delete')
-    expect(onDelete).toHaveBeenCalledWith([expect.objectContaining({ id: 'src/App.vue' })])
-  })
 })
 
 describe('FileExplorer: views', () => {
@@ -331,6 +336,116 @@ describe('FileExplorer: actions', () => {
     const move = lastEmit<FileExplorerMoveEvent>(w, 'move')
     expect(move?.items.map(item => item.id)).toEqual(['src/App.vue'])
     expect(move?.target?.id).toBe('src/components')
+  })
+})
+
+describe('FileExplorer: rename', () => {
+  it('renames inline with F2 and Enter, selecting the name without its extension', async () => {
+    const onRename = vi.fn()
+    const w = render({ defaultFolder: 'src', onRename })
+    await option(w, 'src/App.vue').trigger('click')
+    await press(w, 'F2')
+    await settleFrame()
+
+    const input = renameInput(w)
+    expect(input.element.value).toBe('App.vue')
+    expect(document.activeElement).toBe(input.element)
+    expect([input.element.selectionStart, input.element.selectionEnd]).toEqual([0, 3])
+
+    await input.setValue('Main.vue')
+    await input.trigger('keydown', { key: 'Enter' })
+    expect(onRename).toHaveBeenCalledWith(expect.objectContaining({ id: 'src/App.vue' }), 'Main.vue')
+    expect(renameInput(w).exists()).toBe(false)
+  })
+
+  it('cancels with Escape and ignores unchanged names', async () => {
+    const onRename = vi.fn()
+    const w = render({ defaultFolder: 'src', onRename, defaultSelected: ['src/components'] })
+    await press(w, 'F2')
+    await settleFrame()
+    await renameInput(w).setValue('widgets')
+    await renameInput(w).trigger('keydown', { key: 'Escape' })
+    expect(renameInput(w).exists()).toBe(false)
+
+    await press(w, 'F2')
+    await settleFrame()
+    await renameInput(w).trigger('keydown', { key: 'Enter' })
+    expect(onRename).not.toHaveBeenCalled()
+  })
+
+  it('refuses duplicates and names rejected by `validateName`', async () => {
+    const onRename = vi.fn()
+    const validateName = (name: string) => (name.startsWith('.') ? 'Hidden files are not allowed.' : undefined)
+    const w = render({ defaultFolder: 'src', onRename, validateName, defaultSelected: ['src/App.vue'] })
+    await press(w, 'F2')
+    await settleFrame()
+
+    await renameInput(w).setValue('COMPONENTS')
+    await renameInput(w).trigger('keydown', { key: 'Enter' })
+    await nextTick()
+    expect(document.body.querySelector('[role="alert"]')?.textContent).toContain('already exists')
+    expect(renameInput(w).attributes('aria-invalid')).toBe('true')
+
+    await renameInput(w).setValue('.env')
+    await renameInput(w).trigger('keydown', { key: 'Enter' })
+    await nextTick()
+    expect(document.body.querySelector('[role="alert"]')?.textContent).toContain('Hidden files')
+    expect(onRename).not.toHaveBeenCalled()
+  })
+
+  it('does nothing on F2 without `onRename`', async () => {
+    const w = render({ defaultFolder: 'src', defaultSelected: ['src/App.vue'] })
+    await press(w, 'F2')
+    await settleFrame()
+    expect(renameInput(w).exists()).toBe(false)
+  })
+
+  it('renames folders in the directory tree', async () => {
+    const onRename = vi.fn()
+    const w = render({ onRename })
+    const node = w.find('[data-slot="file-explorer-sidebar"] [role="treeitem"][data-item-id="src"]')
+    ;(node.element as HTMLElement).focus()
+    await node.trigger('keydown', { key: 'F2' })
+    await settleFrame()
+
+    const input = node.find<HTMLInputElement>('[data-slot="file-explorer-rename-input"]')
+    await input.setValue('source')
+    await input.trigger('keydown', { key: 'Enter' })
+    expect(onRename).toHaveBeenCalledWith(expect.objectContaining({ id: 'src' }), 'source')
+  })
+})
+
+describe('FileExplorer: delete', () => {
+  it('asks for confirmation before calling `onDelete`', async () => {
+    const onDelete = vi.fn()
+    const w = render({ defaultFolder: 'src', onDelete })
+    await option(w, 'src/App.vue').trigger('click')
+    await press(w, 'Delete')
+
+    expect(dialog()?.textContent).toContain('Delete “App.vue”?')
+    dialogButton('Cancel')?.click()
+    await settle()
+    expect(onDelete).not.toHaveBeenCalled()
+    expect(dialog()).toBeNull()
+
+    await option(w, 'src/components').trigger('click', { ctrlKey: true })
+    await press(w, 'Delete')
+    expect(dialog()?.textContent).toContain('Delete 2 items?')
+    expect(dialog()?.textContent).toContain('including 1 folder')
+    dialogButton('Delete')?.click()
+    await settle()
+    expect(onDelete).toHaveBeenCalledWith([
+      expect.objectContaining({ id: 'src/App.vue' }),
+      expect.objectContaining({ id: 'src/components' }),
+    ])
+  })
+
+  it('deletes straight away with `confirmDelete: false`', async () => {
+    const onDelete = vi.fn()
+    const w = render({ defaultFolder: 'src', onDelete, confirmDelete: false, defaultSelected: ['src/App.vue'] })
+    await press(w, 'Delete')
+    expect(dialog()).toBeNull()
+    expect(onDelete).toHaveBeenCalledWith([expect.objectContaining({ id: 'src/App.vue' })])
   })
 })
 

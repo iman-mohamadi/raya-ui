@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { h, nextTick } from 'vue'
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import { FileCode2 } from 'lucide-vue-next'
@@ -427,6 +427,46 @@ describe('FileTree: states and slots', () => {
     expect(labels).toContain('2:Button.vue:ui')
     expect(labels).toContain('0:README.md:-')
     expect(row(w, 'src/components/Input.vue').find('.meta').exists()).toBe(true)
+  })
+})
+
+describe('FileTree: rename & delete', () => {
+  it('renames the focused item with F2', async () => {
+    const onRename = vi.fn()
+    const w = render({ onRename })
+    await focus(w, 'README.md')
+    await press(w, 'README.md', 'F2')
+    await new Promise(resolve => setTimeout(resolve, 40))
+
+    const input = treeitem(w, 'README.md').find<HTMLInputElement>('[data-slot="file-explorer-rename-input"]')
+    expect([input.element.selectionStart, input.element.selectionEnd]).toEqual([0, 6])
+    await input.setValue('CHANGELOG.md')
+    await input.trigger('keydown', { key: 'Enter' })
+    expect(onRename).toHaveBeenCalledWith(expect.objectContaining({ id: 'README.md' }), 'CHANGELOG.md')
+  })
+
+  it('keeps arrow keys inside the rename input', async () => {
+    const w = render({ onRename: vi.fn(), defaultExpanded: ['src'] })
+    await focus(w, 'src')
+    await press(w, 'src', 'F2')
+    const input = treeitem(w, 'src').find('[data-slot="file-explorer-rename-input"]')
+    await input.trigger('keydown', { key: 'ArrowLeft' })
+    await settle()
+    expect(w.emitted('update:expanded')).toBeUndefined()
+  })
+
+  it('confirms before deleting', async () => {
+    const onDelete = vi.fn()
+    const w = render({ onDelete })
+    await focus(w, 'README.md')
+    await press(w, 'README.md', 'Delete')
+
+    const confirm = Array.from(document.body.querySelectorAll('[data-slot="file-explorer-delete-dialog"] button'))
+      .find(button => button.textContent?.trim() === 'Delete')
+    expect(confirm).toBeDefined()
+    ;(confirm as HTMLElement).click()
+    await settle()
+    expect(onDelete).toHaveBeenCalledWith([expect.objectContaining({ id: 'README.md' })])
   })
 })
 

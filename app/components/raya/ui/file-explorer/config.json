@@ -22,6 +22,8 @@
     "FileExplorerRow.vue",
     "FileExplorerFileIcon.vue",
     "FileExplorerStatusBar.vue",
+    "FileExplorerRenameInput.vue",
+    "FileExplorerDeleteDialog.vue",
     "FileTree.vue",
     "FileTreeRoot.vue",
     "FileTreeNode.vue",
@@ -33,6 +35,7 @@
     "useFileExplorerSelection.ts",
     "useFileExplorerKeyboard.ts",
     "useFileExplorerItem.ts",
+    "useFileExplorerActions.ts",
     "useFileExplorerSearch.ts",
     "useFileExplorerDragDrop.ts",
     "index.ts"

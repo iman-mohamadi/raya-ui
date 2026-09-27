@@ -81,11 +81,29 @@ export interface FileTreeNodeSlots<TData = unknown> {
   actions?: (props: FileExplorerItemSlotProps<TData>) => unknown
 }
 
+/** Scope of the `#context-menu` slot of `FileTree` and `FileExplorer`. */
+export interface FileExplorerContextMenuSlotProps<TData = unknown> {
+  /** The item that was right-clicked, or `null` for the empty area. */
+  item: FileExplorerItem<TData> | null
+  /** Starts renaming `item` inline once the menu has closed. Needs `onRename`. */
+  rename: () => void
+  /**
+   * Deletes `item` — or the whole selection when `item` is part of it — after
+   * the confirmation dialog. Needs `onDelete`.
+   */
+  remove: () => void
+}
+
+/** Validates a new name. Return an error message to refuse it. */
+export type FileExplorerNameValidator<TData = unknown> = (name: string, item: FileExplorerItem<TData>) => string | undefined
+
 export interface FileTreeSlots<TData = unknown> extends FileTreeNodeSlots<TData> {
   /** Menu entries shown on right-click. `item` is `null` when the empty area was clicked. */
-  'context-menu'?: (props: { item: FileExplorerItem<TData> | null }) => unknown
+  'context-menu'?: (props: FileExplorerContextMenuSlotProps<TData>) => unknown
   empty?: (props: { query: string }) => unknown
   loading?: (props: Record<string, never>) => unknown
+  /** Body of the delete confirmation dialog. */
+  'delete-description'?: (props: { items: FileExplorerItem<TData>[] }) => unknown
 }
 
 export interface FileTreeProps<TData = unknown> {
@@ -121,6 +139,14 @@ export interface FileTreeProps<TData = unknown> {
   expandOnClick?: boolean
   /** Accessible name of the tree. */
   label?: string
+  /** Called with the new name after an inline rename (F2 or the context menu). Enables renaming. */
+  onRename?: (item: FileExplorerItem<TData>, name: string) => void
+  /** Extra checks for new names. Empty names and duplicates in the same folder are always refused. */
+  validateName?: FileExplorerNameValidator<TData>
+  /** Called with the selection on Delete, or from the context menu. Enables deleting. */
+  onDelete?: (items: FileExplorerItem<TData>[]) => void
+  /** Asks for confirmation in a dialog before calling `onDelete`. */
+  confirmDelete?: boolean
   class?: HTMLAttributes['class']
 }
 
@@ -185,8 +211,14 @@ export interface FileExplorerProps<TData = unknown> {
   onUpload?: (files: File[], folder: FileExplorerItem<TData> | null) => void
   /** Called by the New Folder button, which only appears when this is provided. */
   onCreateFolder?: (parent: FileExplorerItem<TData> | null) => void
-  /** Called with the selection when the Delete key is pressed. */
+  /** Called with the new name after an inline rename (F2 or the context menu). Enables renaming. */
+  onRename?: (item: FileExplorerItem<TData>, name: string) => void
+  /** Extra checks for new names. Empty names and duplicates in the same folder are always refused. */
+  validateName?: FileExplorerNameValidator<TData>
+  /** Called with the items to delete: the selection on Delete, or from the context menu. */
   onDelete?: (items: FileExplorerItem<TData>[]) => void
+  /** Asks for confirmation in a dialog before calling `onDelete`. */
+  confirmDelete?: boolean
 }
 
 export interface FileExplorerEmits<TData = unknown> {
@@ -205,7 +237,9 @@ export interface FileExplorerSlots<TData = unknown> {
   /** Replaces the preview area of a card. */
   preview?: (props: { item: FileExplorerItem<TData> }) => unknown
   /** Menu entries for right-clicks on items, the empty area and the directory tree. */
-  'context-menu'?: (props: { item: FileExplorerItem<TData> | null }) => unknown
+  'context-menu'?: (props: FileExplorerContextMenuSlotProps<TData>) => unknown
+  /** Body of the delete confirmation dialog. */
+  'delete-description'?: (props: { items: FileExplorerItem<TData>[] }) => unknown
   empty?: (props: { query: string }) => unknown
   /** Extra toolbar buttons, before New Folder and Upload. */
   'toolbar-actions'?: (props: Record<string, never>) => unknown

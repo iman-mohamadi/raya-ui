@@ -9,6 +9,7 @@ import {
 } from 'reka-ui'
 import { ChevronRight } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
+import FileExplorerRenameInput from './FileExplorerRenameInput.vue'
 import FileTreeNode from './FileTreeNode.vue'
 import { injectFileTreeContext } from './context'
 import type {
@@ -39,6 +40,7 @@ const children = computed(() => props.item.children ?? [])
 const expandable = computed(() => folder.value && (!ctx.foldersOnly.value || children.value.length > 0))
 const isDragging = computed(() => ctx.dragDrop.draggingIds.value.includes(props.item.id))
 const isDropTarget = computed(() => ctx.dragDrop.dropTargetId.value === props.item.id)
+const renaming = computed(() => ctx.renamingId.value === props.item.id)
 
 function slotProps(expanded: boolean, selected: boolean, disabled: boolean): FileExplorerItemSlotProps<TData> {
   return { item: props.item, depth: props.depth, expanded, selected, disabled }
@@ -112,7 +114,7 @@ function onDragOver(event: DragEvent) {
       :data-disabled="isDisabled ? '' : undefined"
       :data-dragging="isDragging ? '' : undefined"
       :data-drop-target="isDropTarget ? '' : undefined"
-      :draggable="ctx.draggable.value && !isDisabled ? 'true' : undefined"
+      :draggable="ctx.draggable.value && !isDisabled && !renaming ? 'true' : undefined"
       @dblclick="!isDisabled && ctx.onItemOpen(item.id)"
       @dragstart="ctx.dragDrop.onDragStart(item.id, $event)"
       @dragover="onDragOver"
@@ -144,7 +146,16 @@ function onDragOver(event: DragEvent) {
             :class="fileTreeIconVariants({ size: ctx.size.value })"
           />
         </slot>
-        <slot name="label" v-bind="slotProps(isExpanded, isSelected, isDisabled)" :query="ctx.query.value">
+        <FileExplorerRenameInput
+          v-if="renaming"
+          :name="item.name"
+          :is-folder="folder"
+          :validate="name => ctx.validateRename(item.id, name)"
+          class="-ms-1 h-5"
+          @commit="name => ctx.commitRename(item.id, name)"
+          @cancel="ctx.cancelRename(item.id)"
+        />
+        <slot v-else name="label" v-bind="slotProps(isExpanded, isSelected, isDisabled)" :query="ctx.query.value">
           <span class="min-w-0 truncate">
             <template v-for="(part, i) in splitByQuery(item.name, ctx.query.value)" :key="i">
               <mark v-if="part.match" class="rounded-[3px] bg-primary/20 text-inherit">{{ part.text }}</mark>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from 'vue'
-import { CopyPlus, Download, ExternalLink, FolderPlus, Link, Trash2 } from 'lucide-vue-next'
+import { CopyPlus, Download, ExternalLink, FolderPlus, Link, PencilLine, Trash2 } from 'lucide-vue-next'
 import {
   FileExplorer,
   formatBytes,
@@ -186,7 +186,7 @@ const toggles = [
   { label: 'Directory tree', hint: 'Show the sidebar when there is room.', state: sidebar },
   { label: 'Multiple selection', hint: 'Ctrl/Cmd, Shift and Ctrl+A.', state: multiple },
   { label: 'Drag and drop', hint: 'Move items onto folders.', state: draggable },
-  { label: 'Uploads & new folders', hint: 'Pass the handlers to show the actions.', state: uploads },
+  { label: 'File actions', hint: 'Upload, new folder, rename, delete.', state: uploads },
   { label: 'Loading', hint: 'Show skeleton cards.', state: loading },
 ]
 
@@ -205,10 +205,6 @@ const resetSettings = () => {
 // --- Demo behavior: application code, not the component ------------------------
 
 const index = computed(() => indexFileTree(files.value))
-const itemsById = (ids: string[]) => ids.flatMap((id) => {
-  const item = index.value.get(id)?.item
-  return item ? [item] : []
-})
 
 function pathOf(id: string): string {
   const names: string[] = []
@@ -271,8 +267,15 @@ function onDelete(items: FileExplorerItem[]) {
   selected.value = selected.value.filter(id => !ids.has(id))
 }
 
-function deleteFromMenu(item: FileExplorerItem) {
-  onDelete(selected.value.includes(item.id) ? itemsById(selected.value) : [item])
+function renameItem(items: FileExplorerItem[], id: string, name: string): FileExplorerItem[] {
+  return items.map((item) => {
+    if (item.id === id) return { ...item, name, modifiedAt: new Date() }
+    return item.children ? { ...item, children: renameItem(item.children, id, name) } : item
+  })
+}
+
+function onRename(item: FileExplorerItem, name: string) {
+  files.value = renameItem(files.value, item.id, name)
 }
 
 function createFolderHere() {
@@ -355,7 +358,7 @@ const codeString = computed(() => {
   if (draggable.value) attrs.push('draggable')
   if (loading.value) attrs.push('loading')
   if (draggable.value) attrs.push('@move="onMove"')
-  if (uploads.value) attrs.push('@upload="onUpload"', '@create-folder="onCreateFolder"', '@delete="onDelete"')
+  if (uploads.value) attrs.push('@upload="onUpload"', '@create-folder="onCreateFolder"', '@rename="onRename"', '@delete="onDelete"')
   attrs.push('@open="openFile"', 'class="h-[560px]"')
 
   const handlers = [
@@ -371,6 +374,9 @@ const codeString = computed(() => {
 
 function onCreateFolder(parent: FileExplorerItem | null) {}
 
+function onRename(item: FileExplorerItem, name: string) {}
+
+// Called after the user confirms in the dialog.
 function onDelete(items: FileExplorerItem[]) {}`]
       : []),
     `function openFile(item: FileExplorerItem) {
@@ -574,20 +580,55 @@ async function onDelete(items: FileExplorerItem[]) {
 </template>`,
   },
   {
+    title: 'Renaming',
+    description: 'Pass `@rename` to enable inline renaming: F2, or `rename()` from the context menu, turns the name into an input with the base name selected. Enter or clicking away commits, Esc cancels. Empty names, slashes and duplicates in the same folder are refused with an inline message; add your own rules with `validate-name`. The handler receives the item and the trimmed new name.',
+    code: `<script setup lang="ts">
+async function onRename(item: FileExplorerItem, name: string) {
+  await storage.rename(item.id, name)
+  files.value = await storage.list()
+}
+
+const validateName = (name: string) =>
+  /[<>:"|?*]/.test(name) ? 'Names cannot contain < > : " | ? *' : undefined
+<\/script>
+
+<template>
+  <FileExplorer :items="files" :validate-name="validateName" @rename="onRename" />
+</template>`,
+  },
+  {
+    title: 'Confirming deletes',
+    description: 'Delete — the key, `remove()` from the context menu or the exposed `remove(ids)` — opens a confirmation dialog that names the file, or counts the items and folders involved. Cancel has focus, so Enter never deletes by accident. `@delete` runs only once the user confirms. Reword the message with `#delete-description`, or turn the dialog off with `:confirm-delete="false"` when your app has its own undo or trash.',
+    code: `<script setup lang="ts">
+async function onDelete(items: FileExplorerItem[]) {
+  await storage.moveToTrash(items.map(item => item.id))
+  files.value = await storage.list()
+}
+<\/script>
+
+<template>
+  <FileExplorer :items="files" @delete="onDelete">
+    <template #delete-description="{ items }">
+      {{ items.length === 1 ? 'It' : 'They' }} will be moved to the trash for 30 days.
+    </template>
+  </FileExplorer>
+</template>`,
+  },
+  {
     title: 'Context menu',
-    description: 'Fill the `#context-menu` slot with shadcn-vue `ContextMenuItem`s. It opens for cards, rows, directory tree folders and the empty area (`item` is `null` there). Right-clicking outside the selection selects that item first.',
+    description: 'Fill the `#context-menu` slot with shadcn-vue `ContextMenuItem`s. It opens for cards, rows, directory tree folders and the empty area (`item` is `null` there). Right-clicking outside the selection selects that item first. The scope also has `rename()` and `remove()`, which start the built-in inline rename and confirmed delete once the menu has closed.',
     code: `<script setup lang="ts">
 import { ContextMenuItem, ContextMenuSeparator } from '@/components/ui/context-menu'
 <\/script>
 
 <template>
   <FileExplorer :items="files">
-    <template #context-menu="{ item }">
+    <template #context-menu="{ item, rename, remove }">
       <template v-if="item">
-        <ContextMenuItem @select="rename(item)">Rename</ContextMenuItem>
+        <ContextMenuItem @select="rename">Rename</ContextMenuItem>
         <ContextMenuItem @select="copyLink(item)">Copy link</ContextMenuItem>
         <ContextMenuSeparator />
-        <ContextMenuItem variant="destructive" @select="remove(item)">Delete</ContextMenuItem>
+        <ContextMenuItem variant="destructive" @select="remove">Delete</ContextMenuItem>
       </template>
       <ContextMenuItem v-else @select="createFolder">New folder</ContextMenuItem>
     </template>
@@ -684,6 +725,8 @@ const props = [
   { name: 'disabled', type: 'boolean', default: 'false', description: 'Disables every interaction.' },
   { name: 'rootLabel', type: 'string', default: '"root"', description: 'Name of the root in the breadcrumbs.' },
   { name: 'accept', type: 'string', default: '—', description: 'accept attribute of the upload picker.' },
+  { name: 'validateName', type: '(name, item) => string | undefined', default: '—', description: 'Extra checks for renames. Return an error message to refuse a name.' },
+  { name: 'confirmDelete', type: 'boolean', default: 'true', description: 'Ask for confirmation in a dialog before calling the delete handler.' },
   { name: 'getIcon', type: 'FileExplorerIconResolver<TData>', default: '—', description: 'Returns an icon component per item; undefined keeps the default type tile.' },
   { name: 'label', type: 'string', default: '"Files"', description: 'Accessible name of the item list.' },
   { name: 'class', type: 'HTMLAttributes["class"]', default: '—', description: 'Classes for the root. Give it a height.' },
@@ -715,12 +758,14 @@ const events = [
   { name: 'move', payload: 'FileExplorerMoveEvent<TData>', description: '{ items, target } after a drop; target is null for the root breadcrumb.' },
   { name: 'upload', payload: '(files: File[], folder) => void', description: 'Handler. Enables the Upload button, drop tile and desktop drops.' },
   { name: 'create-folder', payload: '(parent) => void', description: 'Handler. Enables the New Folder button.' },
-  { name: 'delete', payload: '(items) => void', description: 'Handler. Called with the selection on the Delete key.' },
+  { name: 'rename', payload: '(item, name) => void', description: 'Handler. Enables inline renaming (F2 and rename() in the context menu).' },
+  { name: 'delete', payload: '(items) => void', description: 'Handler. Called after the confirmation dialog, for the Delete key or remove() in the context menu.' },
 ]
 
 const slots = [
   { name: '#preview', payload: '{ item }', description: 'The preview area of a card.' },
-  { name: '#context-menu', payload: '{ item: FileExplorerItem | null }', description: 'Context menu entries; enables the menu.' },
+  { name: '#context-menu', payload: '{ item, rename, remove }', description: 'Context menu entries; enables the menu. rename() and remove() run the built-in actions.' },
+  { name: '#delete-description', payload: '{ items }', description: 'Body of the delete confirmation dialog.' },
   { name: '#empty', payload: '{ query }', description: 'Empty folder or filter without matches.' },
   { name: '#toolbar-actions', payload: '—', description: 'Extra toolbar buttons.' },
   { name: '#status-actions', payload: '{ items }', description: 'Right side of the status bar.' },
@@ -737,7 +782,8 @@ const keyboard = [
   { keys: ['Ctrl / ⌘', 'A'], description: 'Select everything in the folder.' },
   { keys: ['Space'], description: 'Toggle the focused item in the selection.' },
   { keys: ['Esc'], description: 'Clear the selection (or the filter, in the filter field).' },
-  { keys: ['Delete'], description: 'Call the delete handler with the selection.' },
+  { keys: ['F2'], description: 'Rename the focused item inline (Enter to save, Esc to cancel).' },
+  { keys: ['Delete'], description: 'Delete the selection, after confirmation.' },
   { keys: ['a–z'], description: 'Jump to the next item whose name starts with the typed text.' },
 ]
 
@@ -746,7 +792,10 @@ const types = [
   { name: 'FileExplorerView · FileExplorerSort', description: '"grid" | "list", and { key, direction }.' },
   { name: 'FileExplorerMoveEvent<TData>', description: 'Payload of move.' },
   { name: 'FileExplorerProps / Emits / Slots', description: 'The explorer contract, for wrappers.' },
-  { name: 'FileTree · FileTreeProps / Emits / Slots', description: 'The standalone tree and its contract.' },
+  { name: 'FileTree · FileTreeProps / Emits / Slots', description: 'The standalone tree and its contract. It supports the same rename and delete handlers.' },
+  { name: 'FileExplorerContextMenuSlotProps', description: '{ item, rename, remove }.' },
+  { name: 'validateItemName(index, items, item, name)', description: 'The built-in name checks, for server-side reuse.' },
+  { name: 'ref.rename(id) · ref.remove(ids)', description: 'Exposed on a template ref, e.g. for toolbar buttons.' },
   { name: 'formatBytes(bytes)', description: '1536 → "1.5 KB".' },
   { name: 'formatRelativeTime(date, now?)', description: '"just now", "10m ago", "3d ago".' },
   { name: 'getFileKind(item)', description: '{ label, badge, tone } used for tiles and the type column.' },
@@ -919,7 +968,7 @@ const types = [
 
       <h3 class="text-2xl mt-8 mb-3 text-foreground">Events &amp; handlers</h3>
       <p class="text-sm text-muted-foreground leading-relaxed mb-2">
-        <code>upload</code>, <code>create-folder</code> and <code>delete</code> are declared as handler props, so the
+        <code>upload</code>, <code>create-folder</code>, <code>rename</code> and <code>delete</code> are declared as handler props, so the
         explorer can tell whether you listen and only shows those actions when you do.
       </p>
       <div class="rounded-none border-t border-border mt-4 overflow-hidden">
@@ -977,6 +1026,7 @@ const types = [
           :on-upload="uploads ? onUpload : undefined"
           :on-create-folder="uploads ? onCreateFolder : undefined"
           :on-delete="uploads ? onDelete : undefined"
+          :on-rename="uploads ? onRename : undefined"
           label="Project files"
           class="min-h-0 w-full flex-1 shadow-sm"
           @move="onMove"
@@ -997,7 +1047,7 @@ const types = [
             </span>
           </template>
 
-          <template #context-menu="{ item }">
+          <template #context-menu="{ item, rename, remove }">
             <template v-if="item">
               <ContextMenuLabel class="max-w-56 truncate font-mono text-xs font-normal text-muted-foreground">
                 {{ pathOf(item.id) }}
@@ -1017,18 +1067,23 @@ const types = [
                   Download
                 </ContextMenuItem>
               </template>
+              <ContextMenuItem :disabled="!uploads" @select="rename">
+                <PencilLine />
+                Rename
+                <ContextMenuShortcut>F2</ContextMenuShortcut>
+              </ContextMenuItem>
               <ContextMenuItem @select="copyPath(item)">
                 <Link />
                 Copy path
               </ContextMenuItem>
               <ContextMenuSeparator />
-              <ContextMenuItem variant="destructive" @select="deleteFromMenu(item)">
+              <ContextMenuItem variant="destructive" :disabled="!uploads" @select="remove">
                 <Trash2 />
                 Delete
                 <ContextMenuShortcut>Del</ContextMenuShortcut>
               </ContextMenuItem>
             </template>
-            <ContextMenuItem v-else @select="createFolderHere">
+            <ContextMenuItem v-else :disabled="!uploads" @select="createFolderHere">
               <FolderPlus />
               New folder
             </ContextMenuItem>

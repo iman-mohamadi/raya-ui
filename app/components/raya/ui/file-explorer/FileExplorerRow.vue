@@ -1,6 +1,7 @@
 <script setup lang="ts" generic="TData">
 import { computed } from 'vue'
 import FileExplorerFileIcon from './FileExplorerFileIcon.vue'
+import FileExplorerRenameInput from './FileExplorerRenameInput.vue'
 import type { FileExplorerIconResolver, FileExplorerItem } from './types'
 import { useFileExplorerItem } from './useFileExplorerItem'
 import { formatBytes, formatRelativeTime, getFileKind, isFolder } from './utils'
@@ -11,7 +12,7 @@ const props = defineProps<{
   getIcon?: FileExplorerIconResolver<TData>
 }>()
 
-const { attrs, now } = useFileExplorerItem(() => props.item)
+const { renaming, rename, attrs, now } = useFileExplorerItem(() => props.item)
 const kind = computed(() => getFileKind(props.item))
 </script>
 
@@ -31,7 +32,15 @@ const kind = computed(() => getFileKind(props.item))
   >
     <span class="flex min-w-0 items-center gap-2">
       <FileExplorerFileIcon :item="item" :get-icon="getIcon" size="sm" />
-      <span class="truncate">{{ item.name }}</span>
+      <FileExplorerRenameInput
+        v-if="renaming"
+        :name="item.name"
+        :is-folder="isFolder(item)"
+        :validate="rename.validate"
+        @commit="rename.commit"
+        @cancel="rename.cancel"
+      />
+      <span v-else class="truncate">{{ item.name }}</span>
     </span>
     <span class="hidden truncate text-xs text-muted-foreground @xl:block">{{ formatRelativeTime(item.modifiedAt, now) }}</span>
     <span class="hidden truncate text-xs text-muted-foreground @xl:block">{{ item.description ?? kind.label }}</span>
