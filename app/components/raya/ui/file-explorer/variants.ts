@@ -15,6 +15,7 @@ export const fileTreeRowVariants = cva(
     'data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 data-[disabled]:hover:bg-transparent',
     'data-[dragging]:opacity-50',
     'data-[drop-target]:bg-primary/10 data-[drop-target]:ring-1 data-[drop-target]:ring-inset data-[drop-target]:ring-primary/40',
+    'data-[drop-invalid]:bg-destructive/5 data-[drop-invalid]:ring-1 data-[drop-invalid]:ring-inset data-[drop-invalid]:ring-destructive/40',
   ],
   {
     variants: {
@@ -70,5 +71,23 @@ export const fileExplorerButtonVariants = cva(
   },
 )
 
-/** Column template shared by the details header and rows. Narrow explorers keep only name and size. */
-export const fileExplorerColumns = 'grid grid-cols-[minmax(0,1fr)_5.5rem] gap-3 @xl:grid-cols-[minmax(0,1fr)_6.5rem_9rem_5.5rem]'
+/**
+ * Column template shared by the details header and rows. The tracks come from
+ * CSS variables set by the content area; narrow explorers keep pinned columns.
+ */
+export const fileExplorerColumns = 'grid gap-3 grid-cols-(--file-explorer-columns-narrow) @xl:grid-cols-(--file-explorer-columns)'
+
+/** Popover surface of context and dropdown menus (shadcn-vue's menu styling). */
+export const fileExplorerMenuContent = [
+  'z-50 max-h-(--reka-context-menu-content-available-height) min-w-[11rem] overflow-x-hidden overflow-y-auto',
+  'rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md',
+  'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
+  'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
+].join(' ')
+
+export const fileExplorerMenuItem = [
+  'relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden',
+  'focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+  'data-[destructive]:text-destructive data-[destructive]:focus:bg-destructive/10 dark:data-[destructive]:focus:bg-destructive/20',
+  '[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg:not([class*=text-])]:text-muted-foreground',
+].join(' ')

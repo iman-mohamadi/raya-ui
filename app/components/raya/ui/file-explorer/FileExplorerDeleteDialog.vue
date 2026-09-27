@@ -11,13 +11,24 @@ import {
   AlertDialogTitle,
 } from 'reka-ui'
 import { cn } from '@/lib/utils'
+import { defaultFileExplorerMessages, type FileExplorerMessages } from './messages'
 import type { FileExplorerItem } from './types'
 import { fileExplorerButtonVariants } from './variants'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   /** Items waiting for confirmation; `null` closes the dialog. */
   items: FileExplorerItem<TData>[] | null
-}>()
+  /** Overrides the default "Delete …?" wording, e.g. for a permanent delete. */
+  title?: string
+  description?: string
+  confirmLabel?: string
+  messages?: FileExplorerMessages
+}>(), {
+  title: undefined,
+  description: undefined,
+  confirmLabel: undefined,
+  messages: () => defaultFileExplorerMessages,
+})
 
 const emit = defineEmits<{
   confirm: [items: FileExplorerItem<TData>[]]
@@ -31,30 +42,19 @@ defineSlots<{
   description?: (props: { items: FileExplorerItem<TData>[] }) => unknown
 }>()
 
-// Keep the last items while the dialog animates out.
+// Keep the last content while the dialog animates out.
 let lastItems: FileExplorerItem<TData>[] = []
+let lastText = { title: '', description: '', confirm: '' }
 const shown = computed(() => {
-  if (props.items) lastItems = props.items
-  return lastItems
-})
-
-const title = computed(() => {
-  const [first] = shown.value
-  return shown.value.length === 1 && first ? `Delete “${first.name}”?` : `Delete ${shown.value.length} items?`
-})
-
-const description = computed(() => {
-  const items = shown.value
-  const [first] = items
-  const folders = items.filter(item => item.type === 'folder')
-  if (items.length === 1 && first) {
-    if (first.type !== 'folder') return 'This file will be deleted.'
-    const count = first.children?.length ?? 0
-    return count ? `This folder and the ${count} ${count === 1 ? 'item' : 'items'} in it will be deleted.` : 'This folder will be deleted.'
+  if (props.items) {
+    lastItems = props.items
+    lastText = {
+      title: props.title ?? props.messages.deleteTitle(props.items),
+      description: props.description ?? props.messages.deleteDescription(props.items),
+      confirm: props.confirmLabel ?? props.messages.delete,
+    }
   }
-  return folders.length
-    ? `These items will be deleted, including ${folders.length} ${folders.length === 1 ? 'folder' : 'folders'} and everything in them.`
-    : 'These files will be deleted.'
+  return { items: lastItems, ...lastText }
 })
 
 function onOpenChange(open: boolean) {
@@ -79,23 +79,23 @@ function onOpenChange(open: boolean) {
       >
         <div class="flex flex-col gap-2 text-center sm:text-start">
           <AlertDialogTitle class="truncate text-lg font-semibold text-foreground">
-            {{ title }}
+            {{ shown.title }}
           </AlertDialogTitle>
           <AlertDialogDescription class="text-sm text-muted-foreground">
-            <slot name="description" :items="shown">
-              {{ description }}
+            <slot name="description" :items="shown.items">
+              {{ shown.description }}
             </slot>
           </AlertDialogDescription>
         </div>
         <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <AlertDialogCancel :class="cn(fileExplorerButtonVariants({ variant: 'outline' }), 'h-9 px-4 text-sm')">
-            Cancel
+            {{ messages.cancel }}
           </AlertDialogCancel>
           <AlertDialogAction
             :class="cn(fileExplorerButtonVariants(), 'h-9 bg-destructive px-4 text-sm text-white hover:bg-destructive/90 hover:text-white focus-visible:ring-destructive/40')"
-            @click="emit('confirm', shown)"
+            @click="emit('confirm', shown.items)"
           >
-            Delete
+            {{ shown.confirm }}
           </AlertDialogAction>
         </div>
       </AlertDialogContent>

@@ -1,115 +1,139 @@
 <script setup lang="ts" generic="TData">
 import { computed } from 'vue'
 import {
+  DropdownMenuContent,
+  DropdownMenuItemIndicator,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuRoot,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from 'reka-ui'
+import {
+  ArrowDownUp,
   ArrowLeft,
   ArrowRight,
   ArrowUp,
-  Folder,
-  FolderPlus,
+  Check,
+  ChevronDown,
   LayoutGrid,
   List,
+  PanelLeft,
+  Plus,
   Search,
   Upload,
   X,
 } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
+import FileExplorerBreadcrumbs from './FileExplorerBreadcrumbs.vue'
+import FileExplorerMenuItems from './FileExplorerMenuItems.vue'
 import { injectFileExplorerContext } from './context'
-import type { FileExplorerItem, FileExplorerView } from './types'
-import { fileExplorerButtonVariants } from './variants'
+import type { FileExplorerAction, FileExplorerActionId, FileExplorerItem, FileExplorerSort, FileExplorerView } from './types'
+import { fileExplorerButtonVariants, fileExplorerMenuContent, fileExplorerMenuItem } from './variants'
 
 const props = defineProps<{
   /** Folders from the root down to the open one. */
   path: FileExplorerItem<TData>[]
   rootLabel: string
+  listingLabel: string | null
   itemCount: number
   canGoBack: boolean
   canGoForward: boolean
   canGoUp: boolean
-  showNewFolder: boolean
-  showUpload: boolean
   disabled: boolean
+  dir: 'ltr' | 'rtl'
+  /** Actions for the open folder (new, upload, refresh, empty trash). */
+  folderActions: FileExplorerAction[]
+  /** Actions for the selection shown as buttons (download). */
+  selectionActions: FileExplorerAction[]
+  sortColumns: { key: string, label: string }[]
+  refreshing: boolean
+  searchPlaceholder: string
+  showSidebarToggle: boolean
 }>()
 
 const search = defineModel<string>('search', { required: true })
 const view = defineModel<FileExplorerView>('view', { required: true })
+const sort = defineModel<FileExplorerSort>('sort', { required: true })
 
 const emit = defineEmits<{
   back: []
   forward: []
   up: []
   navigate: [id: string | null]
-  newFolder: []
-  upload: []
+  toggleSidebar: []
+  /** A toolbar menu opened or closed. */
+  menuOpen: [open: boolean]
+  /** A toolbar menu is returning focus; picked actions run here. */
+  menuCloseAutoFocus: [event: Event]
 }>()
 
 defineSlots<{ actions?: (props: Record<string, never>) => unknown }>()
 
 const ctx = injectFileExplorerContext()
+const m = computed(() => ctx.messages.value)
 
-interface Crumb { id: string | null, label: string }
+const pick = (ids: FileExplorerActionId[]) => props.folderActions.filter(action => ids.includes(action.id))
+const creates = computed(() => pick(['new-folder', 'new-file']))
+const uploads = computed(() => pick(['upload', 'upload-folder']))
+const refresh = computed(() => props.folderActions.find(action => action.id === 'refresh'))
+const emptyTrash = computed(() => props.folderActions.find(action => action.id === 'empty-trash'))
+const download = computed(() => props.selectionActions.find(action => action.id === 'download'))
 
-/** Long paths keep the root, the parent and the open folder, like a collapsed address bar. */
-const crumbs = computed<(Crumb | 'ellipsis')[]>(() => {
-  const all: Crumb[] = [{ id: null, label: props.rootLabel }, ...props.path.map(folder => ({ id: folder.id, label: folder.name }))]
-  const [root] = all
-  return all.length > 3 && root ? [root, 'ellipsis', ...all.slice(-2)] : all
+const sortKey = computed({
+  get: () => sort.value.key,
+  set: (key: string) => { sort.value = { ...sort.value, key } },
+})
+const sortDirection = computed({
+  get: () => sort.value.direction,
+  set: (direction: string) => { sort.value = { ...sort.value, direction: direction === 'desc' ? 'desc' : 'asc' } },
 })
 
-function onCrumbDragOver(id: string | null, event: DragEvent) {
-  ctx.dragDrop.onDragOver(id, event)
-  event.stopPropagation()
-}
-
-const views: { value: FileExplorerView, label: string, icon: typeof LayoutGrid }[] = [
-  { value: 'grid', label: 'Grid view', icon: LayoutGrid },
-  { value: 'list', label: 'Details view', icon: List },
+const views: { value: FileExplorerView, label: () => string, icon: typeof LayoutGrid }[] = [
+  { value: 'grid', label: () => m.value.gridView, icon: LayoutGrid },
+  { value: 'list', label: () => m.value.listView, icon: List },
 ]
+
+const icon = cn(fileExplorerButtonVariants({ size: 'icon' }))
+const labelled = (variant: 'outline' | 'solid') => cn(fileExplorerButtonVariants({ variant }), 'px-2 @3xl:px-2.5')
+const menuContent = cn(fileExplorerMenuContent, 'origin-(--reka-dropdown-menu-content-transform-origin)')
 </script>
 
 <template>
   <div data-slot="file-explorer-toolbar" class="flex flex-wrap items-center gap-x-2 gap-y-2 border-b border-border px-2 py-2 @xl:px-3">
     <div class="flex items-center">
-      <button type="button" aria-label="Back" :disabled="disabled || !canGoBack" :class="fileExplorerButtonVariants({ size: 'icon' })" @click="emit('back')">
-        <ArrowLeft />
+      <button
+        v-if="showSidebarToggle"
+        type="button"
+        :aria-label="m.toggleSidebar"
+        :title="m.toggleSidebar"
+        :class="cn(icon, '@3xl:hidden')"
+        @click="emit('toggleSidebar')"
+      >
+        <PanelLeft />
       </button>
-      <button type="button" aria-label="Forward" :disabled="disabled || !canGoForward" :class="cn(fileExplorerButtonVariants({ size: 'icon' }), 'hidden @md:inline-flex')" @click="emit('forward')">
-        <ArrowRight />
+      <button type="button" :aria-label="m.back" :title="m.back" :disabled="disabled || !canGoBack" :class="icon" @click="emit('back')">
+        <ArrowLeft class="rtl:-scale-x-100" />
       </button>
-      <button type="button" aria-label="Up to parent folder" :disabled="disabled || !canGoUp" :class="fileExplorerButtonVariants({ size: 'icon' })" @click="emit('up')">
+      <button type="button" :aria-label="m.forward" :title="m.forward" :disabled="disabled || !canGoForward" :class="cn(icon, 'hidden @md:inline-flex')" @click="emit('forward')">
+        <ArrowRight class="rtl:-scale-x-100" />
+      </button>
+      <button type="button" :aria-label="m.up" :title="m.up" :disabled="disabled || !canGoUp" :class="icon" @click="emit('up')">
         <ArrowUp />
       </button>
     </div>
 
-    <nav aria-label="Folder path" class="flex min-w-0 flex-1 items-center gap-1.5 font-mono text-xs">
-      <Folder aria-hidden="true" class="size-4 shrink-0 text-muted-foreground" />
-      <ol class="flex min-w-0 items-center gap-1">
-        <template v-for="(crumb, i) in crumbs" :key="crumb === 'ellipsis' ? 'ellipsis' : crumb.id ?? 'root'">
-          <li v-if="i > 0" aria-hidden="true" class="shrink-0 text-muted-foreground/50">/</li>
-          <li v-if="crumb === 'ellipsis'" class="shrink-0 text-muted-foreground">…</li>
-          <li v-else :class="cn('min-w-0', i === crumbs.length - 1 ? 'shrink-0 max-w-[60%]' : 'max-w-40')">
-            <span
-              v-if="i === crumbs.length - 1"
-              aria-current="page"
-              :data-drop-target="ctx.dragDrop.dropTargetId.value === crumb.id ? '' : undefined"
-              class="block max-w-full truncate rounded bg-muted px-1.5 py-0.5 text-foreground data-[drop-target]:bg-primary/15 data-[drop-target]:text-primary"
-            >{{ crumb.label }}</span>
-            <button
-              v-else
-              type="button"
-              :disabled="disabled"
-              :data-drop-target="ctx.dragDrop.dropTargetId.value === crumb.id ? '' : undefined"
-              class="block max-w-full truncate rounded px-1 py-0.5 text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 data-[drop-target]:bg-primary/15 data-[drop-target]:text-primary"
-              @click="emit('navigate', crumb.id)"
-              @dragover="onCrumbDragOver(crumb.id, $event)"
-              @drop.stop="ctx.dragDrop.onDrop($event)"
-            >
-              {{ crumb.label }}
-            </button>
-          </li>
-        </template>
-      </ol>
-      <span class="hidden shrink-0 text-muted-foreground @4xl:inline">· {{ itemCount }} {{ itemCount === 1 ? 'item' : 'items' }}</span>
-    </nav>
+    <FileExplorerBreadcrumbs
+      :path="path"
+      :root-label="rootLabel"
+      :listing-label="listingLabel"
+      :disabled="disabled"
+      :dir="dir"
+      @navigate="emit('navigate', $event)"
+    />
+    <span class="hidden shrink-0 font-mono text-xs text-muted-foreground @4xl:inline">· {{ m.items(itemCount) }}</span>
 
     <div class="flex w-full items-center gap-2 @2xl:w-auto">
       <div class="relative min-w-0 flex-1 @2xl:w-40 @2xl:flex-none @4xl:w-52">
@@ -120,8 +144,8 @@ const views: { value: FileExplorerView, label: string, icon: typeof LayoutGrid }
           role="searchbox"
           autocomplete="off"
           spellcheck="false"
-          aria-label="Filter files"
-          placeholder="Filter files…"
+          :aria-label="searchPlaceholder"
+          :placeholder="searchPlaceholder"
           :disabled="disabled"
           class="h-8 w-full min-w-0 rounded-md border border-border bg-transparent ps-8 pe-7 font-mono text-xs outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:opacity-50 dark:bg-input/30"
           @keydown.escape="search = ''"
@@ -129,7 +153,7 @@ const views: { value: FileExplorerView, label: string, icon: typeof LayoutGrid }
         <button
           v-if="search"
           type="button"
-          aria-label="Clear filter"
+          :aria-label="m.clearFilter"
           class="absolute end-1.5 top-1/2 flex size-5 -translate-y-1/2 items-center justify-center rounded-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
           @click="search = ''"
         >
@@ -137,15 +161,44 @@ const views: { value: FileExplorerView, label: string, icon: typeof LayoutGrid }
         </button>
       </div>
 
-      <div role="group" aria-label="View" class="flex shrink-0 items-center rounded-md border border-border p-0.5">
+      <DropdownMenuRoot :dir="dir" @update:open="emit('menuOpen', $event)">
+        <DropdownMenuTrigger :aria-label="m.sort" :title="m.sort" :disabled="disabled" :class="icon">
+          <ArrowDownUp />
+        </DropdownMenuTrigger>
+        <DropdownMenuPortal>
+          <DropdownMenuContent align="end" :side-offset="4" :class="menuContent" @close-auto-focus="emit('menuCloseAutoFocus', $event)">
+            <DropdownMenuLabel class="px-2 py-1.5 text-xs font-medium text-muted-foreground">{{ m.sort }}</DropdownMenuLabel>
+            <DropdownMenuRadioGroup v-model="sortKey">
+              <DropdownMenuRadioItem v-for="column in sortColumns" :key="column.key" :value="column.key" :class="cn(fileExplorerMenuItem, 'ps-8')">
+                <DropdownMenuItemIndicator class="absolute start-2 flex size-4 items-center justify-center"><Check /></DropdownMenuItemIndicator>
+                {{ column.label }}
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+            <DropdownMenuSeparator class="-mx-1 my-1 h-px bg-border" />
+            <DropdownMenuRadioGroup v-model="sortDirection">
+              <DropdownMenuRadioItem value="asc" :class="cn(fileExplorerMenuItem, 'ps-8')">
+                <DropdownMenuItemIndicator class="absolute start-2 flex size-4 items-center justify-center"><Check /></DropdownMenuItemIndicator>
+                {{ m.ascending }}
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="desc" :class="cn(fileExplorerMenuItem, 'ps-8')">
+                <DropdownMenuItemIndicator class="absolute start-2 flex size-4 items-center justify-center"><Check /></DropdownMenuItemIndicator>
+                {{ m.descending }}
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenuPortal>
+      </DropdownMenuRoot>
+
+      <div role="group" :aria-label="m.view" class="flex shrink-0 items-center rounded-md border border-border p-0.5">
         <button
           v-for="option in views"
           :key="option.value"
           type="button"
-          :aria-label="option.label"
+          :aria-label="option.label()"
+          :title="option.label()"
           :aria-pressed="view === option.value"
           :disabled="disabled"
-          :class="cn(fileExplorerButtonVariants({ size: 'icon' }), 'size-6.5 rounded-[5px] aria-pressed:bg-accent aria-pressed:text-foreground')"
+          :class="cn(icon, 'size-6.5 rounded-[5px] aria-pressed:bg-accent aria-pressed:text-foreground')"
           @click="view = option.value"
         >
           <component :is="option.icon" />
@@ -154,30 +207,97 @@ const views: { value: FileExplorerView, label: string, icon: typeof LayoutGrid }
 
       <slot name="actions" />
 
-      <template v-if="showNewFolder || showUpload">
+      <template v-if="download || refresh || emptyTrash || creates.length || uploads.length">
         <div aria-hidden="true" class="h-5 w-px shrink-0 bg-border" />
+
         <button
-          v-if="showNewFolder"
+          v-if="download"
           type="button"
-          aria-label="New folder"
-          :disabled="disabled"
-          :class="cn(fileExplorerButtonVariants({ variant: 'outline' }), 'px-2 @3xl:px-2.5')"
-          @click="emit('newFolder')"
+          data-action="download"
+          :aria-label="download.label"
+          :title="download.label"
+          :disabled="disabled || download.disabled"
+          :class="icon"
+          @click="download.run()"
         >
-          <FolderPlus />
-          <span class="hidden @3xl:inline">New Folder</span>
+          <component :is="download.icon" />
         </button>
         <button
-          v-if="showUpload"
+          v-if="refresh"
           type="button"
-          aria-label="Upload"
-          :disabled="disabled"
-          :class="cn(fileExplorerButtonVariants({ variant: 'solid' }), 'px-2 @3xl:px-2.5')"
-          @click="emit('upload')"
+          data-action="refresh"
+          :aria-label="refresh.label"
+          :title="refresh.label"
+          :aria-busy="refreshing || undefined"
+          :disabled="disabled || refreshing"
+          :class="icon"
+          @click="refresh.run()"
         >
-          <Upload />
-          <span class="hidden @3xl:inline">Upload</span>
+          <component :is="refresh.icon" :class="refreshing && 'animate-spin motion-reduce:animate-none'" />
         </button>
+        <button
+          v-if="emptyTrash"
+          type="button"
+          data-action="empty-trash"
+          :disabled="disabled || emptyTrash.disabled"
+          :class="cn(labelled('outline'), 'text-destructive')"
+          @click="emptyTrash.run()"
+        >
+          <component :is="emptyTrash.icon" />
+          <span class="hidden @3xl:inline">{{ emptyTrash.label }}</span>
+        </button>
+
+        <template v-if="creates.length === 1 && creates[0]">
+          <button
+            type="button"
+            :data-action="creates[0].id"
+            :aria-label="creates[0].label"
+            :disabled="disabled || creates[0].disabled"
+            :class="labelled('outline')"
+            @click="creates[0].run()"
+          >
+            <component :is="creates[0].icon" />
+            <span class="hidden @3xl:inline">{{ creates[0].label }}</span>
+          </button>
+        </template>
+        <DropdownMenuRoot v-else-if="creates.length" :dir="dir" @update:open="emit('menuOpen', $event)">
+          <DropdownMenuTrigger :aria-label="m.new" :disabled="disabled || creates.every(action => action.disabled)" :class="labelled('outline')">
+            <Plus />
+            <span class="hidden @3xl:inline">{{ m.new }}</span>
+            <ChevronDown class="hidden opacity-60 @3xl:inline" />
+          </DropdownMenuTrigger>
+          <DropdownMenuPortal>
+            <DropdownMenuContent align="end" :side-offset="4" :class="menuContent" @close-auto-focus="emit('menuCloseAutoFocus', $event)">
+              <FileExplorerMenuItems :actions="creates" kind="dropdown" />
+            </DropdownMenuContent>
+          </DropdownMenuPortal>
+        </DropdownMenuRoot>
+
+        <template v-if="uploads.length === 1 && uploads[0]">
+          <button
+            type="button"
+            data-action="upload"
+            :aria-label="uploads[0].label"
+            :disabled="disabled || uploads[0].disabled"
+            :class="labelled('solid')"
+            @click="uploads[0].run()"
+          >
+            <Upload />
+            <span class="hidden @3xl:inline">{{ uploads[0].label }}</span>
+          </button>
+        </template>
+        <DropdownMenuRoot v-else-if="uploads.length" :dir="dir" @update:open="emit('menuOpen', $event)">
+          <DropdownMenuTrigger :aria-label="m.upload" :disabled="disabled || uploads.every(action => action.disabled)" :class="labelled('solid')">
+            <Upload />
+            <span class="hidden @3xl:inline">{{ m.upload }}</span>
+            <ChevronDown class="hidden opacity-70 @3xl:inline" />
+          </DropdownMenuTrigger>
+          <DropdownMenuPortal>
+            <DropdownMenuContent align="end" :side-offset="4" :class="menuContent" @close-auto-focus="emit('menuCloseAutoFocus', $event)">
+              <FileExplorerMenuItems :actions="uploads" kind="dropdown" />
+            </DropdownMenuContent>
+          </DropdownMenuPortal>
+        </DropdownMenuRoot>
       </template>
     </div>
   </div>

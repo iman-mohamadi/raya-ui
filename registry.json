@@ -336,7 +336,7 @@
       "name": "file-explorer",
       "type": "registry:ui",
       "title": "File Explorer",
-      "description": "A desktop-style file explorer: directory tree, breadcrumbs, grid and details views, keyboard navigation, multi-selection, filtering, context menus, drag and drop and uploads. Also exports the standalone FileTree.",
+      "description": "A desktop-style, backend-agnostic file explorer: directory tree, sidebar locations, breadcrumbs, grid and details views with configurable columns, keyboard navigation, multi-selection, clipboard, drag and drop, uploads, conflict resolution, trash, permissions, lazy loading and pagination, and async operations with progress, retry, cancel and undo. Also exports the standalone FileTree.",
       "dependencies": [
         "reka-ui",
         "lucide-vue-next",
@@ -356,6 +356,10 @@
         },
         {
           "path": "app/components/raya/ui/file-explorer/FileExplorerToolbar.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/FileExplorerBreadcrumbs.vue",
           "type": "registry:ui"
         },
         {
@@ -391,6 +395,18 @@
           "type": "registry:ui"
         },
         {
+          "path": "app/components/raya/ui/file-explorer/FileExplorerConflictDialog.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/FileExplorerOperations.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/FileExplorerMenuItems.vue",
+          "type": "registry:ui"
+        },
+        {
           "path": "app/components/raya/ui/file-explorer/FileTree.vue",
           "type": "registry:ui"
         },
@@ -419,6 +435,14 @@
           "type": "registry:ui"
         },
         {
+          "path": "app/components/raya/ui/file-explorer/messages.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/columns.ts",
+          "type": "registry:ui"
+        },
+        {
           "path": "app/components/raya/ui/file-explorer/useFileExplorerNavigation.ts",
           "type": "registry:ui"
         },
@@ -444,6 +468,22 @@
         },
         {
           "path": "app/components/raya/ui/file-explorer/useFileExplorerDragDrop.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/useFileExplorerOperations.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/useFileExplorerConflicts.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/useFileExplorerLoader.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/useFileExplorerCommands.ts",
           "type": "registry:ui"
         },
         {

@@ -4,6 +4,7 @@ import { TreeRoot } from 'reka-ui'
 import FileTreeNode from './FileTreeNode.vue'
 import { injectFileTreeContext } from './context'
 import type { FileExplorerIconResolver, FileExplorerItem, FileTreeNodeSlots } from './types'
+import { isExpandableFolder } from './utils'
 
 const props = defineProps<{
   items: FileExplorerItem<TData>[]
@@ -12,6 +13,7 @@ const props = defineProps<{
   selectedItems: FileExplorerItem<TData>[]
   multiple: boolean
   disabled: boolean
+  dir?: 'ltr' | 'rtl'
   getIcon?: FileExplorerIconResolver<TData>
 }>()
 
@@ -24,13 +26,10 @@ defineSlots<FileTreeNodeSlots<TData>>()
 const ctx = injectFileTreeContext()
 
 const getKey = (item: FileExplorerItem<TData>) => item.id
-// Folders report children (possibly empty) so Reka treats them as expandable,
-// except leaf folders in a folders-only tree, which match FileTreeNode.
-const getChildren = (item: FileExplorerItem<TData>) => {
-  if (item.type !== 'folder') return undefined
-  if (ctx.foldersOnly.value && !item.children?.length) return undefined
-  return item.children ?? []
-}
+// Expandable folders report children (possibly empty) so Reka offers to open
+// them; the rule is shared with FileTreeNode.
+const getChildren = (item: FileExplorerItem<TData>) =>
+  isExpandableFolder(item, { lazy: ctx.lazy.value, foldersOnly: ctx.foldersOnly.value }) ? item.children ?? [] : undefined
 
 const modelValue = computed(() => (props.multiple ? props.selectedItems : props.selectedItems[0]))
 
@@ -79,6 +78,7 @@ function onKeydown(event: KeyboardEvent) {
     :multiple="multiple"
     :expanded="expanded"
     :disabled="disabled"
+    :dir="dir"
     data-slot="file-tree-tree"
     class="outline-none"
     @update:expanded="emit('update:expanded', $event)"

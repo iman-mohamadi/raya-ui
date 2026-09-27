@@ -1,8 +1,9 @@
 import type { Ref } from 'vue'
 import { createContext } from 'reka-ui'
-import type { FileTreeSize } from './types'
+import type { FileExplorerMessages } from './messages'
+import type { FileExplorerOperationState, FileTreeSize } from './types'
+import type { LoadState } from './useFileExplorerLoader'
 
-/** One drag session. Shared by every drop target inside a `FileExplorer`. */
 /** Inline rename, shared by tree nodes, cards and rows. */
 export interface FileExplorerRenameContext {
   /** The item showing a rename input, if any. */
@@ -12,10 +13,13 @@ export interface FileExplorerRenameContext {
   cancelRename: (id: string) => void
 }
 
+/** One drag session. Shared by every drop target inside a `FileExplorer`. */
 export interface FileExplorerDragDrop {
   draggingIds: Readonly<Ref<readonly string[]>>
   /** Folder currently under the pointer; `null` is the root, `undefined` is none. */
   dropTargetId: Readonly<Ref<string | null | undefined>>
+  /** Hovered folder that refuses the drop. */
+  invalidTargetId: Readonly<Ref<string | null | undefined>>
   onDragStart: (id: string, event: DragEvent) => void
   onDragOver: (id: string | null, event: DragEvent) => void
   onDrop: (event: DragEvent) => void
@@ -35,10 +39,15 @@ export interface FileTreeContext extends FileExplorerRenameContext {
   guides: Readonly<Ref<boolean>>
   draggable: Readonly<Ref<boolean>>
   dragDrop: FileExplorerDragDrop
+  messages: Readonly<Ref<FileExplorerMessages>>
   onItemSelect: (id: string, event: Event) => void
   onItemOpen: (id: string) => void
   onItemContextMenu: (id: string) => void
   foldersOnly: Readonly<Ref<boolean>>
+  /** Children load on demand (`onLoadChildren`). */
+  lazy: Readonly<Ref<boolean>>
+  loadState: (id: string) => LoadState | undefined
+  retryLoad: (id: string) => void
   /** Whether clicking a folder row (not its chevron) also opens or closes it. */
   expandOnClick: Readonly<Ref<boolean>>
   extendSelection: (id: string) => void
@@ -63,13 +72,22 @@ export const [injectSharedDragDrop, provideSharedDragDrop]
 /** State shared from `FileExplorer` with its toolbar, cards, rows and status bar. */
 export interface FileExplorerContext extends FileExplorerRenameContext {
   selected: Readonly<Ref<ReadonlySet<string>>>
+  /** Items on the clipboard after Cut, shown dimmed. */
+  cutIds: Readonly<Ref<ReadonlySet<string>>>
+  favorites: Readonly<Ref<ReadonlySet<string>>>
+  /** The running or failed operation shown on an item. */
+  itemOperation: (id: string) => FileExplorerOperationState | undefined
   /** The item holding the roving tab stop in the content area. */
   focusedId: Readonly<Ref<string | null>>
   /** Ticks every minute, for "5m ago" labels. */
   now: Readonly<Ref<Date>>
+  multiple: Readonly<Ref<boolean>>
   draggable: Readonly<Ref<boolean>>
   dragDrop: FileExplorerDragDrop
+  messages: Readonly<Ref<FileExplorerMessages>>
   onItemClick: (id: string, event: MouseEvent) => void
+  /** Checkbox on a card or row: adds or removes the item without touching the rest. */
+  onItemToggle: (id: string) => void
   /** Double-click or Enter: folders navigate, files emit `open`. */
   onItemOpen: (id: string) => void
   onItemContextMenu: (id: string) => void

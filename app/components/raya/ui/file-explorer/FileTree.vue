@@ -1,25 +1,28 @@
 <script setup lang="ts" generic="TData = unknown">
 import { computed, nextTick, ref, toRef, useSlots, useTemplateRef, watch } from 'vue'
-import { ContextMenuContent, ContextMenuPortal, ContextMenuRoot, ContextMenuTrigger } from 'reka-ui'
+import { ContextMenuContent, ContextMenuPortal, ContextMenuRoot, ContextMenuTrigger, useDirection } from 'reka-ui'
 import { useVModel } from '@vueuse/core'
 import { FolderOpen, Search, X } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
 import FileExplorerDeleteDialog from './FileExplorerDeleteDialog.vue'
 import FileTreeRoot from './FileTreeRoot.vue'
 import { injectSharedDragDrop, provideFileTreeContext, type FileExplorerDragDrop } from './context'
+import { resolveMessages } from './messages'
 import type { FileTreeEmits, FileTreeProps, FileTreeSlots } from './types'
 import { useFileExplorerActions } from './useFileExplorerActions'
 import { useFileExplorerDragDrop } from './useFileExplorerDragDrop'
+import { useFileExplorerLoader } from './useFileExplorerLoader'
 import { useFileExplorerSearch } from './useFileExplorerSearch'
 import { useFileExplorerSelection } from './useFileExplorerSelection'
-import { getVisibleIds, indexFileTree, isFolder, pruneFiles } from './utils'
+import { getVisibleIds, indexFileTree, isFolder, isUnloadedFolder, pruneFiles } from './utils'
+import { fileExplorerMenuContent } from './variants'
 
 const props = withDefaults(defineProps<FileTreeProps<TData>>(), {
   items: () => [],
   selected: undefined,
   expanded: undefined,
   search: undefined,
-  searchPlaceholder: 'Search files…',
+  searchPlaceholder: undefined,
   size: 'md',
   guides: true,
   expandOnClick: true,
@@ -31,6 +34,9 @@ const emit = defineEmits<FileTreeEmits<TData>>()
 
 const slots = useSlots()
 defineSlots<FileTreeSlots<TData>>()
+
+const messages = computed(() => resolveMessages(props.messages))
+const dir = useDirection(toRef(props, 'dir'))
 
 // --- Controlled / uncontrolled state ------------------------------------------
 
@@ -155,8 +161,46 @@ const actions = useFileExplorerActions({
   onDelete: () => props.onDelete,
   confirmDelete: () => props.confirmDelete,
   disabled: () => props.disabled,
+  messages: () => messages.value,
   focus: focusItem,
 })
+
+function onMenuCloseAutoFocus(event: Event) {
+  if (actions.onMenuCloseAutoFocus(event)) return
+  // Return focus to the item that was right-clicked rather than the tree container.
+  if (contextItemId.value === null) return
+  event.preventDefault()
+  focusItem(contextItemId.value)
+}
+
+// --- Lazy loading --------------------------------------------------------------
+
+const lazy = computed(() => Boolean(props.onLoadChildren))
+const loader = useFileExplorerLoader<TData, string>({
+  handler: () => {
+    const load = props.onLoadChildren
+    if (!load) return undefined
+    return (id, context) => {
+      const folder = index.value.get(id)?.item
+      return folder ? load(folder, context) : undefined
+    }
+  },
+  context: signal => ({ signal, progress: () => {}, resolveConflicts: () => Promise.resolve(null) }),
+})
+
+function loadFolder(id: string, force = false) {
+  // Errors are shown on the node, with Retry.
+  loader.load(id, id, force).catch(() => {})
+}
+
+// Expanding an unloaded folder loads it.
+watch([expandedIds, index], () => {
+  if (!lazy.value) return
+  for (const id of expandedIds.value) {
+    const folder = index.value.get(id)?.item
+    if (folder && isUnloadedFolder(folder) && !loader.state(id)) loadFolder(id)
+  }
+}, { immediate: true })
 
 /** Delete acts on the selection when the focused item is part of it, else on the focused item. */
 function deleteFrom(id: string) {
@@ -213,6 +257,10 @@ provideFileTreeContext({
   dragDrop,
   foldersOnly: toRef(props, 'foldersOnly'),
   expandOnClick: toRef(props, 'expandOnClick'),
+  messages,
+  lazy,
+  loadState: loader.state,
+  retryLoad: id => loadFolder(id, true),
   onItemSelect,
   onItemOpen,
   onItemContextMenu,
@@ -232,6 +280,7 @@ provideFileTreeContext({
     data-slot="file-tree"
     :class="cn('flex min-h-0 flex-col gap-2 text-sm [--file-tree-indent:1rem]', props.class)"
     :data-disabled="disabled ? '' : undefined"
+    :dir="props.dir"
   >
     <div v-if="searchable" data-slot="file-tree-search" class="relative shrink-0">
       <Search aria-hidden="true" class="pointer-events-none absolute start-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -241,8 +290,8 @@ provideFileTreeContext({
         role="searchbox"
         autocomplete="off"
         spellcheck="false"
-        :aria-label="searchPlaceholder"
-        :placeholder="searchPlaceholder"
+        :aria-label="searchPlaceholder ?? messages.searchPlaceholder"
+        :placeholder="searchPlaceholder ?? messages.searchPlaceholder"
         :disabled="disabled"
         :class="cn(
           'h-8 w-full min-w-0 rounded-md border border-input bg-transparent ps-8 pe-8 text-sm shadow-xs outline-none',
@@ -255,7 +304,7 @@ provideFileTreeContext({
       <button
         v-if="searchQuery"
         type="button"
-        aria-label="Clear search"
+        :aria-label="messages.clearFilter"
         class="absolute end-1.5 top-1/2 flex size-5 -translate-y-1/2 items-center justify-center rounded-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
         @click="searchQuery = ''"
       >
@@ -263,7 +312,7 @@ provideFileTreeContext({
       </button>
     </div>
 
-    <ContextMenuRoot>
+    <ContextMenuRoot :dir="dir">
       <ContextMenuTrigger as-child :disabled="!hasContextMenu || loading || disabled">
         <div
           ref="viewport"
@@ -277,7 +326,7 @@ provideFileTreeContext({
           @drop="dragDrop.onDrop"
         >
           <slot v-if="loading" name="loading">
-            <div role="status" aria-label="Loading files" class="flex flex-col">
+            <div role="status" :aria-label="messages.loading" class="flex flex-col">
               <div
                 v-for="(row, i) in skeletonRows"
                 :key="i"
@@ -297,12 +346,7 @@ provideFileTreeContext({
             <div class="flex flex-col items-center justify-center gap-2 px-4 py-10 text-center">
               <FolderOpen aria-hidden="true" class="size-5 text-muted-foreground/70" />
               <p class="text-sm text-muted-foreground">
-                <template v-if="search.query.value">
-                  No results for “{{ search.query.value }}”
-                </template>
-                <template v-else>
-                  No files
-                </template>
+                {{ search.query.value ? messages.noResults(search.query.value) : messages.noFiles }}
               </p>
             </div>
           </slot>
@@ -315,6 +359,7 @@ provideFileTreeContext({
             :multiple="multiple"
             :disabled="disabled"
             :get-icon="getIcon"
+            :dir="dir"
             :aria-label="label"
             @update:expanded="setExpanded"
           >
@@ -337,13 +382,8 @@ provideFileTreeContext({
       <ContextMenuPortal v-if="hasContextMenu">
         <ContextMenuContent
           data-slot="file-tree-context-menu"
-          @close-auto-focus="actions.onMenuCloseAutoFocus"
-          :class="cn(
-            'z-50 max-h-(--reka-context-menu-content-available-height) min-w-[8rem] origin-(--reka-context-menu-content-transform-origin) overflow-x-hidden overflow-y-auto',
-            'rounded-md border bg-popover p-1 text-popover-foreground shadow-md',
-            'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
-            'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
-          )"
+          :class="cn(fileExplorerMenuContent, 'origin-(--reka-context-menu-content-transform-origin)')"
+          @close-auto-focus="onMenuCloseAutoFocus"
         >
           <slot name="context-menu" v-bind="actions.menuScope(contextItem)" />
         </ContextMenuContent>
@@ -352,6 +392,7 @@ provideFileTreeContext({
 
     <FileExplorerDeleteDialog
       :items="actions.pendingDelete.value"
+      :messages="messages"
       @confirm="actions.confirmDelete"
       @close="actions.closeDelete"
     >

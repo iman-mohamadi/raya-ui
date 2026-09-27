@@ -162,10 +162,10 @@ describe('FileExplorer: browsing', () => {
 
   it('filters the open folder by name', async () => {
     const w = render({ defaultFolder: 'src' })
-    await w.find('input[aria-label="Filter files"]').setValue('app')
+    await w.find('input[role="searchbox"]').setValue('app')
     expect(optionIds(w)).toEqual(['src/App.vue'])
 
-    await w.find('input[aria-label="Filter files"]').setValue('zzz')
+    await w.find('input[role="searchbox"]').setValue('zzz')
     expect(content(w).text()).toContain('No items match “zzz”')
   })
 })
@@ -277,8 +277,8 @@ describe('FileExplorer: views', () => {
     expect(lastEmit<FileExplorerItem>(w, 'open')?.id).toBe('README.md')
 
     await option(w, 'README.md').trigger('click')
-    const openButton = statusBar(w).findAll('button').find(el => el.text() === 'Open File')
-    await openButton?.trigger('click')
+    const openButton = statusBar(w).find('button[data-action="open"]')
+    await openButton.trigger('click')
     expect(w.emitted('open')).toHaveLength(2)
   })
 
@@ -295,8 +295,8 @@ describe('FileExplorer: views', () => {
 describe('FileExplorer: actions', () => {
   it('only shows New Folder and Upload when handlers are provided', () => {
     const w = render()
-    expect(w.find('button[aria-label="Upload"]').exists()).toBe(false)
-    expect(w.find('button[aria-label="New folder"]').exists()).toBe(false)
+    expect(w.find('[data-action="upload"]').exists()).toBe(false)
+    expect(w.find('[data-action="new-folder"]').exists()).toBe(false)
     expect(w.find('[data-slot="file-explorer-dropzone"]').exists()).toBe(false)
   })
 
@@ -305,19 +305,21 @@ describe('FileExplorer: actions', () => {
     const onUpload = vi.fn()
     const w = render({ defaultFolder: 'src', onCreateFolder, onUpload })
 
-    await w.find('button[aria-label="New folder"]').trigger('click')
-    expect(onCreateFolder).toHaveBeenCalledWith(expect.objectContaining({ id: 'src' }))
+    await w.find('[data-action="new-folder"]').trigger('click')
+    expect(onCreateFolder).toHaveBeenCalledWith(expect.objectContaining({ id: 'src' }), expect.anything())
     expect(w.find('[data-slot="file-explorer-dropzone"]').exists()).toBe(true)
 
     const input = w.find<HTMLInputElement>('input[type="file"]')
     const file = new File(['hello'], 'hello.txt', { type: 'text/plain' })
     Object.defineProperty(input.element, 'files', { value: [file], configurable: true })
     await input.trigger('change')
-    expect(onUpload).toHaveBeenCalledWith([file], expect.objectContaining({ id: 'src' }))
+    await settle()
+    expect(onUpload).toHaveBeenCalledWith([file], expect.objectContaining({ id: 'src' }), expect.objectContaining({ relativePaths: [''] }))
   })
 
   it('reports a move when a card is dropped on a folder card', async () => {
-    const w = render({ draggable: true, defaultFolder: 'src' })
+    const onMove = vi.fn()
+    const w = render({ draggable: true, defaultFolder: 'src', onMove })
     const data = new Map<string, string>()
     const dataTransfer = {
       types: [] as string[],
@@ -333,9 +335,10 @@ describe('FileExplorer: actions', () => {
     expect(option(w, 'src/components').attributes('data-drop-target')).toBe('')
     await option(w, 'src/components').trigger('drop', { dataTransfer })
 
-    const move = lastEmit<FileExplorerMoveEvent>(w, 'move')
-    expect(move?.items.map(item => item.id)).toEqual(['src/App.vue'])
-    expect(move?.target?.id).toBe('src/components')
+    await settle()
+    const move: FileExplorerMoveEvent = onMove.mock.calls[0]?.[0]
+    expect(move.items.map(item => item.id)).toEqual(['src/App.vue'])
+    expect(move.target?.id).toBe('src/components')
   })
 })
 
@@ -354,7 +357,7 @@ describe('FileExplorer: rename', () => {
 
     await input.setValue('Main.vue')
     await input.trigger('keydown', { key: 'Enter' })
-    expect(onRename).toHaveBeenCalledWith(expect.objectContaining({ id: 'src/App.vue' }), 'Main.vue')
+    expect(onRename).toHaveBeenCalledWith(expect.objectContaining({ id: 'src/App.vue' }), 'Main.vue', expect.anything())
     expect(renameInput(w).exists()).toBe(false)
   })
 
@@ -411,7 +414,7 @@ describe('FileExplorer: rename', () => {
     const input = node.find<HTMLInputElement>('[data-slot="file-explorer-rename-input"]')
     await input.setValue('source')
     await input.trigger('keydown', { key: 'Enter' })
-    expect(onRename).toHaveBeenCalledWith(expect.objectContaining({ id: 'src' }), 'source')
+    expect(onRename).toHaveBeenCalledWith(expect.objectContaining({ id: 'src' }), 'source', expect.anything())
   })
 })
 
@@ -437,7 +440,7 @@ describe('FileExplorer: delete', () => {
     expect(onDelete).toHaveBeenCalledWith([
       expect.objectContaining({ id: 'src/App.vue' }),
       expect.objectContaining({ id: 'src/components' }),
-    ])
+    ], expect.anything())
   })
 
   it('deletes straight away with `confirmDelete: false`', async () => {
@@ -445,7 +448,7 @@ describe('FileExplorer: delete', () => {
     const w = render({ defaultFolder: 'src', onDelete, confirmDelete: false, defaultSelected: ['src/App.vue'] })
     await press(w, 'Delete')
     expect(dialog()).toBeNull()
-    expect(onDelete).toHaveBeenCalledWith([expect.objectContaining({ id: 'src/App.vue' })])
+    expect(onDelete).toHaveBeenCalledWith([expect.objectContaining({ id: 'src/App.vue' })], expect.anything())
   })
 })
 

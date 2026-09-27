@@ -1,28 +1,74 @@
 <script setup lang="ts" generic="TData = unknown">
-import { computed, nextTick, ref, useSlots, useTemplateRef, watch, type ComponentPublicInstance } from 'vue'
-import { ContextMenuContent, ContextMenuPortal, ContextMenuRoot, ContextMenuTrigger } from 'reka-ui'
+import {
+  computed,
+  nextTick,
+  onMounted,
+  ref,
+  shallowRef,
+  toRef,
+  useSlots,
+  useTemplateRef,
+  watch,
+  type ComponentPublicInstance,
+} from 'vue'
+import { ContextMenuContent, ContextMenuPortal, ContextMenuRoot, ContextMenuTrigger, useDirection } from 'reka-ui'
 import { useNow, useVModel } from '@vueuse/core'
 import { cn } from '@/lib/utils'
+import FileExplorerConflictDialog from './FileExplorerConflictDialog.vue'
 import FileExplorerContent from './FileExplorerContent.vue'
 import FileExplorerDeleteDialog from './FileExplorerDeleteDialog.vue'
+import FileExplorerMenuItems from './FileExplorerMenuItems.vue'
+import FileExplorerOperations from './FileExplorerOperations.vue'
 import FileExplorerSidebar from './FileExplorerSidebar.vue'
 import FileExplorerStatusBar from './FileExplorerStatusBar.vue'
 import FileExplorerToolbar from './FileExplorerToolbar.vue'
+import { columnDefinitions as normalizeColumns, resolveColumns } from './columns'
 import { provideFileExplorerContext, provideSharedDragDrop } from './context'
+import { resolveMessages } from './messages'
 import type {
+  FileExplorerAction,
+  FileExplorerClipboard,
+  FileExplorerConflictResolution,
+  FileExplorerContextMenuSlotProps,
   FileExplorerEmits,
   FileExplorerItem,
+  FileExplorerLocation,
+  FileExplorerMenuSlotProps,
+  FileExplorerOperationContext,
+  FileExplorerOperationFailure,
+  FileExplorerOperationResult,
   FileExplorerProps,
   FileExplorerSlots,
   FileExplorerSort,
   FileExplorerView,
 } from './types'
 import { useFileExplorerActions } from './useFileExplorerActions'
+import { useFileExplorerCommands, type FileExplorerHandlerName } from './useFileExplorerCommands'
+import { useFileExplorerConflicts } from './useFileExplorerConflicts'
 import { useFileExplorerDragDrop } from './useFileExplorerDragDrop'
 import { useFileExplorerKeyboard } from './useFileExplorerKeyboard'
+import { useFileExplorerLoader, type LoadState } from './useFileExplorerLoader'
 import { useFileExplorerNavigation } from './useFileExplorerNavigation'
+import { useFileExplorerOperations, type RunOptions } from './useFileExplorerOperations'
 import { useFileExplorerSelection } from './useFileExplorerSelection'
-import { formatBytes, indexFileTree, isFolder, sortFileItems } from './utils'
+import {
+  can,
+  childrenOf,
+  collectDroppedFiles,
+  findNameConflicts,
+  formatBytes,
+  indexFileTree,
+  isDescendantOf,
+  isFolder,
+  isUnloadedFolder,
+  matchesAccept,
+  sortFileItems,
+  uniqueName,
+  type DroppedFile,
+} from './utils'
+import { fileExplorerMenuContent } from './variants'
+
+type Item = FileExplorerItem<TData>
 
 const props = withDefaults(defineProps<FileExplorerProps<TData>>(), {
   items: () => [],
@@ -31,17 +77,38 @@ const props = withDefaults(defineProps<FileExplorerProps<TData>>(), {
   view: undefined,
   search: undefined,
   sort: undefined,
+  clipboard: undefined,
+  location: undefined,
+  listing: undefined,
+  locations: () => [],
+  operations: undefined,
+  columns: undefined,
+  favorites: undefined,
   multiple: true,
   sidebar: true,
   rootLabel: 'root',
   label: 'Files',
   confirmDelete: true,
+  searchDebounce: 300,
 })
 
 const emit = defineEmits<FileExplorerEmits<TData>>()
 
 const slots = useSlots()
 defineSlots<FileExplorerSlots<TData>>()
+
+const messages = computed(() => resolveMessages(props.messages))
+const root = useTemplateRef<HTMLElement>('root')
+
+// Direction: the prop, then Reka's ConfigProvider, then what the page says.
+const configDir = useDirection(toRef(props, 'dir'))
+const pageDir = ref<'ltr' | 'rtl'>('ltr')
+const dir = computed<'ltr' | 'rtl'>(() => props.dir ?? (configDir.value === 'rtl' ? 'rtl' : pageDir.value))
+const isMac = ref(false)
+onMounted(() => {
+  if (root.value && getComputedStyle(root.value).direction === 'rtl') pageDir.value = 'rtl'
+  isMac.value = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent)
+})
 
 // --- Controlled / uncontrolled state ------------------------------------------
 
@@ -50,71 +117,101 @@ const selectedModel = useVModel(props, 'selected', emit, { passive: true, defaul
 const viewModel = useVModel(props, 'view', emit, { passive: true, defaultValue: props.defaultView ?? 'grid' })
 const searchModel = useVModel(props, 'search', emit, { passive: true, defaultValue: '' })
 const sortModel = useVModel(props, 'sort', emit, { passive: true, defaultValue: { key: 'name', direction: 'asc' } })
+const locationModel = useVModel(props, 'location', emit, { passive: true, defaultValue: null })
 
-const folderId = computed<string | null>({
-  get: () => folderModel.value ?? null,
-  set: (value) => { folderModel.value = value },
+const writable = <T,>(get: () => T, set: (value: T) => void) => computed<T>({ get, set })
+const folderId = writable<string | null>(() => folderModel.value ?? null, (value) => { folderModel.value = value })
+const selectedIds = writable<string[]>(() => selectedModel.value ?? [], (value) => { selectedModel.value = value })
+const view = writable<FileExplorerView>(() => viewModel.value ?? 'grid', (value) => { viewModel.value = value })
+const search = writable<string>(() => searchModel.value ?? '', (value) => { searchModel.value = value })
+const sort = writable<FileExplorerSort>(() => sortModel.value ?? { key: 'name', direction: 'asc' }, (value) => { sortModel.value = value })
+// Kept by hand: useVModel's typing would unwrap the generic `data` of clipboard items.
+const localClipboard = shallowRef<FileExplorerClipboard<TData> | null>(props.clipboard ?? null)
+watch(() => props.clipboard, (value) => {
+  if (value !== undefined) localClipboard.value = value
 })
-const selectedIds = computed<string[]>({
-  get: () => selectedModel.value ?? [],
-  set: (value) => { selectedModel.value = value },
-})
-const view = computed<FileExplorerView>({
-  get: () => viewModel.value ?? 'grid',
-  set: (value) => { viewModel.value = value },
-})
-const search = computed<string>({
-  get: () => searchModel.value ?? '',
-  set: (value) => { searchModel.value = value },
-})
-const sort = computed<FileExplorerSort>({
-  get: () => sortModel.value ?? { key: 'name', direction: 'asc' },
-  set: (value) => { sortModel.value = value },
-})
+const clipboard = writable<FileExplorerClipboard<TData> | null>(
+  () => (props.clipboard !== undefined ? props.clipboard : localClipboard.value),
+  (value) => {
+    localClipboard.value = value
+    emit('update:clipboard', value)
+  },
+)
+const locationId = writable<string | null>(() => locationModel.value ?? null, (value) => { locationModel.value = value })
 
-// --- Folder contents ---------------------------------------------------------------
+// --- Tree, listing and folder contents -------------------------------------------
 
-const index = computed(() => indexFileTree(props.items))
-const navigation = useFileExplorerNavigation({ folder: folderId, index })
-
-const currentFolder = computed(() => (navigation.current.value === null ? null : index.value.get(navigation.current.value)?.item ?? null))
-const path = computed(() => navigation.path.value.flatMap((id) => {
-  const item = index.value.get(id)?.item
+/** The tree, plus listing items that live outside it (search results, Recent…). */
+const index = computed(() => {
+  const tree = indexFileTree(props.items)
+  const listed = props.listing?.items
+  if (!listed?.length) return tree
+  const merged = new Map(tree)
+  for (const [id, entry] of indexFileTree(listed)) if (!merged.has(id)) merged.set(id, entry)
+  return merged
+})
+const itemOf = (id: string) => index.value.get(id)?.item
+const itemsOf = (ids: readonly string[]) => ids.flatMap((id) => {
+  const item = itemOf(id)
   return item ? [item] : []
-}))
+})
 
+const navigation = useFileExplorerNavigation({ folder: folderId, index })
+const currentFolder = computed(() => (navigation.current.value === null ? null : itemOf(navigation.current.value) ?? null))
+const path = computed(() => itemsOf(navigation.path.value))
+
+const listing = computed(() => props.listing ?? null)
+const activeLocation = computed(() => props.locations.flatMap(section => section.locations).find(entry => entry.id === locationId.value) ?? null)
 const query = computed(() => search.value.trim())
+const listingLabel = computed(() => {
+  if (!listing.value) return null
+  return listing.value.label ?? activeLocation.value?.label ?? (query.value ? `“${query.value}”` : '')
+})
+
+const now = useNow({ interval: 60_000 })
+const columnDefinitions = computed(() => normalizeColumns(props.columns))
+const columns = computed(() => resolveColumns(columnDefinitions.value, messages.value, () => now.value))
+
+const sortColumns = computed(() => columns.value.filter(column => column.sortable).map(column => ({ key: column.key, label: column.label })))
+
+const sourceItems = computed<Item[]>(() => {
+  if (listing.value) return listing.value.items
+  return currentFolder.value ? currentFolder.value.children ?? [] : props.items
+})
 const contentItems = computed(() => {
-  const children = currentFolder.value ? currentFolder.value.children ?? [] : props.items
-  const needle = query.value.toLowerCase()
-  const filtered = needle ? children.filter(item => item.name.toLowerCase().includes(needle)) : children
-  return sortFileItems(filtered, sort.value)
+  const needle = props.remoteSearch ? '' : query.value.toLowerCase()
+  const filtered = needle ? sourceItems.value.filter(item => item.name.toLowerCase().includes(needle)) : sourceItems.value
+  return sortFileItems(filtered, sort.value, columnDefinitions.value)
 })
 const contentIds = computed(() => contentItems.value.map(item => item.id))
 
 // --- Selection & focus ----------------------------------------------------------
 
 const isSelectable = (id: string) => {
-  const item = index.value.get(id)?.item
+  const item = itemOf(id)
   return item !== undefined && !item.disabled
 }
 
 const selection = useFileExplorerSelection({
   selected: selectedIds,
-  multiple: computed(() => props.multiple),
+  multiple: toRef(props, 'multiple'),
   visibleIds: contentIds,
   isSelectable,
 })
 
+// Items that disappeared (deleted, moved away) leave the selection.
+watch(index, () => {
+  const kept = selectedIds.value.filter(id => index.value.has(id))
+  if (kept.length !== selectedIds.value.length) selectedIds.value = kept
+})
+
 const selectedSet = computed(() => new Set(selectedIds.value))
-const selectedItems = computed(() => selectedIds.value.flatMap((id) => {
-  const item = index.value.get(id)?.item
-  return item ? [item] : []
-}))
+const selectedItems = computed(() => itemsOf(selectedIds.value))
 const selectedSize = computed(() => {
   const files = selectedItems.value.filter(item => !isFolder(item))
   return files.length ? formatBytes(files.reduce((sum, item) => sum + (item.size ?? 0), 0)) : ''
 })
+const favoriteSet = computed(() => new Set(props.favorites ?? []))
 
 const content = useTemplateRef<ComponentPublicInstance>('content')
 const contentElement = computed<HTMLElement | null>(() => {
@@ -143,71 +240,509 @@ function focusItem(id: string) {
   nextTick(() => findItemElement(id)?.focus())
 }
 
-/** Cards per row, measured from the rendered grid. */
-function gridColumns(): number {
-  const options = Array.from(contentElement.value?.querySelectorAll<HTMLElement>('[role="option"]') ?? [])
-  const top = options[0]?.offsetTop
-  const perRow = options.filter(option => option.offsetTop === top).length
-  return Math.max(1, perRow)
-}
-
-// --- Rename & delete ----------------------------------------------------------------
-
-const actions = useFileExplorerActions({
-  index,
-  rootItems: () => props.items,
-  selected: selectedIds,
-  onRename: () => props.onRename,
-  validateName: () => props.validateName,
-  onDelete: () => props.onDelete,
-  confirmDelete: () => props.confirmDelete,
-  disabled: () => props.disabled,
-  focus: focusItem,
-})
-
-// After a delete, put focus back on the nearest remaining item rather than the page.
-function onDeleteDialogCloseAutoFocus(event: Event) {
-  event.preventDefault()
+/** Focus stays in the content area after an action, on `id` or the tab stop. */
+function refocus(id: string | null = focusedId.value) {
   nextTick(() => {
-    const id = focusedId.value
     const target = id === null ? undefined : findItemElement(id)
     if (target) target.focus()
     else contentElement.value?.focus()
   })
 }
 
-// --- Navigation --------------------------------------------------------------------
+/** Cards per row, measured from the rendered grid. */
+function gridColumns(): number {
+  const options = Array.from(contentElement.value?.querySelectorAll<HTMLElement>('[role="option"]') ?? [])
+  const top = options[0]?.offsetTop
+  return Math.max(1, options.filter(option => option.offsetTop === top).length)
+}
 
-// Leaving a folder resets the selection; going Up selects the folder you came from.
-let pendingSelection: string | null = null
-watch(navigation.current, () => {
+/**
+ * Before items go away (delete, trash, cut-paste), move the tab stop to the
+ * nearest item that stays, so focus lands somewhere sensible afterwards.
+ */
+function focusNeighborOf(ids: readonly string[]) {
+  const leaving = new Set(ids)
+  const order = contentIds.value
+  const last = Math.max(...order.map((id, i) => (leaving.has(id) ? i : -1)))
+  const neighbor = order.slice(last + 1).find(id => !leaving.has(id)) ?? [...order.slice(0, last)].reverse().find(id => !leaving.has(id))
+  if (!neighbor) return
   const hadFocus = contentElement.value?.contains(document.activeElement) ?? false
-  selectedIds.value = pendingSelection === null ? [] : [pendingSelection]
-  lastFocusedId.value = pendingSelection
-  selection.anchor.value = pendingSelection
-  pendingSelection = null
-  search.value = ''
-  actions.renamingId.value = null
-  if (hadFocus) {
-    nextTick(() => {
-      const id = focusedId.value
-      if (id !== null) findItemElement(id)?.focus()
-      else contentElement.value?.focus()
+  lastFocusedId.value = neighbor
+  if (hadFocus) refocus(neighbor)
+}
+
+/** Runs `callback` once every id is on screen (a created item arrives through `items`). */
+function whenPresent(ids: string[], callback: (ids: string[]) => void) {
+  const ready = () => ids.every(id => contentIds.value.includes(id))
+  if (ready()) {
+    nextTick(() => callback(ids))
+    return
+  }
+  const stop = watch(contentIds, () => {
+    if (!ready()) return
+    stop()
+    clearTimeout(timer)
+    nextTick(() => callback(ids))
+  })
+  const timer = setTimeout(stop, 10_000)
+}
+
+function applyResult(result: FileExplorerOperationResult<TData> | undefined) {
+  if (result?.select?.length) {
+    whenPresent(result.select, (ids) => {
+      selectedIds.value = ids
+      const [first] = ids
+      if (first) focusItem(first)
     })
   }
+  if (result?.rename) {
+    whenPresent([result.rename], ([id]) => {
+      if (!id) return
+      selectedIds.value = [id]
+      focusItem(id)
+      actions.startRename(id)
+    })
+  }
+}
+
+// --- Operations & conflicts -------------------------------------------------------
+
+const conflicts = useFileExplorerConflicts<TData>({
+  takenNames: conflict => childrenOf(index.value, props.items, conflict.target?.id ?? null).map(item => item.name),
 })
 
+const operations = useFileExplorerOperations<TData>({
+  messages: () => messages.value,
+  external: () => props.operations,
+  resolveConflicts: conflicts.resolve,
+  onError: operation => emit('operation-error', operation),
+  onExternal: (event, operation) => {
+    if (event === 'cancel') emit('cancel-operation', operation)
+    else if (event === 'retry') emit('retry-operation', operation)
+    else emit('dismiss-operation', operation)
+  },
+})
+
+const contextFor = (signal: AbortSignal): FileExplorerOperationContext<TData> => ({
+  signal,
+  progress: () => {},
+  resolveConflicts: conflicts.resolve,
+})
+
+type ItemsRun = Omit<RunOptions<TData>, 'count' | 'itemIds' | 'retryWith'>
+
+/**
+ * Runs a handler on `items`. `build` makes the run for any subset, so Retry
+ * after a partial failure sends only the items that failed.
+ */
+function runOnItems(items: Item[], build: (subset: Item[]) => ItemsRun) {
+  const make = (subset: Item[]): RunOptions<TData> => ({
+    ...build(subset),
+    count: subset.length,
+    itemIds: subset.map(item => item.id),
+    retryWith: (failed: FileExplorerOperationFailure<TData>[]) => {
+      const ids = new Set(failed.flatMap(failure => (failure.source instanceof File ? [] : [failure.source.id])))
+      const retry = subset.filter(item => ids.has(item.id))
+      return retry.length ? make(retry) : undefined
+    },
+  })
+  return operations.run(make(items))
+}
+
+// --- Permissions --------------------------------------------------------------------
+
+const isReadonly = computed(() => Boolean(props.readonly || props.disabled))
+
+/** Whether items can be added to `folder` (`null` is the root). */
+function canWrite(folder: Item | null) {
+  if (isReadonly.value) return false
+  return folder === null || (can(folder, 'write') && !folder.trashed)
+}
+
+const has = (name: FileExplorerHandlerName) => Boolean(props[name])
+
+// --- Rename & delete ----------------------------------------------------------------
+
+type ConfirmKind = 'delete' | 'delete-permanently' | 'empty-trash'
+const pendingConfirm = shallowRef<{ kind: ConfirmKind, items: Item[] } | null>(null)
+
+function removeItems(kind: 'delete' | 'delete-permanently' | 'trash', items: Item[]) {
+  const deletable = items.filter(item => can(item, 'delete'))
+  if (!deletable.length) return
+  focusNeighborOf(deletable.map(item => item.id))
+  void runOnItems(deletable, subset => ({
+    type: kind === 'trash' ? 'trash' : 'delete',
+    onSuccess: applyResult,
+    invoke: (context) => {
+      if (kind === 'trash') return props.onTrash?.({ items: subset }, context)
+      if (kind === 'delete-permanently') return props.onDeletePermanently?.({ items: subset }, context)
+      return props.onDelete?.(subset, context)
+    },
+  }))
+}
+
+// Remembered apart from `pendingConfirm`: the dialog's close can clear that
+// before its confirm button's handler runs.
+let confirmKind: ConfirmKind = 'delete'
+
+function confirmThen(kind: ConfirmKind, items: Item[]) {
+  if (kind === 'empty-trash' || props.confirmDelete) {
+    confirmKind = kind
+    pendingConfirm.value = { kind, items }
+  }
+  else if (kind === 'delete' || kind === 'delete-permanently') {
+    removeItems(kind, items)
+  }
+}
+
+function onConfirm(items: Item[]) {
+  pendingConfirm.value = null
+  if (confirmKind === 'empty-trash') {
+    void operations.run({ type: 'delete', count: listing.value?.items.length ?? 0, invoke: context => props.onEmptyTrash?.({ folder: currentFolder.value }, context), onSuccess: applyResult })
+  }
+  else {
+    removeItems(confirmKind, items)
+  }
+}
+
+const confirmText = computed(() => {
+  const pending = pendingConfirm.value
+  const m = messages.value
+  if (pending?.kind === 'delete-permanently')
+    return { title: m.deletePermanentlyTitle(pending.items), description: m.deletePermanentlyDescription(pending.items), confirm: m.deletePermanently }
+  if (pending?.kind === 'empty-trash')
+    return { title: m.emptyTrashTitle, description: m.emptyTrashDescription, confirm: m.emptyTrash }
+  return { title: undefined, description: undefined, confirm: undefined }
+})
+
+function renameItem(item: Item, name: string) {
+  const onRename = props.onRename
+  if (!onRename) return
+  void runOnItems([item], () => ({ type: 'rename', silent: true, invoke: context => onRename(item, name, context), onSuccess: applyResult }))
+}
+
+const actions = useFileExplorerActions({
+  index,
+  rootItems: () => props.items,
+  selected: selectedIds,
+  onRename: () => (props.onRename && !isReadonly.value ? renameItem : undefined),
+  validateName: () => props.validateName,
+  // Confirmation is handled here, for delete, permanent delete and empty trash alike.
+  onDelete: () => (props.onDelete && !isReadonly.value ? (items: Item[]) => confirmThen('delete', items) : undefined),
+  confirmDelete: () => false,
+  disabled: () => props.disabled,
+  messages: () => messages.value,
+  focus: focusItem,
+})
+
+// --- Clipboard ------------------------------------------------------------------------
+
+const cutIds = computed(() => new Set(clipboard.value?.operation === 'cut' ? clipboard.value.items.map(item => item.id) : []))
+
+function toClipboard(operation: 'copy' | 'cut', items: Item[]) {
+  clipboard.value = { operation, items }
+  if (operation === 'copy') emit('copy', { items })
+  else emit('cut', { items })
+}
+
+const parentOf = (item: Item) => index.value.get(item.id)?.parentId ?? null
+
+/** Asks about name clashes in `target`. `null` means the user canceled. */
+async function resolveClashes(sources: { name: string, source: Item | File }[], target: Item | null) {
+  const existing = childrenOf(index.value, props.items, target?.id ?? null)
+  return conflicts.resolve(findNameConflicts(sources, existing, target))
+}
+
+async function paste(target: Item | null) {
+  const current = clipboard.value
+  const onPaste = props.onPaste
+  if (!current || !onPaste || !canWrite(target)) return
+  const operation = current.operation
+  const targetId = target?.id ?? null
+  // Fresh copies of what is still there; nothing may land inside itself.
+  const items = current.items
+    .map(item => itemOf(item.id) ?? item)
+    .filter(item => !(target && (target.id === item.id || isDescendantOf(index.value, target.id, item.id))))
+    .filter(item => operation === 'copy' || parentOf(item) !== targetId)
+  if (!items.length) return
+
+  // Copying next to the original keeps both, like a desktop — no need to ask.
+  const taken = childrenOf(index.value, props.items, targetId).map(item => item.name)
+  const alongside = operation === 'copy' ? items.filter(item => parentOf(item) === targetId) : []
+  const automatic: FileExplorerConflictResolution<TData>[] = alongside.map((item) => {
+    const name = uniqueName(item.name, taken)
+    taken.push(name)
+    return { conflict: { name: item.name, source: item, destination: item, target, reason: 'exists' }, action: 'keep-both', name }
+  })
+
+  const others = items.filter(item => !alongside.includes(item))
+  const resolved = await resolveClashes(others.map(item => ({ name: item.name, source: item })), target)
+  if (resolved === null) return
+  const skipped = new Set(resolved.filter(resolution => resolution.action === 'skip').map(resolution => resolution.conflict.source))
+  const pasted = items.filter(item => !skipped.has(item))
+  if (!pasted.length) return
+  const resolutions = [...automatic, ...resolved.filter(resolution => resolution.action !== 'skip')]
+
+  const options = (subset: Item[]): ItemsRun => ({
+    type: operation === 'cut' ? 'move' : 'copy',
+    cancelable: true,
+    invoke: context => onPaste({ items: subset, target, operation, conflicts: resolutions.filter(resolution => subset.some(item => item === resolution.conflict.source)) }, context),
+    onSuccess: (result) => {
+      if (operation === 'cut') clipboard.value = null
+      applyResult(result)
+    },
+  })
+  if (operation === 'cut') focusNeighborOf(pasted.map(item => item.id))
+  void runOnItems(pasted, options)
+}
+
+async function move(items: Item[], target: Item | null) {
+  const onMove = props.onMove
+  const movable = items.filter(item => can(item, 'move'))
+  if (!onMove || !movable.length || !canWrite(target)) return
+  const resolved = await resolveClashes(movable.map(item => ({ name: item.name, source: item })), target)
+  if (resolved === null) return
+  const skipped = new Set(resolved.filter(resolution => resolution.action === 'skip').map(resolution => resolution.conflict.source))
+  const moved = movable.filter(item => !skipped.has(item))
+  if (!moved.length) return
+  const resolutions = resolved.filter(resolution => resolution.action !== 'skip')
+  const options = (subset: Item[]): ItemsRun => ({
+    type: 'move',
+    cancelable: true,
+    invoke: context => onMove({ items: subset, target, conflicts: resolutions.filter(resolution => subset.some(item => item === resolution.conflict.source)) }, context),
+    onSuccess: applyResult,
+  })
+  void runOnItems(moved, options)
+}
+
+// --- Uploads ----------------------------------------------------------------------------
+
+const fileInput = useTemplateRef<HTMLInputElement>('fileInput')
+const folderInput = useTemplateRef<HTMLInputElement>('folderInput')
+const externalDrag = ref(false)
+
+/** The folder that receives uploads and new items; `undefined` while a listing is shown. */
+const addTarget = computed<Item | null | undefined>(() => (listing.value ? undefined : currentFolder.value))
+const uploadable = computed(() => has('onUpload') && addTarget.value !== undefined && canWrite(addTarget.value))
+
+const topName = (entry: DroppedFile) => (entry.path ? entry.path.split('/')[0] ?? entry.file.name : entry.file.name)
+
+async function upload(entries: DroppedFile[], target: Item | null) {
+  const onUpload = props.onUpload
+  if (!onUpload || !entries.length || !canWrite(target)) return
+  const m = messages.value
+
+  const rejected: string[] = []
+  const accepted = entries.filter(({ file }) => {
+    if (!matchesAccept(file, props.accept)) rejected.push(m.fileNotAccepted(file.name))
+    else if (props.maxFileSize !== undefined && file.size > props.maxFileSize) rejected.push(m.fileTooLarge(file.name, formatBytes(props.maxFileSize)))
+    else return true
+    return false
+  })
+  if (rejected.length) {
+    void operations.run({ type: 'upload', count: rejected.length, label: m.filesRejected(rejected.length), retryable: false, invoke: () => { throw new Error(rejected.join(' ')) } })
+  }
+  if (!accepted.length) return
+
+  // Conflicts are about what lands in the folder: loose files, or the top of a dropped folder.
+  const groups = new Map<string, DroppedFile[]>()
+  for (const entry of accepted) groups.set(topName(entry), [...(groups.get(topName(entry)) ?? []), entry])
+  const resolved = await resolveClashes([...groups].map(([name, [first]]) => ({ name, source: first?.file ?? new File([], name) })), target)
+  if (resolved === null) return
+  const skippedNames = new Set(resolved.filter(resolution => resolution.action === 'skip').map(resolution => resolution.conflict.name.toLowerCase()))
+  const resolutions = resolved.filter(resolution => resolution.action !== 'skip')
+
+  const send = (subset: DroppedFile[]): RunOptions<TData> => ({
+    type: 'upload',
+    count: subset.length,
+    cancelable: true,
+    invoke: context => onUpload(subset.map(entry => entry.file), target, {
+      ...context,
+      relativePaths: subset.map(entry => entry.path),
+      conflicts: resolutions.filter(resolution => subset.some(entry => topName(entry).toLowerCase() === resolution.conflict.name.toLowerCase())),
+    }),
+    onSuccess: applyResult,
+    retryWith: (failed) => {
+      const files = new Set(failed.flatMap(failure => (failure.source instanceof File ? [failure.source] : [])))
+      const retry = subset.filter(entry => files.has(entry.file))
+      return retry.length ? send(retry) : undefined
+    },
+  })
+  const files = accepted.filter(entry => !skippedNames.has(topName(entry).toLowerCase()))
+  if (files.length) void operations.run(send(files))
+}
+
+function pickFiles(directory: boolean) {
+  const input = directory ? folderInput.value : fileInput.value
+  input?.click()
+}
+
+function onFileInput(event: Event) {
+  if (!(event.target instanceof HTMLInputElement) || addTarget.value === undefined) return
+  const files = Array.from(event.target.files ?? [])
+  // Folder picks carry their path in `webkitRelativePath`.
+  void upload(files.map(file => ({ file, path: file.webkitRelativePath ?? '' })), addTarget.value)
+  event.target.value = ''
+}
+
+// --- Loading: lazy children, next pages, remote search -----------------------------------
+
+const childrenLoader = useFileExplorerLoader<TData, string>({
+  handler: () => {
+    const load = props.onLoadChildren
+    if (!load) return undefined
+    return (id, context) => {
+      const folder = itemOf(id)
+      return folder ? load(folder, context) : undefined
+    }
+  },
+  context: contextFor,
+})
+
+function loadChildren(id: string, force = false) {
+  return childrenLoader.load(id, id, force)
+}
+
+watch(currentFolder, (folder) => {
+  if (folder && props.onLoadChildren && isUnloadedFolder(folder) && !childrenLoader.state(folder.id))
+    loadChildren(folder.id).catch(() => {})
+}, { immediate: true })
+
+const moreLoader = useFileExplorerLoader<TData, { folder: Item | null, cursor: unknown }>({
+  handler: () => {
+    const load = props.onLoadMore
+    return load ? (event, context) => load(event, context) : undefined
+  },
+  context: contextFor,
+})
+const moreKey = computed(() => (listing.value ? '#listing' : navigation.current.value ?? '#root'))
+const hasMore = computed(() => Boolean(listing.value ? listing.value.hasMore : currentFolder.value?.hasMore) && Boolean(props.onLoadMore))
+
+function loadMore() {
+  const cursor = listing.value ? listing.value.cursor : currentFolder.value?.cursor
+  moreLoader.load(moreKey.value, { folder: currentFolder.value, cursor }, true).catch(() => {})
+}
+
+const searchState = shallowRef<LoadState | undefined>()
+let searchController: AbortController | undefined
+let searchTimer: ReturnType<typeof setTimeout> | undefined
+
+function runSearch(term: string) {
+  const onSearch = props.onSearch
+  if (!onSearch) return
+  searchController?.abort()
+  const controller = new AbortController()
+  searchController = controller
+  searchState.value = term ? { status: 'loading' } : undefined
+  Promise.resolve()
+    .then(() => onSearch({ query: term, folder: currentFolder.value }, contextFor(controller.signal)))
+    .then(
+      () => {
+        if (searchController === controller) searchState.value = undefined
+      },
+      (error: unknown) => {
+        if (searchController !== controller || controller.signal.aborted) return
+        searchState.value = { status: 'error', error: error instanceof Error ? error.message : String(error) }
+      },
+    )
+}
+
+watch(query, (term) => {
+  if (!props.remoteSearch) return
+  clearTimeout(searchTimer)
+  if (props.searchDebounce > 0 && term) searchTimer = setTimeout(() => runSearch(term), props.searchDebounce)
+  else runSearch(term)
+})
+
+const contentLoad = computed<{ state: LoadState | undefined, kind: 'folder' | 'search' }>(() => {
+  if (searchState.value) return { state: searchState.value, kind: 'search' }
+  const folder = currentFolder.value
+  return { state: folder && !listing.value ? childrenLoader.state(folder.id) : undefined, kind: 'folder' }
+})
+
+function retryContent() {
+  if (contentLoad.value.kind === 'search') runSearch(query.value)
+  else if (currentFolder.value) loadChildren(currentFolder.value.id, true).catch(() => {})
+}
+
+// --- Navigation --------------------------------------------------------------------
+
+/** Where focus was in each folder, restored when coming back to it. */
+const lastFocusByFolder = new Map<string | null, string>()
+// Going Up selects the folder you came from.
+let pendingSelection: string | null = null
+
+function rememberFocus() {
+  const id = focusedId.value
+  if (id !== null) lastFocusByFolder.set(navigation.current.value, id)
+}
+
+watch(navigation.current, (next, previous) => {
+  const hadFocus = contentElement.value?.contains(document.activeElement) ?? false
+  // Coming back out of a child folder (Up or Back) selects it, like Explorer and Finder.
+  const cameFromChild = previous != null && index.value.get(previous)?.parentId === next ? previous : null
+  const restore = pendingSelection ?? cameFromChild
+  selectedIds.value = restore === null ? [] : [restore]
+  lastFocusedId.value = restore ?? lastFocusByFolder.get(next) ?? null
+  selection.anchor.value = restore
+  pendingSelection = null
+  search.value = ''
+  locationId.value = null
+  actions.renamingId.value = null
+  if (hadFocus) refocus()
+})
+
+function navigate(id: string | null) {
+  rememberFocus()
+  if (locationId.value !== null && id === navigation.current.value) {
+    // Leaving a listing for the folder that was open underneath.
+    locationId.value = null
+    return
+  }
+  navigation.navigate(id)
+}
+
 function goUp() {
-  if (!navigation.canGoUp.value) return
+  if (!navigation.canGoUp.value || listing.value) return
+  rememberFocus()
   pendingSelection = navigation.current.value
   navigation.up()
 }
 
+function goBack() {
+  // Back from a listing returns to the folder underneath.
+  if (listing.value || locationId.value !== null) {
+    locationId.value = null
+    if (props.remoteSearch) search.value = ''
+    return
+  }
+  rememberFocus()
+  navigation.back()
+}
+
+function goForward() {
+  rememberFocus()
+  navigation.forward()
+}
+
 function openItem(id: string) {
-  const item = index.value.get(id)?.item
-  if (!item || item.disabled || props.disabled) return
-  if (isFolder(item)) navigation.navigate(id)
+  const item = itemOf(id)
+  if (!item || item.disabled || props.disabled || !can(item, 'read')) return
+  if (isFolder(item)) navigate(id)
   else emit('open', item)
+}
+
+function selectLocation(entry: FileExplorerLocation) {
+  sidebarOpen.value = false
+  if (entry.folder !== undefined) {
+    locationId.value = null
+    navigate(entry.folder)
+    return
+  }
+  rememberFocus()
+  selectedIds.value = []
+  lastFocusedId.value = null
+  locationId.value = entry.id
 }
 
 // Keep the directory tree open down to the current folder.
@@ -217,14 +752,95 @@ watch(navigation.path, (ids) => {
   if (missing.length) treeExpanded.value = [...treeExpanded.value, ...missing]
 }, { immediate: true })
 
+const sidebarOpen = ref(false)
+function onSidebarNavigate(id: string) {
+  sidebarOpen.value = false
+  navigate(id)
+}
+
+// --- Commands: toolbar, menus, shortcuts, status bar ---------------------------------------
+
+const refreshing = ref(false)
+const contextMenuOpen = ref(false)
+const toolbarMenuOpen = ref(false)
+
+function runSilently(type: RunOptions<TData>['type'], items: Item[], invoke: (subset: Item[], context: FileExplorerOperationContext<TData>) => unknown) {
+  return runOnItems(items, subset => ({ type, silent: true, invoke: context => invoke(subset, context), onSuccess: applyResult }))
+}
+
+const commands = useFileExplorerCommands<TData>({
+  messages: () => messages.value,
+  has,
+  readonly: () => isReadonly.value,
+  isMac: () => isMac.value,
+  currentFolder: () => addTarget.value,
+  canWrite,
+  hasClipboard: () => Boolean(clipboard.value?.items.length),
+  isFavorite: id => favoriteSet.value.has(id),
+  inTrash: () => Boolean(listing.value?.trash),
+  directoryUpload: () => Boolean(props.directoryUpload),
+  // An open menu traps focus until it has closed; dialogs and inputs wait for that.
+  schedule: run => () => (contextMenuOpen.value || toolbarMenuOpen.value ? actions.afterMenuCloses(run) : run()),
+  perform: {
+    open: item => openItem(item.id),
+    preview: item => void runSilently('other', [item], (_, context) => props.onPreview?.({ item }, context)),
+    download: items => void runOnItems(items, subset => ({ type: 'download', cancelable: true, invoke: context => props.onDownload?.({ items: subset }, context), onSuccess: applyResult })),
+    createFolder: parent => void operations.run({ type: 'create', count: 1, silent: true, invoke: context => props.onCreateFolder?.(parent, context), onSuccess: applyResult }),
+    createFile: parent => void operations.run({ type: 'create', count: 1, silent: true, invoke: context => props.onCreateFile?.(parent, context), onSuccess: applyResult }),
+    upload: pickFiles,
+    cut: items => toClipboard('cut', items),
+    copy: items => toClipboard('copy', items),
+    paste: target => void paste(target),
+    duplicate: items => void runOnItems(items, subset => ({ type: 'duplicate', invoke: context => props.onDuplicate?.({ items: subset }, context), onSuccess: applyResult })),
+    rename: item => actions.startRename(item.id),
+    trash: items => removeItems('trash', items),
+    delete: items => confirmThen('delete', items),
+    restore: (items) => {
+      focusNeighborOf(items.map(item => item.id))
+      void runOnItems(items, subset => ({ type: 'restore', invoke: context => props.onRestore?.({ items: subset }, context), onSuccess: applyResult }))
+    },
+    deletePermanently: items => confirmThen('delete-permanently', items),
+    emptyTrash: () => confirmThen('empty-trash', listing.value?.items ?? []),
+    share: items => void runSilently('share', items, (subset, context) => props.onShare?.({ items: subset }, context)),
+    copyLink: items => void runSilently('share', items, (subset, context) => props.onCopyLink?.({ items: subset }, context)),
+    favorite: items => void runSilently('other', items, (subset, context) => props.onFavorite?.({ items: subset }, context)),
+    unfavorite: items => void runSilently('other', items, (subset, context) => props.onUnfavorite?.({ items: subset }, context)),
+    properties: items => void runSilently('other', items, (subset, context) => props.onProperties?.({ items: subset }, context)),
+    refresh: () => {
+      if (refreshing.value) return
+      refreshing.value = true
+      const folder = currentFolder.value
+      if (folder) childrenLoader.reset(folder.id)
+      void operations.run({ type: 'refresh', count: 0, silent: true, invoke: context => props.onRefresh?.({ folder }, context) })
+        .finally(() => { refreshing.value = false })
+    },
+  },
+})
+
+const folderActions = computed(() => commands.resolve([], 'background'))
+const selectionActions = computed(() => commands.resolve(selectedItems.value, 'items'))
+const toolbarActions = computed(() => commands.toolbar(selectedItems.value))
+
 // --- Pointer & keyboard ---------------------------------------------------------
 
 function onItemClick(id: string, event: MouseEvent) {
   if (props.disabled || !isSelectable(id)) return
+  // On touch, tapping the selected item opens it; the first tap selects.
+  const touch = typeof PointerEvent !== 'undefined' && event instanceof PointerEvent && event.pointerType === 'touch'
+  if (touch && selectedIds.value.length === 1 && selectedSet.value.has(id)) {
+    openItem(id)
+    return
+  }
   lastFocusedId.value = id
   if (props.multiple && event.shiftKey) selection.extend(id)
   else if (props.multiple && (event.metaKey || event.ctrlKey)) selection.toggle(id)
   else selection.replace(id)
+}
+
+function onItemToggle(id: string) {
+  if (props.disabled || !isSelectable(id)) return
+  lastFocusedId.value = id
+  selection.toggle(id)
 }
 
 function onContentClick(event: MouseEvent) {
@@ -236,9 +852,10 @@ const keyboard = useFileExplorerKeyboard({
   ids: contentIds,
   focusedId,
   view,
-  multiple: computed(() => props.multiple),
+  dir,
+  multiple: toRef(props, 'multiple'),
   isSelectable,
-  nameOf: id => index.value.get(id)?.item.name ?? '',
+  nameOf: id => itemOf(id)?.name ?? '',
   columns: gridColumns,
   focus: focusItem,
   replace: selection.replace,
@@ -247,39 +864,34 @@ const keyboard = useFileExplorerKeyboard({
   selectAll: selection.selectAll,
   clear: selection.clear,
   open: openItem,
-  back: navigation.back,
-  forward: navigation.forward,
+  back: goBack,
+  forward: goForward,
   up: goUp,
-  remove: () => actions.requestDelete(selectedItems.value),
-  rename: () => actions.startRename(focusedId.value),
 })
 
 function onContentKeydown(event: KeyboardEvent) {
   if (props.disabled || props.loading) return
-  // Let buttons (the drop tile, sort headers) and the rename input handle their own keys.
+  // Buttons (the drop tile, sort headers) and the rename input handle their own keys.
   if (event.target instanceof Element && event.target.closest('button, input')) return
+  const mod = event.ctrlKey || event.metaKey
+  const key = event.key.toLowerCase()
+  if (mod && key === 'z' && !event.shiftKey) {
+    event.preventDefault()
+    operations.undo()
+    return
+  }
+  if (mod && (key === 'y' || (key === 'z' && event.shiftKey))) {
+    event.preventDefault()
+    operations.redo()
+    return
+  }
+  if (commands.handleKeydown(event, selectedItems.value)) return
   keyboard.onKeydown(event)
-}
-
-// --- Uploads -------------------------------------------------------------------------
-
-const uploadable = computed(() => Boolean(props.onUpload) && !props.disabled)
-const fileInput = useTemplateRef<HTMLInputElement>('fileInput')
-const externalDrag = ref(false)
-
-function upload(files: File[]) {
-  if (files.length && props.onUpload) props.onUpload(files, currentFolder.value)
-}
-
-function onFileInput(event: Event) {
-  if (!(event.target instanceof HTMLInputElement)) return
-  upload(Array.from(event.target.files ?? []))
-  event.target.value = ''
 }
 
 // --- Drag and drop -----------------------------------------------------------------
 
-const dragDropEnabled = computed(() => props.draggable && !props.disabled)
+const dragDropEnabled = computed(() => Boolean(props.draggable) && !isReadonly.value)
 const dragDrop = useFileExplorerDragDrop({
   enabled: dragDropEnabled,
   index,
@@ -288,9 +900,27 @@ const dragDrop = useFileExplorerDragDrop({
   expand: (id) => {
     if (!treeExpanded.value.includes(id)) treeExpanded.value = [...treeExpanded.value, id]
   },
-  onMove: event => emit('move', event),
+  onMove: event => void move(event.items, event.target),
+  canDrag: (id) => {
+    const item = itemOf(id)
+    return item !== undefined && can(item, 'move') && !item.trashed
+  },
+  canDropInto: targetId => canWrite(targetId === null ? null : itemOf(targetId) ?? null),
+  countLabel: count => messages.value.items(count),
 })
 provideSharedDragDrop(dragDrop)
+
+function canDropOnLocation(entry: FileExplorerLocation) {
+  if (!entry.trash || !has('onTrash')) return false
+  const dragging = itemsOf(dragDrop.draggingIds.value)
+  return dragging.length > 0 && dragging.every(item => can(item, 'delete'))
+}
+
+function onDropOnLocation(entry: FileExplorerLocation, event: DragEvent) {
+  event.preventDefault()
+  if (canDropOnLocation(entry)) removeItems('trash', itemsOf(dragDrop.draggingIds.value))
+  dragDrop.onDragEnd()
+}
 
 const isExternalDrag = (event: DragEvent) =>
   !dragDrop.draggingIds.value.length && Boolean(event.dataTransfer?.types.includes('Files'))
@@ -319,7 +949,11 @@ function onContentDrop(event: DragEvent) {
   if (externalDrag.value) {
     event.preventDefault()
     externalDrag.value = false
-    upload(Array.from(event.dataTransfer?.files ?? []))
+    const target = addTarget.value
+    if (event.dataTransfer && target !== undefined) {
+      const transfer = event.dataTransfer
+      void collectDroppedFiles(transfer, Boolean(props.directoryUpload)).then(files => upload(files, target))
+    }
     return
   }
   dragDrop.onDrop(event)
@@ -327,10 +961,12 @@ function onContentDrop(event: DragEvent) {
 
 // --- Context menu -------------------------------------------------------------------
 
-const hasContextMenu = computed(() => Boolean(slots['context-menu']))
+const hasCustomMenu = computed(() => Boolean(slots['context-menu']))
 const contextItemId = ref<string | null>(null)
-const contextItem = computed<FileExplorerItem<TData> | null>(() =>
-  contextItemId.value === null ? null : index.value.get(contextItemId.value)?.item ?? null)
+const contextItem = computed<Item | null>(() => (contextItemId.value === null ? null : itemOf(contextItemId.value) ?? null))
+
+const contextActions = computed(() => commands.menu(contextItem.value ? actions.targetsOf(contextItem.value) : []))
+const menuSlotProps = computed<FileExplorerMenuSlotProps<TData>>(() => ({ ...actions.menuScope(contextItem.value), actions: contextActions.value }))
 
 function onItemContextMenu(id: string) {
   contextItemId.value = id
@@ -338,13 +974,49 @@ function onItemContextMenu(id: string) {
   if (!selectedSet.value.has(id) && isSelectable(id)) selection.replace(id)
 }
 
+function onContentContextMenuCapture(event: MouseEvent) {
+  contextItemId.value = null
+  // Empty space with nothing to offer gets the browser's own menu.
+  const onItem = event.target instanceof Element && event.target.closest('[role="option"]')
+  if (!onItem && !folderActions.value.length && !hasCustomMenu.value) event.stopImmediatePropagation()
+}
+
+function onContentMenuCloseAutoFocus(event: Event) {
+  if (actions.onMenuCloseAutoFocus(event)) return
+  // Return focus to the item that was right-clicked, not the list container.
+  event.preventDefault()
+  refocus(contextItemId.value ?? focusedId.value)
+}
+
+function onToolbarMenuCloseAutoFocus(event: Event) {
+  actions.onMenuCloseAutoFocus(event)
+}
+
+/** The tree's own menu: the explorer's actions, but rename and delete act in the tree. */
+function treeMenuActions(scope: FileExplorerContextMenuSlotProps<TData>): FileExplorerAction[] {
+  const items = scope.item ? actions.targetsOf(scope.item) : []
+  return commands.menu(items).map((action) => {
+    if (action.id === 'rename') return { ...action, run: scope.rename }
+    // Everything else also waits for the tree's menu to close.
+    return { ...action, run: () => scope.defer(action.run) }
+  })
+}
+
+const treeBackgroundMenu = computed(() => hasCustomMenu.value || folderActions.value.length > 0)
+
 provideFileExplorerContext({
   selected: selectedSet,
+  cutIds,
+  favorites: favoriteSet,
+  itemOperation: id => operations.byItem.value.get(id),
   focusedId,
-  now: useNow({ interval: 60_000 }),
+  now,
+  multiple: toRef(props, 'multiple'),
   draggable: dragDropEnabled,
   dragDrop,
+  messages,
   onItemClick,
+  onItemToggle,
   onItemOpen: openItem,
   onItemContextMenu,
   renamingId: actions.renamingId,
@@ -357,19 +1029,48 @@ defineExpose({
   /** Starts renaming an item inline, if `onRename` is provided. */
   rename: (id: string) => actions.startRename(id),
   /** Deletes items by id, through the confirmation dialog when enabled. */
-  remove: (ids: string[]) => actions.requestDelete(ids.flatMap((id) => {
-    const item = index.value.get(id)?.item
-    return item ? [item] : []
-  })),
+  remove: (ids: string[]) => confirmThen('delete', itemsOf(ids)),
+  copy: (ids: string[]) => toClipboard('copy', itemsOf(ids)),
+  cut: (ids: string[]) => toClipboard('cut', itemsOf(ids)),
+  /** Pastes into `folderId` (default: the open folder). */
+  paste: (folderId?: string | null) => void paste(folderId === undefined ? currentFolder.value : folderId === null ? null : itemOf(folderId) ?? null),
+  refresh: () => commands.resolve([], 'background').find(action => action.id === 'refresh')?.run(),
+  undo: () => operations.undo(),
+  redo: () => operations.redo(),
+  /** Opens the conflict dialog for conflicts your server reported. */
+  resolveConflicts: conflicts.resolve,
+  /** Available actions for items (by id), or for the open folder when empty — e.g. for a command palette. */
+  getActions: (ids: string[] = []) => (ids.length ? commands.resolve(itemsOf(ids), 'items') : commands.resolve([], 'background')),
+  /** Every operation currently shown. */
+  operations: operations.operations,
 })
+
+const allOperations = operations.operations
+
+// The directory tree gets the explorer's rename and delete, so they are tracked
+// as operations and confirmed the same way.
+const treeRename = computed(() => (props.onRename && !isReadonly.value ? renameItem : undefined))
+const treeDelete = computed(() => {
+  if (isReadonly.value || !(props.onDelete || props.onTrash)) return undefined
+  return (items: Item[]) => (props.onTrash ? removeItems('trash', items) : confirmThen('delete', items))
+})
+const treeLoad = computed(() => (props.onLoadChildren ? (folder: Item) => loadChildren(folder.id) : undefined))
+
+function onDeleteDialogCloseAutoFocus(event: Event) {
+  event.preventDefault()
+  refocus()
+}
 </script>
 
 <template>
   <div
+    ref="root"
     data-slot="file-explorer"
+    :dir="props.dir"
     :data-disabled="disabled ? '' : undefined"
+    :data-readonly="readonly ? '' : undefined"
     :class="cn(
-      '@container flex min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-card text-sm text-card-foreground',
+      '@container relative flex min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-card text-sm text-card-foreground',
       disabled && 'pointer-events-none opacity-60',
       props.class,
     )"
@@ -377,101 +1078,137 @@ defineExpose({
     <FileExplorerToolbar
       v-model:search="search"
       v-model:view="view"
+      v-model:sort="sort"
       :path="path"
       :root-label="rootLabel"
+      :listing-label="listingLabel"
       :item-count="contentItems.length"
-      :can-go-back="navigation.canGoBack.value"
+      :can-go-back="navigation.canGoBack.value || listing !== null || locationId !== null"
       :can-go-forward="navigation.canGoForward.value"
-      :can-go-up="navigation.canGoUp.value"
-      :show-new-folder="Boolean(onCreateFolder)"
-      :show-upload="uploadable"
+      :can-go-up="navigation.canGoUp.value && listing === null"
       :disabled="disabled"
-      @back="navigation.back"
-      @forward="navigation.forward"
+      :dir="dir"
+      :folder-actions="folderActions"
+      :selection-actions="toolbarActions"
+      :sort-columns="sortColumns"
+      :refreshing="refreshing"
+      :search-placeholder="remoteSearch ? messages.searchPlaceholder : messages.filterPlaceholder"
+      :show-sidebar-toggle="sidebar"
+      @back="goBack"
+      @forward="goForward"
       @up="goUp"
-      @navigate="navigation.navigate"
-      @new-folder="onCreateFolder?.(currentFolder)"
-      @upload="fileInput?.click()"
+      @navigate="navigate"
+      @toggle-sidebar="sidebarOpen = !sidebarOpen"
+      @menu-open="toolbarMenuOpen = $event"
+      @menu-close-auto-focus="onToolbarMenuCloseAutoFocus"
     >
       <template v-if="$slots['toolbar-actions']" #actions>
         <slot name="toolbar-actions" />
       </template>
     </FileExplorerToolbar>
 
-    <div class="flex min-h-0 flex-1">
+    <div class="relative flex min-h-0 flex-1">
       <FileExplorerSidebar
         v-if="sidebar"
         v-model:expanded="treeExpanded"
         :items="items"
         :folder="navigation.current.value"
+        :location="locationId"
+        :locations="locations"
         :item-count="contentItems.length"
         :selected-size="selectedSize"
         :draggable="dragDropEnabled"
         :disabled="disabled"
+        :dir="dir"
+        :open="sidebarOpen"
         :get-icon="getIcon"
-        :on-rename="onRename"
+        :on-rename="treeRename"
         :validate-name="validateName"
-        :on-delete="onDelete ? actions.requestDelete : undefined"
-        @navigate="navigation.navigate"
+        :on-delete="treeDelete"
+        :on-load-children="treeLoad"
+        :background-menu="treeBackgroundMenu"
+        :can-drop-on-location="canDropOnLocation"
+        @navigate="onSidebarNavigate"
+        @select-location="selectLocation"
+        @drop-on-location="onDropOnLocation"
+        @close="sidebarOpen = false"
       >
-        <template v-if="hasContextMenu" #context-menu="scope">
-          <slot name="context-menu" v-bind="scope" />
+        <template #context-menu="scope">
+          <slot v-if="hasCustomMenu" name="context-menu" v-bind="{ ...scope, actions: treeMenuActions(scope) }" />
+          <FileExplorerMenuItems v-else :actions="treeMenuActions(scope)" kind="context" />
         </template>
       </FileExplorerSidebar>
 
       <div class="flex min-w-0 flex-1 flex-col">
-        <ContextMenuRoot>
-          <ContextMenuTrigger as-child :disabled="!hasContextMenu || loading || disabled">
-            <FileExplorerContent
-              ref="content"
-              tabindex="-1"
-              :items="contentItems"
-              :view="view"
-              :sort="sort"
-              :query="query"
-              :loading="loading"
-              :multiple="multiple"
-              :uploadable="uploadable"
-              :external-drag="externalDrag"
-              :folder-name="currentFolder?.name ?? rootLabel"
-              :label="label"
-              :get-icon="getIcon"
-              class="outline-none"
-              @update:sort="sort = $event"
-              @pick="fileInput?.click()"
-              @click="onContentClick"
-              @keydown="onContentKeydown"
-              @contextmenu.capture="contextItemId = null"
-              @dragover="onContentDragOver"
-              @dragleave="onContentDragLeave"
-              @drop="onContentDrop"
-            >
-              <template v-if="$slots.preview" #preview="scope">
-                <slot name="preview" v-bind="scope" />
-              </template>
-              <template v-if="$slots.empty" #empty="scope">
-                <slot name="empty" v-bind="scope" />
-              </template>
-            </FileExplorerContent>
-          </ContextMenuTrigger>
+        <div class="relative flex min-h-0 flex-1 flex-col">
+          <ContextMenuRoot :dir="dir" @update:open="contextMenuOpen = $event">
+            <ContextMenuTrigger as-child :disabled="loading || disabled">
+              <FileExplorerContent
+                ref="content"
+                tabindex="-1"
+                :items="contentItems"
+                :view="view"
+                :sort="sort"
+                :columns="columns"
+                :query="remoteSearch ? '' : query"
+                :loading="loading"
+                :load-state="contentLoad.state"
+                :load-state-kind="contentLoad.kind"
+                :multiple="multiple"
+                :uploadable="uploadable"
+                :external-drag="externalDrag"
+                :folder-name="currentFolder?.name ?? rootLabel"
+                :label="label"
+                :has-more="hasMore"
+                :more-state="moreLoader.state(moreKey)"
+                :get-icon="getIcon"
+                class="outline-none"
+                @update:sort="sort = $event"
+                @pick="pickFiles(false)"
+                @load-more="loadMore"
+                @retry="retryContent"
+                @click="onContentClick"
+                @keydown="onContentKeydown"
+                @contextmenu.capture="onContentContextMenuCapture"
+                @dragover="onContentDragOver"
+                @dragleave="onContentDragLeave"
+                @drop="onContentDrop"
+              >
+                <template v-if="$slots.preview" #preview="scope">
+                  <slot name="preview" v-bind="scope" />
+                </template>
+                <template v-if="$slots.empty" #empty="scope">
+                  <slot name="empty" v-bind="scope" />
+                </template>
+                <template v-if="$slots.cell" #cell="scope">
+                  <slot name="cell" v-bind="scope" />
+                </template>
+              </FileExplorerContent>
+            </ContextMenuTrigger>
 
-          <ContextMenuPortal v-if="hasContextMenu">
-            <ContextMenuContent
-              data-slot="file-explorer-context-menu"
-              @close-auto-focus="actions.onMenuCloseAutoFocus"
-              :class="cn(
-                'z-50 max-h-(--reka-context-menu-content-available-height) min-w-[8rem] origin-(--reka-context-menu-content-transform-origin) overflow-x-hidden overflow-y-auto',
-                'rounded-md border bg-popover p-1 text-popover-foreground shadow-md',
-                'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
-                'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
-              )"
-            >
-              <slot name="context-menu" v-bind="actions.menuScope(contextItem)" />
-            </ContextMenuContent>
-          </ContextMenuPortal>
-        </ContextMenuRoot>
+            <ContextMenuPortal>
+              <ContextMenuContent
+                data-slot="file-explorer-context-menu"
+                :class="cn(fileExplorerMenuContent, 'origin-(--reka-context-menu-content-transform-origin)')"
+                @close-auto-focus="onContentMenuCloseAutoFocus"
+              >
+                <slot v-if="hasCustomMenu" name="context-menu" v-bind="menuSlotProps" />
+                <FileExplorerMenuItems v-else :actions="contextActions" kind="context" />
+              </ContextMenuContent>
+            </ContextMenuPortal>
+          </ContextMenuRoot>
 
-        <FileExplorerStatusBar :selected-items="selectedItems" :item-count="contentItems.length" @open="emit('open', $event)">
+          <FileExplorerOperations
+            :operations="allOperations"
+            :messages="messages"
+            @cancel="operations.cancel"
+            @retry="operations.retry"
+            @undo="operations.undo"
+            @dismiss="operations.dismiss"
+          />
+        </div>
+
+        <FileExplorerStatusBar :selected-items="selectedItems" :item-count="contentItems.length" :actions="selectionActions">
           <template v-if="$slots['status-actions']" #actions="scope">
             <slot name="status-actions" v-bind="scope" />
           </template>
@@ -480,22 +1217,46 @@ defineExpose({
     </div>
 
     <FileExplorerDeleteDialog
-      :items="actions.pendingDelete.value"
-      @confirm="actions.confirmDelete"
-      @close="actions.closeDelete"
+      :items="pendingConfirm?.items ?? null"
+      :title="confirmText.title"
+      :description="confirmText.description"
+      :confirm-label="confirmText.confirm"
+      :messages="messages"
+      @confirm="onConfirm"
+      @close="pendingConfirm = null"
       @close-auto-focus="onDeleteDialogCloseAutoFocus"
     >
-      <template v-if="$slots['delete-description']" #description="scope">
+      <template v-if="$slots['delete-description'] && pendingConfirm?.kind !== 'empty-trash'" #description="scope">
         <slot name="delete-description" v-bind="scope" />
       </template>
     </FileExplorerDeleteDialog>
 
+    <FileExplorerConflictDialog
+      :conflict="conflicts.current.value"
+      :remaining="conflicts.remaining.value"
+      :root-label="rootLabel"
+      :messages="messages"
+      @choose="conflicts.choose"
+      @cancel="conflicts.cancel"
+    />
+
     <input
-      v-if="uploadable"
+      v-if="has('onUpload')"
       ref="fileInput"
       type="file"
       multiple
       :accept="accept"
+      class="sr-only"
+      tabindex="-1"
+      aria-hidden="true"
+      @change="onFileInput"
+    >
+    <input
+      v-if="has('onUpload') && directoryUpload"
+      ref="folderInput"
+      type="file"
+      multiple
+      webkitdirectory
       class="sr-only"
       tabindex="-1"
       aria-hidden="true"

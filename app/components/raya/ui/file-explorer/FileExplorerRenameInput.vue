@@ -8,6 +8,8 @@ const props = defineProps<{
   /** Folders select the whole name; files leave the extension out, like Windows. */
   isFolder: boolean
   validate: (name: string) => string | undefined
+  /** Accessible name of the input. */
+  label?: string
   class?: HTMLAttributes['class']
 }>()
 
@@ -89,7 +91,7 @@ function onKeydown(event: KeyboardEvent) {
     v-model="value"
     type="text"
     data-slot="file-explorer-rename-input"
-    aria-label="New name"
+    :aria-label="label ?? 'New name'"
     autocomplete="off"
     spellcheck="false"
     :aria-invalid="error ? 'true' : undefined"

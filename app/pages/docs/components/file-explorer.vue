@@ -1,192 +1,35 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref } from 'vue'
-import { CopyPlus, Download, ExternalLink, FolderPlus, Link, PencilLine, Trash2 } from 'lucide-vue-next'
-import {
-  FileExplorer,
-  formatBytes,
-  indexFileTree,
-  type FileExplorerItem,
-  type FileExplorerMoveEvent,
-  type FileExplorerView,
-} from '@/components/raya/ui/file-explorer'
+import { computed, ref, useTemplateRef } from 'vue'
+import type { FileExplorerView } from '@/components/raya/ui/file-explorer'
 import { CodeBlock } from '@/components/raya/ui/code-block'
-import {
-  ContextMenuItem,
-  ContextMenuLabel,
-  ContextMenuSeparator,
-  ContextMenuShortcut,
-} from '@/components/ui/context-menu'
+import FileExplorerDemo from '@/components/docs/FileExplorerDemo.vue'
 
 definePageMeta({ layout: 'docs' })
 
 useSeoMeta({
   title: 'File Explorer Component for Vue & Nuxt',
-  description: 'A desktop-style file explorer for Vue and Nuxt: directory tree, breadcrumbs, grid and details views, keyboard navigation, multi-selection, context menus, drag and drop and uploads.',
+  description: 'A backend-agnostic file manager UI for Vue and Nuxt: directory tree, grid and details views, clipboard, conflicts, operations with progress and retry, permissions, trash, lazy loading and uploads.',
   ogTitle: 'File Explorer Component for Vue & Nuxt',
-  ogDescription: 'A desktop-style file explorer for Vue and Nuxt: directory tree, breadcrumbs, grid and details views, keyboard navigation, multi-selection, context menus, drag and drop and uploads.',
+  ogDescription: 'A backend-agnostic file manager UI for Vue and Nuxt: directory tree, grid and details views, clipboard, conflicts, operations with progress and retry, permissions, trash, lazy loading and uploads.',
 })
 
-// --- Demo data -----------------------------------------------------------------
+// --- Demo settings ------------------------------------------------------------------
 
-const ago = (minutes: number) => new Date(Date.now() - minutes * 60_000)
-const HOUR = 60
-const DAY = 24 * HOUR
-
-const primitives = ['Dialog.vue', 'Button.vue', 'Input.vue', 'Select.vue', 'Tabs.vue', 'Tooltip.vue', 'Popover.vue', 'Switch.vue', 'Slider.vue', 'Checkbox.vue', 'Avatar.vue', 'Badge.vue', 'Card.vue', 'Sheet.vue']
-
-const createFiles = (): FileExplorerItem[] => [
-  {
-    id: 'pages',
-    name: 'pages',
-    type: 'folder',
-    modifiedAt: ago(5 * DAY),
-    children: [
-      { id: 'pages/index.vue', name: 'index.vue', type: 'file', size: 3_210, modifiedAt: ago(2 * DAY), preview: '<template>\n  <HeroSection />' },
-      { id: 'pages/docs.vue', name: 'docs.vue', type: 'file', size: 1_804, modifiedAt: ago(6 * DAY) },
-    ],
-  },
-  {
-    id: 'components',
-    name: 'components',
-    type: 'folder',
-    modifiedAt: ago(10),
-    children: [
-      {
-        id: 'components/ui',
-        name: 'ui',
-        type: 'folder',
-        modifiedAt: ago(10),
-        children: [
-          {
-            id: 'components/ui/FileExplorer.vue',
-            name: 'FileExplorer.vue',
-            type: 'file',
-            size: 4_300,
-            mimeType: 'text/x-vue',
-            description: 'Vue 3 SFC',
-            modifiedAt: ago(10),
-            preview: '<template>\n  <FileExplorer v-model="active" />',
-          },
-          {
-            id: 'components/ui/useFileSystem.ts',
-            name: 'useFileSystem.ts',
-            type: 'file',
-            size: 2_867,
-            mimeType: 'text/typescript',
-            description: 'Composable hook',
-            modifiedAt: ago(2 * HOUR),
-            preview: 'export const useFS = () =>\n  return { readTree }',
-          },
-          {
-            id: 'components/ui/ui-primitives',
-            name: 'ui-primitives',
-            type: 'folder',
-            description: 'Directory',
-            modifiedAt: ago(DAY),
-            children: primitives.map((name, i) => ({
-              id: `components/ui/ui-primitives/${name}`,
-              name,
-              type: 'file' as const,
-              size: 900 + i * 173,
-              modifiedAt: ago(DAY + i * 60),
-            })),
-          },
-          {
-            id: 'components/ui/hero-banner.png',
-            name: 'hero-banner.png',
-            type: 'file',
-            size: 1_468_006,
-            mimeType: 'image/png',
-            description: 'Raster asset',
-            modifiedAt: ago(3 * DAY),
-            thumbnail: '/og-image.png',
-          },
-          {
-            id: 'components/ui/nuxt.config.ts',
-            name: 'nuxt.config.ts',
-            type: 'file',
-            size: 1_126,
-            mimeType: 'text/typescript',
-            description: 'Core config',
-            modifiedAt: ago(4 * DAY),
-            preview: 'export default defineNuxtConfig({\n  devtools: { enabled: true }',
-          },
-        ],
-      },
-      {
-        id: 'components/forms',
-        name: 'forms',
-        type: 'folder',
-        modifiedAt: ago(9 * DAY),
-        children: [
-          { id: 'components/forms/FormField.vue', name: 'FormField.vue', type: 'file', size: 2_140, modifiedAt: ago(9 * DAY) },
-          { id: 'components/forms/useForm.ts', name: 'useForm.ts', type: 'file', size: 1_512, modifiedAt: ago(12 * DAY), preview: 'export function useForm<T>(schema: Schema<T>) {' },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'composables',
-    name: 'composables',
-    type: 'folder',
-    modifiedAt: ago(3 * HOUR),
-    children: [
-      { id: 'composables/useTheme.ts', name: 'useTheme.ts', type: 'file', size: 812, modifiedAt: ago(3 * HOUR), preview: 'export const useTheme = () => {\n  const mode = useColorMode()' },
-      { id: 'composables/useToast.ts', name: 'useToast.ts', type: 'file', size: 1_344, modifiedAt: ago(20 * DAY) },
-    ],
-  },
-  {
-    id: 'server',
-    name: 'server',
-    type: 'folder',
-    modifiedAt: ago(14 * DAY),
-    children: [
-      {
-        id: 'server/api',
-        name: 'api',
-        type: 'folder',
-        modifiedAt: ago(14 * DAY),
-        children: [
-          { id: 'server/api/files.get.ts', name: 'files.get.ts', type: 'file', size: 954, modifiedAt: ago(14 * DAY), preview: 'export default defineEventHandler(async () => {' },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'assets',
-    name: 'assets',
-    type: 'folder',
-    modifiedAt: ago(30 * DAY),
-    children: [
-      { id: 'assets/logo.svg', name: 'logo.svg', type: 'file', size: 1_120, modifiedAt: ago(30 * DAY), thumbnail: '/logo.svg' },
-      { id: 'assets/main.css', name: 'main.css', type: 'file', size: 18_430, modifiedAt: ago(2 * DAY), preview: '@import "tailwindcss";\n@import "tw-animate-css";' },
-    ],
-  },
-  { id: 'package.json', name: 'package.json', type: 'file', size: 1_087, modifiedAt: ago(DAY), preview: '{\n  "name": "raya-app",' },
-  { id: 'README.md', name: 'README.md', type: 'file', size: 3_402, modifiedAt: ago(8 * DAY), preview: '# Raya App\nBeautifully engineered components.' },
-]
-
-const DEFAULT_FOLDER = 'components/ui'
-const DEFAULT_SELECTED = ['components/ui/FileExplorer.vue']
-
-const files = ref(createFiles())
-const folder = ref<string | null>(DEFAULT_FOLDER)
-const selected = ref<string[]>([...DEFAULT_SELECTED])
-
-// --- Interactive settings ------------------------------------------------------
-
+const demo = useTemplateRef<InstanceType<typeof FileExplorerDemo>>('demo')
 const view = ref<FileExplorerView>('grid')
 const multiple = ref(true)
 const draggable = ref(true)
 const sidebar = ref(true)
-const uploads = ref(true)
+const readonly = ref(false)
+const slow = ref(true)
 const loading = ref(false)
 
 const toggles = [
-  { label: 'Directory tree', hint: 'Show the sidebar when there is room.', state: sidebar },
+  { label: 'Directory tree', hint: 'Sidebar with locations and folders.', state: sidebar },
   { label: 'Multiple selection', hint: 'Ctrl/Cmd, Shift and Ctrl+A.', state: multiple },
-  { label: 'Drag and drop', hint: 'Move items onto folders.', state: draggable },
-  { label: 'File actions', hint: 'Upload, new folder, rename, delete.', state: uploads },
+  { label: 'Drag and drop', hint: 'Move items onto folders or Trash.', state: draggable },
+  { label: 'Read only', hint: 'Hides every action that changes data.', state: readonly },
+  { label: 'Slow network', hint: 'Makes progress easy to watch.', state: slow },
   { label: 'Loading', hint: 'Show skeleton cards.', state: loading },
 ]
 
@@ -195,118 +38,10 @@ const resetSettings = () => {
   multiple.value = true
   draggable.value = true
   sidebar.value = true
-  uploads.value = true
+  readonly.value = false
+  slow.value = true
   loading.value = false
-  files.value = createFiles()
-  folder.value = DEFAULT_FOLDER
-  selected.value = [...DEFAULT_SELECTED]
-}
-
-// --- Demo behavior: application code, not the component ------------------------
-
-const index = computed(() => indexFileTree(files.value))
-
-function pathOf(id: string): string {
-  const names: string[] = []
-  let current: string | null = id
-  while (current !== null) {
-    const entry = index.value.get(current)
-    if (!entry) break
-    names.unshift(entry.item.name)
-    current = entry.parentId
-  }
-  return names.join('/')
-}
-
-function removeItems(items: FileExplorerItem[], ids: Set<string>): FileExplorerItem[] {
-  return items
-    .filter(item => !ids.has(item.id))
-    .map(item => (item.children ? { ...item, children: removeItems(item.children, ids) } : item))
-}
-
-function insertItems(items: FileExplorerItem[], targetId: string | null, additions: FileExplorerItem[]): FileExplorerItem[] {
-  if (targetId === null) return [...items, ...additions]
-  return items.map((item) => {
-    if (item.id === targetId) return { ...item, children: [...(item.children ?? []), ...additions] }
-    return item.children ? { ...item, children: insertItems(item.children, targetId, additions) } : item
-  })
-}
-
-let counter = 0
-const uniqueId = (prefix: string) => `${prefix}-${Date.now()}-${++counter}`
-const objectUrls: string[] = []
-onBeforeUnmount(() => objectUrls.forEach(url => URL.revokeObjectURL(url)))
-
-function onMove({ items, target }: FileExplorerMoveEvent) {
-  const ids = new Set(items.map(item => item.id))
-  files.value = insertItems(removeItems(files.value, ids), target?.id ?? null, items)
-}
-
-function onUpload(uploaded: File[], target: FileExplorerItem | null) {
-  const additions = uploaded.map((file): FileExplorerItem => {
-    const thumbnail = file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined
-    if (thumbnail) objectUrls.push(thumbnail)
-    return { id: uniqueId('upload'), name: file.name, type: 'file', size: file.size, mimeType: file.type || undefined, modifiedAt: new Date(), thumbnail }
-  })
-  files.value = insertItems(files.value, target?.id ?? null, additions)
-  selected.value = additions.map(item => item.id)
-}
-
-function onCreateFolder(parent: FileExplorerItem | null) {
-  const siblings = new Set((parent ? parent.children ?? [] : files.value).map(item => item.name))
-  let name = 'New folder'
-  for (let n = 2; siblings.has(name); n++) name = `New folder (${n})`
-  const created: FileExplorerItem = { id: uniqueId('folder'), name, type: 'folder', children: [], modifiedAt: new Date() }
-  files.value = insertItems(files.value, parent?.id ?? null, [created])
-  selected.value = [created.id]
-}
-
-function onDelete(items: FileExplorerItem[]) {
-  const ids = new Set(items.map(item => item.id))
-  files.value = removeItems(files.value, ids)
-  selected.value = selected.value.filter(id => !ids.has(id))
-}
-
-function renameItem(items: FileExplorerItem[], id: string, name: string): FileExplorerItem[] {
-  return items.map((item) => {
-    if (item.id === id) return { ...item, name, modifiedAt: new Date() }
-    return item.children ? { ...item, children: renameItem(item.children, id, name) } : item
-  })
-}
-
-function onRename(item: FileExplorerItem, name: string) {
-  files.value = renameItem(files.value, item.id, name)
-}
-
-function createFolderHere() {
-  onCreateFolder(folder.value === null ? null : index.value.get(folder.value)?.item ?? null)
-}
-
-function duplicate(item: FileExplorerItem) {
-  const dot = item.name.lastIndexOf('.')
-  const name = dot > 0 ? `${item.name.slice(0, dot)} copy${item.name.slice(dot)}` : `${item.name} copy`
-  const copy: FileExplorerItem = { ...item, id: uniqueId('copy'), name, modifiedAt: new Date() }
-  files.value = insertItems(files.value, index.value.get(item.id)?.parentId ?? null, [copy])
-  selected.value = [copy.id]
-}
-
-function copyPath(item: FileExplorerItem) {
-  navigator.clipboard?.writeText(pathOf(item.id)).catch(() => {})
-}
-
-function download(item: FileExplorerItem) {
-  // The demo has no real file contents; download the preview text instead.
-  const url = URL.createObjectURL(new Blob([item.preview ?? ''], { type: item.mimeType ?? 'text/plain' }))
-  const link = document.createElement('a')
-  link.href = url
-  link.download = item.name
-  link.click()
-  URL.revokeObjectURL(url)
-}
-
-const lastOpened = ref('')
-function onOpen(item: FileExplorerItem) {
-  lastOpened.value = pathOf(item.id)
+  demo.value?.reset()
 }
 
 // --- Installation --------------------------------------------------------------
@@ -329,114 +64,68 @@ const installCommands = computed(() => {
 })
 
 const fileStructure = [
-  { name: 'FileExplorer.vue', note: 'state, navigation, uploads, context menu' },
-  { name: 'FileExplorerToolbar.vue', note: 'back/forward/up, breadcrumbs, filter, view, actions' },
-  { name: 'FileExplorerSidebar.vue', note: 'directory tree + stats' },
-  { name: 'FileExplorerContent.vue', note: 'grid and details views' },
-  { name: 'FileExplorerCard.vue', note: '' },
-  { name: 'FileExplorerRow.vue', note: '' },
-  { name: 'FileExplorerFileIcon.vue', note: '' },
-  { name: 'FileExplorerStatusBar.vue', note: '' },
-  { name: 'FileTree.vue', note: 'standalone recursive tree' },
-  { name: 'FileTreeRoot.vue', note: '' },
-  { name: 'FileTreeNode.vue', note: 'recursive tree item' },
-  { name: 'useFileExplorer*.ts', note: 'navigation, selection, keyboard, search, drag & drop' },
-  { name: 'context.ts · types.ts · utils.ts · variants.ts · index.ts', note: '' },
+  { name: 'FileExplorer.vue', note: 'state, navigation, operations, uploads, menus, dialogs' },
+  { name: 'FileExplorerToolbar.vue · FileExplorerBreadcrumbs.vue', note: 'navigation, search, sort, view, actions' },
+  { name: 'FileExplorerSidebar.vue', note: 'locations + directory tree' },
+  { name: 'FileExplorerContent.vue · Card.vue · Row.vue', note: 'grid and details views' },
+  { name: 'FileExplorerOperations.vue', note: 'progress, errors, retry, undo' },
+  { name: 'FileExplorerConflictDialog.vue · DeleteDialog.vue', note: 'replace / keep both / skip, confirmations' },
+  { name: 'FileExplorerMenuItems.vue · FileIcon.vue · StatusBar.vue · RenameInput.vue', note: '' },
+  { name: 'FileTree.vue · FileTreeRoot.vue · FileTreeNode.vue', note: 'recursive tree (also standalone)' },
+  { name: 'useFileExplorerCommands.ts', note: 'the action registry' },
+  { name: 'useFileExplorerOperations.ts · Conflicts · Loader · Actions', note: 'async, conflicts, lazy loading, rename & delete' },
+  { name: 'useFileExplorerNavigation · Selection · Keyboard · DragDrop · Search · Item', note: '' },
+  { name: 'messages.ts · columns.ts · context.ts · types.ts · utils.ts · variants.ts · index.ts', note: '' },
 ]
 
 // --- Live source code ------------------------------------------------------------
 
-const codeString = computed(() => {
-  const attrs = [
-    'v-model:folder="folder"',
-    'v-model:selected="selected"',
-    ':items="files"',
-  ]
-  if (view.value !== 'grid') attrs.push(`default-view="${view.value}"`)
-  if (!multiple.value) attrs.push(':multiple="false"')
-  if (!sidebar.value) attrs.push(':sidebar="false"')
-  if (draggable.value) attrs.push('draggable')
-  if (loading.value) attrs.push('loading')
-  if (draggable.value) attrs.push('@move="onMove"')
-  if (uploads.value) attrs.push('@upload="onUpload"', '@create-folder="onCreateFolder"', '@rename="onRename"', '@delete="onDelete"')
-  attrs.push('@open="openFile"', 'class="h-[560px]"')
-
-  const handlers = [
-    ...(draggable.value
-      ? [`function onMove({ items, target }: FileExplorerMoveEvent) {
-  // Persist the move, then update \`files\`.
-}`]
-      : []),
-    ...(uploads.value
-      ? [`function onUpload(uploaded: File[], folder: FileExplorerItem | null) {
-  // Send to your storage, then add the new items under \`folder\`.
-}
-
-function onCreateFolder(parent: FileExplorerItem | null) {}
-
-function onRename(item: FileExplorerItem, name: string) {}
-
-// Called after the user confirms in the dialog.
-function onDelete(items: FileExplorerItem[]) {}`]
-      : []),
-    `function openFile(item: FileExplorerItem) {
-  router.push(\`/editor/\${encodeURIComponent(item.id)}\`)
-}`,
-  ]
-
-  return `<script setup lang="ts">
+const codeString = computed(() => `<script setup lang="ts">
 import { ref } from 'vue'
 import {
   FileExplorer,
-  type FileExplorerItem,${draggable.value ? '\n  type FileExplorerMoveEvent,' : ''}
+  type FileExplorerItem,
+  type FileExplorerOperationContext,
+  type FileExplorerPasteEvent,
 } from '@/components/ui/file-explorer'
+import { api } from '@/lib/api' // your client — the explorer never calls it
 
-const files = ref<FileExplorerItem[]>([
-  {
-    id: 'components',
-    name: 'components',
-    type: 'folder',
-    children: [
-      {
-        id: 'components/ui',
-        name: 'ui',
-        type: 'folder',
-        children: [
-          {
-            id: 'components/ui/FileExplorer.vue',
-            name: 'FileExplorer.vue',
-            type: 'file',
-            size: 4300,
-            modifiedAt: '2026-09-27T09:40:00Z',
-            description: 'Vue 3 SFC',
-            preview: '<template>\\n  <FileExplorer v-model="active" />',
-          },
-          {
-            id: 'components/ui/hero-banner.png',
-            name: 'hero-banner.png',
-            type: 'file',
-            size: 1468006,
-            thumbnail: '/images/hero-banner.png',
-          },
-        ],
-      },
-    ],
-  },
-  { id: 'README.md', name: 'README.md', type: 'file', size: 3402 },
-])
-
-const folder = ref<string | null>('components/ui')
+const files = ref<FileExplorerItem[]>(await api.tree())
+const folder = ref<string | null>(null)
 const selected = ref<string[]>([])
 
-${handlers.join('\n\n')}
+// Every handler may return a promise: the explorer shows progress,
+// errors with Retry, Cancel (through context.signal) and Undo.
+async function onPaste(event: FileExplorerPasteEvent, context: FileExplorerOperationContext) {
+  await api.paste(event, { signal: context.signal, onProgress: context.progress })
+  files.value = await api.tree()
+}
+
+async function onTrash({ items }: { items: FileExplorerItem[] }) {
+  await api.trash(items.map(item => item.id))
+  files.value = await api.tree()
+  return { message: \`Moved \${items.length} to Trash\`, undo: () => api.restore(items.map(item => item.id)) }
+}
 <\/script>
 
 <template>
   <FileExplorer
-    ${attrs.join('\n    ')}
+    v-model:folder="folder"
+    v-model:selected="selected"
+    :items="files"${view.value !== 'grid' ? `\n    default-view="${view.value}"` : ''}${multiple.value ? '' : '\n    :multiple="false"'}${sidebar.value ? '' : '\n    :sidebar="false"'}${draggable.value ? '\n    draggable' : ''}${readonly.value ? '\n    readonly' : ''}${loading.value ? '\n    loading' : ''}
+    directory-upload
+    @upload="(files, folder, context) => api.upload(files, folder, context)"
+    @create-folder="parent => api.mkdir(parent)"
+    @rename="(item, name) => api.rename(item.id, name)"
+    @move="event => api.move(event)"
+    @paste="onPaste"
+    @trash="onTrash"
+    @download="({ items }) => api.download(items)"
+    @refresh="async () => (files.value = await api.tree())"
+    @open="item => router.push(\`/edit/\${item.id}\`)"
+    class="h-[560px]"
   />
-</template>`
-})
+</template>`)
 
 // --- Usage examples ----------------------------------------------------------------
 
@@ -444,10 +133,13 @@ ${handlers.join('\n\n')}
 const inlineCode = (text: string) =>
   text.split('`').map((part, i) => ({ text: part, code: i % 2 === 1 }))
 
-const examples = [
+interface Example { id: string, title: string, description: string, code: string }
+
+const examples: Example[] = [
   {
+    id: 'basic',
     title: 'Basic usage',
-    description: 'Pass a nested tree to `items`. Every item needs a stable, unique `id`, a `name` and a `type`; folders hold `children`. The explorer handles browsing, selection and keyboard navigation on its own. Give it a height and it fills it.',
+    description: 'Pass a nested tree to `items`. Every item needs a stable, unique `id`, a `name` and a `type`; folders hold `children`. Browsing, selection and keyboard navigation work on their own. Give the explorer a height and it fills it.',
     code: `<script setup lang="ts">
 import { FileExplorer, type FileExplorerItem } from '@/components/ui/file-explorer'
 
@@ -470,224 +162,421 @@ const files: FileExplorerItem[] = [
 </template>`,
   },
   {
-    title: 'Navigation',
-    description: 'The open folder is an id (or `null` for the root), bound with `v-model:folder`. Double-click or Enter opens a folder; Back, Forward and Up work like a browser history, and every breadcrumb is clickable. Sync it with the URL to make locations shareable.',
-    code: `<script setup lang="ts">
-const route = useRoute()
-const router = useRouter()
-
-const folder = computed({
-  get: () => (route.query.folder as string) ?? null,
-  set: id => router.push({ query: id ? { folder: id } : {} }),
-})
-<\/script>
-
-<template>
-  <FileExplorer v-model:folder="folder" :items="files" root-label="My Drive" />
+    id: 'events',
+    title: 'Events decide what exists',
+    description: 'The explorer emits intent; your application performs it and updates `items`. Listening to an event is what enables its action — the toolbar, the context menu, the shortcuts and the status bar all come from one action registry, so an action you do not handle never appears, and one the selection, permissions or read-only state forbid is disabled.',
+    code: `<template>
+  <FileExplorer
+    :items="files"
+    @upload="upload"
+    @create-folder="createFolder"
+    @create-file="createFile"
+    @rename="rename"
+    @move="move"
+    @paste="paste"
+    @duplicate="duplicate"
+    @download="download"
+    @preview="preview"
+    @open="open"
+    @trash="trash"
+    @restore="restore"
+    @delete-permanently="purge"
+    @empty-trash="emptyTrash"
+    @share="share"
+    @copy-link="copyLink"
+    @favorite="star"
+    @unfavorite="unstar"
+    @properties="showProperties"
+    @refresh="refresh"
+  />
 </template>`,
   },
   {
-    title: 'Selection and opening files',
-    description: 'Selection is a list of ids in the open folder. With `multiple` (on by default) it behaves like a desktop: Ctrl/Cmd-click toggles, Shift-click selects a range, clicking empty space clears. Double-clicking a file, pressing Enter or using the status bar emits `open`.',
+    id: 'async',
+    title: 'Async handlers and operation states',
+    description: 'Return a promise from any handler and the explorer tracks it: a progress bar in the operations panel and on the affected items, `aria-busy`, and a spinner on the refresh button. The last argument is a context with `progress(percent)` and an `AbortSignal`. Instant actions (rename, star, preview) stay silent unless they fail.',
     code: `<script setup lang="ts">
-const selected = ref<string[]>([])
+import type { FileExplorerItem, FileExplorerOperationContext } from '@/components/ui/file-explorer'
 
-function openFile(item: FileExplorerItem) {
-  router.push(\`/editor/\${encodeURIComponent(item.id)}\`)
+async function download({ items }: { items: FileExplorerItem[] }, context: FileExplorerOperationContext) {
+  const response = await fetch('/api/archive', {
+    method: 'POST',
+    body: JSON.stringify(items.map(item => item.id)),
+    signal: context.signal, // Cancel aborts the request
+  })
+  const reader = response.body!.getReader()
+  const total = Number(response.headers.get('content-length'))
+  let received = 0
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    received += value.length
+    context.progress((received / total) * 100)
+  }
+  // Saving the file is your call — the explorer never downloads anything.
 }
 <\/script>
 
 <template>
-  <FileExplorer v-model:selected="selected" :items="files" @open="openFile" />
+  <FileExplorer :items="files" @download="download" />
 </template>`,
   },
   {
-    title: 'Grid and details views',
-    description: 'The toolbar switches between cards and a details list; bind `v-model:view` to control or persist it. The details view sorts by name, modified date, type or size (`v-model:sort`), always keeping folders first.',
+    id: 'errors',
+    title: 'Errors, retry and cancellation',
+    description: 'A rejected promise is never swallowed: the operation turns into an error with the message you threw, Retry (which calls your handler again with the same arguments) and Dismiss, and `operation-error` fires for logging. For partial failures, resolve with `failed` — Retry then sends only what failed. Cancel aborts `context.signal`.',
     code: `<script setup lang="ts">
-import { useStorage } from '@vueuse/core'
-import type { FileExplorerSort, FileExplorerView } from '@/components/ui/file-explorer'
+async function upload(files: File[], folder: FileExplorerItem | null, context: FileExplorerUploadContext) {
+  const results = await Promise.allSettled(files.map((file, i) =>
+    storage.put(folder?.id ?? '', context.relativePaths[i] || file.name, file, { signal: context.signal })))
 
-const view = useStorage<FileExplorerView>('explorer-view', 'grid')
-const sort = ref<FileExplorerSort>({ key: 'modified', direction: 'desc' })
+  files.value = await storage.list()
+  return {
+    failed: results.flatMap((result, i) =>
+      result.status === 'rejected' ? [{ source: files[i], error: String(result.reason) }] : []),
+  }
+}
 <\/script>
 
 <template>
-  <FileExplorer v-model:view="view" v-model:sort="sort" :items="files" />
+  <FileExplorer :items="files" @upload="upload" @operation-error="op => logger.warn(op)" />
 </template>`,
   },
   {
-    title: 'Previews and metadata',
-    description: 'Cards show whatever the item carries: `size` and `modifiedAt` in the footer, `description` as the subtitle (defaults to the file type), and either a `thumbnail` image or a few lines of `preview` text. Folders summarize their contents. Use the `#preview` slot for anything else, e.g. a waveform or a PDF page.',
+    id: 'external-operations',
+    title: 'Your own operations',
+    description: 'When progress lives elsewhere (a resumable upload manager, a job queue), pass `operations` and listen to `cancel-operation`, `retry-operation` and `dismiss-operation`. Items listed in `itemIds` show the progress inline.',
     code: `<script setup lang="ts">
-const files: FileExplorerItem<{ url: string }>[] = [
-  {
-    id: 'useFileSystem.ts',
-    name: 'useFileSystem.ts',
-    type: 'file',
-    size: 2867,
-    modifiedAt: new Date(),
-    description: 'Composable hook',
-    preview: 'export const useFS = () =>\\n  return { readTree }',
-  },
-  {
-    id: 'hero.png',
-    name: 'hero.png',
-    type: 'file',
-    size: 1468006,
-    thumbnail: 'https://cdn.example.com/thumbs/hero.png',
-  },
-]
+import type { FileExplorerOperationState } from '@/components/ui/file-explorer'
+
+const operations = computed<FileExplorerOperationState[]>(() =>
+  uploads.value.map(upload => ({
+    id: upload.id,
+    type: 'upload',
+    status: upload.error ? 'error' : upload.done ? 'success' : 'running',
+    label: \`Uploading \${upload.name}\`,
+    progress: upload.percent,
+    error: upload.error,
+    itemIds: [upload.placeholderId],
+    cancelable: true,
+    retryable: true,
+  })))
 <\/script>
 
 <template>
-  <FileExplorer :items="files">
-    <template #preview="{ item }">
-      <AudioWaveform v-if="item.mimeType?.startsWith('audio/')" :src="item.data?.url" />
-    </template>
-  </FileExplorer>
+  <FileExplorer
+    :items="files"
+    :operations="operations"
+    @cancel-operation="op => uploader.cancel(op.id)"
+    @retry-operation="op => uploader.retry(op.id)"
+    @dismiss-operation="op => uploader.forget(op.id)"
+  />
 </template>`,
   },
   {
-    title: 'Uploads, new folders and deleting',
-    description: 'The explorer never touches storage. Pass `@upload`, `@create-folder` and `@delete` and the matching UI appears: the Upload button, the drop tile and desktop file drops for uploads; the New Folder button; the Delete key. Each handler receives the destination folder (`null` for the root) or the selected items.',
+    id: 'undo',
+    title: 'Undo and redo',
+    description: 'The explorer cannot reverse anything on your server, so it asks you how: return `{ undo }` from a handler and it offers Undo in the panel and on Ctrl/Cmd+Z. Whatever `undo` returns can carry its own `undo`, which becomes Redo (Ctrl/Cmd+Shift+Z or Ctrl+Y). `message` replaces the default success text.',
     code: `<script setup lang="ts">
-async function onUpload(uploaded: File[], folder: FileExplorerItem | null) {
-  await Promise.all(uploaded.map(file => storage.put(folder?.id ?? '', file)))
-  files.value = await storage.list()
+async function trash({ items }: FileExplorerItemsEvent) {
+  const ids = items.map(item => item.id)
+  await api.trash(ids)
+  files.value = await api.tree()
+  return {
+    message: \`Moved \${ids.length} items to Trash\`,
+    undo: async () => {
+      await api.restore(ids)
+      files.value = await api.tree()
+      return { undo: () => trash({ items }) } // redo
+    },
+  }
 }
+<\/script>`,
+  },
+  {
+    id: 'clipboard',
+    title: 'Copy, cut and paste',
+    description: 'Handling `@paste` enables Copy (Ctrl/Cmd+C), Cut (Ctrl/Cmd+X) and Paste (Ctrl/Cmd+V), from the keyboard, the context menu and on a folder ("paste into"). The clipboard is UI state — bind `v-model:clipboard` to share it between explorers. Cut items are dimmed until pasted. Paste goes into the open folder; pasting a folder into itself or a read-only folder is refused. `copy` and `cut` events tell you what was put on the clipboard.',
+    code: `<script setup lang="ts">
+import type { FileExplorerClipboard, FileExplorerPasteEvent } from '@/components/ui/file-explorer'
 
-async function onCreateFolder(parent: FileExplorerItem | null) {
-  await storage.mkdir(parent?.id ?? '', 'New folder')
-  files.value = await storage.list()
+const clipboard = ref<FileExplorerClipboard | null>(null)
+
+async function paste({ items, target, operation, conflicts }: FileExplorerPasteEvent, context: FileExplorerOperationContext) {
+  await (operation === 'cut' ? api.move : api.copy)({
+    ids: items.map(item => item.id),
+    to: target?.id ?? null,
+    // e.g. [{ conflict, action: 'keep-both', name: 'report (1).pdf' }]
+    conflicts: conflicts.map(({ conflict, action, name }) => ({ id: (conflict.source as FileExplorerItem).id, action, name })),
+  }, { signal: context.signal })
+  files.value = await api.tree()
 }
+<\/script>
 
-async function onDelete(items: FileExplorerItem[]) {
-  if (!confirm(\`Delete \${items.length} item(s)?\`)) return
-  await storage.remove(items.map(item => item.id))
-  files.value = await storage.list()
+<template>
+  <!-- Two panes sharing one clipboard -->
+  <FileExplorer v-model:clipboard="clipboard" :items="files" @paste="paste" />
+  <FileExplorer v-model:clipboard="clipboard" :items="files" @paste="paste" />
+</template>`,
+  },
+  {
+    id: 'conflicts',
+    title: 'Conflict resolution',
+    description: 'Before paste, move and upload, the explorer compares names with the destination and asks: Replace, Keep both (with a free name such as "report (1).pdf") or Skip, with "apply to all" for the rest; Cancel stops everything. Copying next to the original keeps both without asking. Your handler receives the choices in `conflicts`, and skipped items are left out. When your server finds conflicts the explorer cannot see, call `context.resolveConflicts()` from the handler — the same dialog answers.',
+    code: `<script setup lang="ts">
+async function move(event: FileExplorerMoveEvent, context: FileExplorerOperationContext) {
+  const { clashes } = await api.checkMove(event)
+  if (clashes.length) {
+    const choices = await context.resolveConflicts(clashes.map(clash => ({
+      name: clash.name,
+      source: event.items.find(item => item.id === clash.id)!,
+      destination: null,
+      target: event.target,
+      reason: clash.locked ? 'permission' : 'exists',
+    })))
+    if (!choices) return // the user canceled
+  }
+  await api.move(event)
+}
+<\/script>`,
+  },
+  {
+    id: 'download',
+    title: 'Download, duplicate, preview and open',
+    description: 'Download is a first-class action (toolbar, menu, status bar) for any selection, folders included when your server can archive them. Duplicate (Ctrl/Cmd+D) copies next to the originals. Open and preview are different things: `open` fires on double-click and Enter; `preview` is a quick look on Space. The explorer never renders files, runs them or downloads them itself — `isPotentiallyUnsafe(item)` flags executables so you can warn, and they get no Preview.',
+    code: `<script setup lang="ts">
+import { isPotentiallyUnsafe } from '@/components/ui/file-explorer'
+
+function open(item: FileExplorerItem) {
+  if (isPotentiallyUnsafe(item) && !confirm(\`\${item.name} is an application. Open it anyway?\`)) return
+  router.push(\`/files/\${item.id}\`)
 }
 <\/script>
 
 <template>
   <FileExplorer
     :items="files"
-    accept="image/*,.pdf"
-    @upload="onUpload"
-    @create-folder="onCreateFolder"
-    @delete="onDelete"
+    @open="open"
+    @preview="({ item }) => (quickLook = item)"
+    @download="({ items }) => api.download(items)"
+    @duplicate="({ items }) => api.duplicate(items)"
+  />
+  <MyQuickLook v-model:item="quickLook" />
+</template>`,
+  },
+  {
+    id: 'permissions',
+    title: 'Permissions and read-only',
+    description: 'Give items `permissions` — `read`, `write`, `delete`, `rename`, `move`, `copy`, `download`, `share`, all allowed unless set to `false`. Actions follow: a folder without `write` refuses uploads, new items, pastes and drops (and is marked while dragged over); a file without `rename` has no Rename. `readonly` hides every change at once. This shapes the UI only — enforce permissions on your server too.',
+    code: `const files: FileExplorerItem[] = [
+  {
+    id: 'shared',
+    name: 'Shared with me',
+    type: 'folder',
+    owner: 'Ada',
+    permissions: { write: false, delete: false, rename: false, move: false },
+    children: [
+      { id: 'shared/roadmap.xlsx', name: 'roadmap.xlsx', type: 'file', permissions: { download: false } },
+    ],
+  },
+]`,
+  },
+  {
+    id: 'trash',
+    title: 'Trash, restore and permanent delete',
+    description: 'With `@trash`, Delete moves items to the trash without asking (return `undo` to offer Undo). Items with `trashed: true` offer Restore and Delete permanently instead, and a `listing` with `trash: true` adds Empty Trash; both confirm first. Keep `@delete` too and Shift+Delete deletes permanently. Without `@trash`, Delete asks for confirmation and calls `@delete`.',
+    code: `<template>
+  <FileExplorer
+    v-model:location="location"
+    :items="files"
+    :listing="location === 'trash' ? { items: trashed, trash: true } : null"
+    :locations="[{ locations: [{ id: 'trash', label: 'Trash', icon: Trash2, trash: true }] }]"
+    @trash="({ items }) => api.trash(items)"
+    @restore="({ items }) => api.restore(items)"
+    @delete-permanently="({ items }) => api.purge(items)"
+    @empty-trash="() => api.emptyTrash()"
   />
 </template>`,
   },
   {
-    title: 'Renaming',
-    description: 'Pass `@rename` to enable inline renaming: F2, or `rename()` from the context menu, turns the name into an input with the base name selected. Enter or clicking away commits, Esc cancels. Empty names, slashes and duplicates in the same folder are refused with an inline message; add your own rules with `validate-name`. The handler receives the item and the trimmed new name.',
-    code: `<script setup lang="ts">
-async function onRename(item: FileExplorerItem, name: string) {
-  await storage.rename(item.id, name)
-  files.value = await storage.list()
-}
-
-const validateName = (name: string) =>
-  /[<>:"|?*]/.test(name) ? 'Names cannot contain < > : " | ? *' : undefined
-<\/script>
-
-<template>
-  <FileExplorer :items="files" :validate-name="validateName" @rename="onRename" />
+    id: 'favorites',
+    title: 'Favorites',
+    description: 'Pass the starred ids as `favorites` and listen to `favorite` / `unfavorite`. Starred items show a star, and the menu offers Add to or Remove from Starred. Nothing on the item is mutated.',
+    code: `<template>
+  <FileExplorer
+    :items="files"
+    :favorites="starred"
+    @favorite="({ items }) => starred.push(...items.map(item => item.id))"
+    @unfavorite="({ items }) => (starred = starred.filter(id => !items.some(item => item.id === id)))"
+  />
 </template>`,
   },
   {
-    title: 'Confirming deletes',
-    description: 'Delete — the key, `remove()` from the context menu or the exposed `remove(ids)` — opens a confirmation dialog that names the file, or counts the items and folders involved. Cancel has focus, so Enter never deletes by accident. `@delete` runs only once the user confirms. Reword the message with `#delete-description`, or turn the dialog off with `:confirm-delete="false"` when your app has its own undo or trash.',
+    id: 'locations',
+    title: 'Sidebar locations and listings',
+    description: 'Sections above the directory tree come from `locations`. An entry with `folder` is a shortcut to a folder (`null` is the root). Any other entry sets `v-model:location`, and you show its items through `listing` — Recent, Starred, Shared with me, a search, a storage provider. Listings are flat and may contain items from anywhere; entries with `trash` accept drops that move items to the trash.',
     code: `<script setup lang="ts">
-async function onDelete(items: FileExplorerItem[]) {
-  await storage.moveToTrash(items.map(item => item.id))
-  files.value = await storage.list()
+import { Clock, House, Star, Trash2 } from 'lucide-vue-next'
+
+const location = ref<string | null>(null)
+const locations = [
+  { label: 'Quick access', locations: [
+    { id: 'home', label: 'Home', icon: House, folder: null },
+    { id: 'recent', label: 'Recent', icon: Clock },
+    { id: 'starred', label: 'Starred', icon: Star },
+    { id: 'trash', label: 'Trash', icon: Trash2, trash: true },
+  ] },
+  { label: 'Locations', locations: [
+    { id: 'drive', label: 'My Drive', folder: 'drive-root' },
+    { id: 'team', label: 'Team Drive', folder: 'team-root' },
+  ] },
+]
+
+const { data: listing, pending } = useAsyncData(
+  () => (location.value ? api.listing(location.value) : Promise.resolve(null)),
+  { watch: [location] },
+)
+<\/script>
+
+<template>
+  <FileExplorer v-model:location="location" :items="files" :locations="locations" :listing="listing" :loading="pending" />
+</template>`,
+  },
+  {
+    id: 'lazy',
+    title: 'Lazy loading large trees',
+    description: 'You never need the whole filesystem in memory. With `@load-children`, a folder whose `children` is `undefined` is loaded when it is opened or expanded in the tree (one call, shared by both). A spinner shows while it loads; a rejected promise shows the error with Retry. Set `hasChildren: false` on folders known to be empty so they show no chevron.',
+    code: `<script setup lang="ts">
+const files = ref<FileExplorerItem[]>(await api.list(null)) // top level only
+
+async function loadChildren(folder: FileExplorerItem, context: FileExplorerOperationContext) {
+  const children = await api.list(folder.id, { signal: context.signal })
+  files.value = setChildren(files.value, folder.id, children) // your immutable update
 }
 <\/script>
 
 <template>
-  <FileExplorer :items="files" @delete="onDelete">
-    <template #delete-description="{ items }">
-      {{ items.length === 1 ? 'It' : 'They' }} will be moved to the trash for 30 days.
+  <FileExplorer :items="files" @load-children="loadChildren" />
+</template>`,
+  },
+  {
+    id: 'pagination',
+    title: 'Pagination and infinite loading',
+    description: 'For huge folders, load a page and set `hasMore` and `cursor` on the folder (or on the `listing`). The next page loads when the end scrolls into view, or with the Load more button; errors pause loading until Retry. Cards and rows use `content-visibility`, so long folders stay cheap to render.',
+    code: `<script setup lang="ts">
+async function loadMore({ folder, cursor }: FileExplorerLoadMoreEvent) {
+  const page = await api.list(folder?.id ?? null, { cursor })
+  files.value = appendChildren(files.value, folder?.id ?? null, page.items, {
+    hasMore: page.next !== null,
+    cursor: page.next,
+  })
+}
+<\/script>
+
+<template>
+  <FileExplorer :items="files" @load-more="loadMore" />
+</template>`,
+  },
+  {
+    id: 'remote-search',
+    title: 'Remote search',
+    description: 'By default the search box filters the open folder by name. With `remote-search`, it calls `@search` instead (after `search-debounce` ms, 300 by default; set 0 to debounce yourself) and shows a loading state while your handler runs and an error with Retry if it throws. Show the results through `listing`; an empty query means the search was cleared.',
+    code: `<script setup lang="ts">
+const results = ref<FileExplorerListing | null>(null)
+
+async function search({ query, folder }: FileExplorerSearchEvent, context: FileExplorerOperationContext) {
+  results.value = query
+    ? { label: \`Results for “\${query}”\`, items: await api.search(query, { within: folder?.id, signal: context.signal }) }
+    : null
+}
+<\/script>
+
+<template>
+  <FileExplorer :items="files" :listing="results" remote-search @search="search" />
+</template>`,
+  },
+  {
+    id: 'columns',
+    title: 'Details view columns',
+    description: 'Choose built-in columns — `name`, `modified`, `created`, `accessed`, `type`, `size`, `owner`, `permissions` — or add your own with a `value` (to sort by) and `format` (to display); the `#cell` slot renders custom columns any way you like. Columns sort from their header or the toolbar Sort menu. Name, size and `pinned` columns stay on narrow explorers.',
+    code: `<script setup lang="ts">
+const columns = [
+  'name',
+  'owner',
+  'modified',
+  { key: 'version', label: 'Version', width: '5rem', value: (item: FileExplorerItem<Meta>) => item.data?.version },
+  { key: 'status', label: 'Sync', width: '6rem', pinned: true },
+  'size',
+]
+<\/script>
+
+<template>
+  <FileExplorer :items="files" :columns="columns" default-view="list">
+    <template #cell="{ item, column }">
+      <SyncBadge v-if="column.key === 'status'" :state="item.data?.sync" />
     </template>
   </FileExplorer>
 </template>`,
   },
   {
-    title: 'Context menu',
-    description: 'Fill the `#context-menu` slot with shadcn-vue `ContextMenuItem`s. It opens for cards, rows, directory tree folders and the empty area (`item` is `null` there). Right-clicking outside the selection selects that item first. The scope also has `rename()` and `remove()`, which start the built-in inline rename and confirmed delete once the menu has closed.',
+    id: 'menu',
+    title: 'Context menu and action availability',
+    description: 'Right-click (or long-press, or the Menu key) opens a built-in menu with every action available for the item, the selection or the empty area. Replace it with the `#context-menu` slot: the scope carries the resolved `actions` (render some, add your own), plus `rename()`, `remove()` and `defer()` — the last runs your own entry once the menu has closed, which dialogs need. The exposed `getActions(ids)` returns the same list, e.g. for a command palette.',
     code: `<script setup lang="ts">
 import { ContextMenuItem, ContextMenuSeparator } from '@/components/ui/context-menu'
 <\/script>
 
 <template>
-  <FileExplorer :items="files">
-    <template #context-menu="{ item, rename, remove }">
-      <template v-if="item">
-        <ContextMenuItem @select="rename">Rename</ContextMenuItem>
-        <ContextMenuItem @select="copyLink(item)">Copy link</ContextMenuItem>
-        <ContextMenuSeparator />
-        <ContextMenuItem variant="destructive" @select="remove">Delete</ContextMenuItem>
-      </template>
-      <ContextMenuItem v-else @select="createFolder">New folder</ContextMenuItem>
+  <FileExplorer ref="explorer" :items="files" @paste="paste" @download="download">
+    <template #context-menu="{ item, actions, defer }">
+      <ContextMenuItem v-for="action in actions" :key="action.id" :disabled="action.disabled" @select="action.run()">
+        <component :is="action.icon" /> {{ action.label }}
+      </ContextMenuItem>
+      <ContextMenuSeparator />
+      <ContextMenuItem v-if="item" @select="defer(() => openVersionHistory(item))">Version history…</ContextMenuItem>
     </template>
   </FileExplorer>
 </template>`,
   },
   {
-    title: 'Drag and drop',
-    description: 'With `draggable`, cards and rows can be dropped onto folder cards, folders in the directory tree or any breadcrumb. Dragging a selected item drags the whole selection; hovering a closed tree folder opens it. The explorer emits `move` and leaves the data to you.',
+    id: 'upload',
+    title: 'Uploads',
+    description: '`@upload` enables the Upload button, the drop tile and dropping files from the desktop; `directory-upload` adds Upload folder and walks dropped folders, handing you `context.relativePaths`. `accept` and `max-file-size` are enforced for picked and dropped files alike, and rejected files are reported. Name clashes go through the conflict dialog first.',
+    code: `<template>
+  <FileExplorer
+    :items="files"
+    accept="image/*,.pdf"
+    :max-file-size="50 * 1024 * 1024"
+    directory-upload
+    @upload="(files, folder, context) => storage.upload(files, folder, context)"
+  />
+</template>`,
+  },
+  {
+    id: 'i18n',
+    title: 'Translations and RTL',
+    description: 'Every visible string — buttons, menus, dialogs, empty states, errors, operation labels — comes from `messages`; pass the ones you want to change. Strings that depend on counts or names are functions, so plurals stay correct. Set `dir="rtl"` (or use Reka\'s `ConfigProvider`) and arrows, indentation, breadcrumbs and menus mirror.',
     code: `<script setup lang="ts">
-async function onMove({ items, target }: FileExplorerMoveEvent) {
-  await storage.move(items.map(item => item.id), target?.id ?? '')
-  files.value = await storage.list()
+import type { FileExplorerMessages } from '@/components/ui/file-explorer'
+
+const messages: Partial<FileExplorerMessages> = {
+  newFolder: 'Nouveau dossier',
+  upload: 'Téléverser',
+  items: count => \`\${count} élément\${count > 1 ? 's' : ''}\`,
+  deleteTitle: items => \`Supprimer \${items.length} élément(s) ?\`,
 }
 <\/script>
 
 <template>
-  <FileExplorer :items="files" draggable @move="onMove" />
+  <FileExplorer :items="files" :messages="messages" dir="rtl" />
 </template>`,
   },
   {
-    title: 'Toolbar and status bar',
-    description: 'Add buttons to the toolbar with `#toolbar-actions`, and replace the status bar actions (an Open File link by default) with `#status-actions`, which receives the selected items.',
-    code: `<template>
-  <FileExplorer :items="files">
-    <template #toolbar-actions>
-      <Button size="sm" variant="ghost" @click="refresh">Refresh</Button>
-    </template>
-
-    <template #status-actions="{ items }">
-      <button v-if="items.length === 1" @click="download(items[0])">Download</button>
-    </template>
-  </FileExplorer>
-</template>`,
-  },
-  {
-    title: 'Empty and loading states',
-    description: '`loading` shows skeleton cards (or rows) and sets `aria-busy`. Empty folders and filters without matches show a message you can replace with the `#empty` slot.',
-    code: `<script setup lang="ts">
-const { data: files, pending } = await useFetch<FileExplorerItem[]>('/api/files', { default: () => [] })
-<\/script>
-
-<template>
-  <FileExplorer :items="files" :loading="pending">
-    <template #empty="{ query }">
-      <p v-if="query">Nothing called “{{ query }}” here.</p>
-      <p v-else>Nothing here yet — drop files to get started.</p>
-    </template>
-  </FileExplorer>
-</template>`,
-  },
-  {
+    id: 'file-tree',
     title: 'FileTree on its own',
-    description: 'The directory tree is exported as `FileTree`: a recursive, accessible tree built on Reka UI with id-based `v-model:selected` and `v-model:expanded`, search that reveals matches, item slots, a context menu and drag and drop. Use it for editor sidebars and navigation.',
+    description: 'The directory tree is exported as `FileTree`: recursive, WAI-ARIA tree semantics through Reka UI, id-based `v-model:selected` and `v-model:expanded`, search that reveals matches, inline rename, confirmed delete, lazy `@load-children`, a context menu and drag and drop.',
     code: `<script setup lang="ts">
-import { FileTree, formatBytes } from '@/components/ui/file-explorer'
-
-const selected = ref<string[]>([])
-const expanded = ref<string[]>(['src'])
+import { FileTree } from '@/components/ui/file-explorer'
 <\/script>
 
 <template>
@@ -696,12 +585,10 @@ const expanded = ref<string[]>(['src'])
     v-model:expanded="expanded"
     :items="files"
     searchable
+    @rename="(item, name) => api.rename(item.id, name)"
+    @load-children="folder => api.loadChildren(folder)"
     class="h-80"
-  >
-    <template #actions="{ item }">
-      <span class="opacity-0 group-hover/row:opacity-100">{{ formatBytes(item.size) }}</span>
-    </template>
-  </FileTree>
+  />
 </template>`,
   },
 ]
@@ -709,99 +596,128 @@ const expanded = ref<string[]>(['src'])
 // --- API reference -----------------------------------------------------------------
 
 const props = [
-  { name: 'items', type: 'FileExplorerItem<TData>[]', default: '[]', description: 'The whole tree. Never mutated.' },
-  { name: 'folder', type: 'string | null', default: 'null', description: 'Open folder id, null for the root. Bind with v-model:folder. Unknown ids fall back to the root.' },
-  { name: 'defaultFolder', type: 'string | null', default: 'null', description: 'Initial folder when folder is not bound.' },
-  { name: 'selected', type: 'string[]', default: '—', description: 'Selected ids. Bind with v-model:selected. Cleared when the folder changes.' },
-  { name: 'defaultSelected', type: 'string[]', default: '[]', description: 'Initial selection when selected is not bound.' },
-  { name: 'view', type: '"grid" | "list"', default: '"grid"', description: 'Bind with v-model:view.' },
-  { name: 'defaultView', type: '"grid" | "list"', default: '"grid"', description: 'Initial view when view is not bound.' },
-  { name: 'search', type: 'string', default: '""', description: 'Filters the open folder by name. Bind with v-model:search. Cleared on navigation.' },
-  { name: 'sort', type: 'FileExplorerSort', default: '{ key: "name", direction: "asc" }', description: 'Bind with v-model:sort. Folders always come first.' },
-  { name: 'multiple', type: 'boolean', default: 'true', description: 'Ctrl/Cmd-click, Shift-click, Shift+Arrow and Ctrl/Cmd+A multi-selection.' },
-  { name: 'draggable', type: 'boolean', default: 'false', description: 'Enables drag and drop onto folders, the tree and breadcrumbs. Listen to move.' },
-  { name: 'sidebar', type: 'boolean', default: 'true', description: 'Shows the directory tree when the explorer is at least 48rem wide.' },
-  { name: 'loading', type: 'boolean', default: 'false', description: 'Skeleton cards or rows, and aria-busy.' },
-  { name: 'disabled', type: 'boolean', default: 'false', description: 'Disables every interaction.' },
-  { name: 'rootLabel', type: 'string', default: '"root"', description: 'Name of the root in the breadcrumbs.' },
-  { name: 'accept', type: 'string', default: '—', description: 'accept attribute of the upload picker.' },
-  { name: 'validateName', type: '(name, item) => string | undefined', default: '—', description: 'Extra checks for renames. Return an error message to refuse a name.' },
-  { name: 'confirmDelete', type: 'boolean', default: 'true', description: 'Ask for confirmation in a dialog before calling the delete handler.' },
-  { name: 'getIcon', type: 'FileExplorerIconResolver<TData>', default: '—', description: 'Returns an icon component per item; undefined keeps the default type tile.' },
-  { name: 'label', type: 'string', default: '"Files"', description: 'Accessible name of the item list.' },
-  { name: 'class', type: 'HTMLAttributes["class"]', default: '—', description: 'Classes for the root. Give it a height.' },
+  { name: 'items', type: 'FileExplorerItem<TData>[]', default: '[]', description: 'The tree. Never mutated.' },
+  { name: 'folder', type: 'string | null', default: 'null', description: 'Open folder id (null is the root). v-model:folder.' },
+  { name: 'selected', type: 'string[]', default: '[]', description: 'Selected ids. v-model:selected.' },
+  { name: 'view', type: '"grid" | "list"', default: '"grid"', description: 'v-model:view.' },
+  { name: 'sort', type: 'FileExplorerSort', default: '{ key: "name", direction: "asc" }', description: 'v-model:sort. Folders always first.' },
+  { name: 'search', type: 'string', default: '""', description: 'v-model:search. Filters the open folder, or runs @search with remote-search.' },
+  { name: 'clipboard', type: 'FileExplorerClipboard | null', default: 'null', description: 'v-model:clipboard. Share it between explorers.' },
+  { name: 'location', type: 'string | null', default: 'null', description: 'Active sidebar location without a folder. v-model:location.' },
+  { name: 'listing', type: 'FileExplorerListing | null', default: 'null', description: 'Flat items shown instead of the open folder: Recent, Starred, Trash, search results.' },
+  { name: 'locations', type: 'FileExplorerLocationSection[]', default: '[]', description: 'Sidebar sections above the directory tree.' },
+  { name: 'operations', type: 'FileExplorerOperationState[]', default: '—', description: 'Your own operations, shown with the explorer\'s.' },
+  { name: 'columns', type: '(FileExplorerColumnKey | FileExplorerColumn)[]', default: 'name, modified, type, size', description: 'Details view columns.' },
+  { name: 'favorites', type: 'string[]', default: '—', description: 'Starred ids.' },
+  { name: 'multiple', type: 'boolean', default: 'true', description: 'Multi-selection.' },
+  { name: 'draggable', type: 'boolean', default: 'false', description: 'Drag and drop between folders, the tree, breadcrumbs and Trash.' },
+  { name: 'sidebar', type: 'boolean', default: 'true', description: 'Locations and directory tree (an overlay on narrow explorers).' },
+  { name: 'readonly', type: 'boolean', default: 'false', description: 'Hides every action that changes data.' },
+  { name: 'loading', type: 'boolean', default: 'false', description: 'Skeletons and aria-busy.' },
+  { name: 'disabled', type: 'boolean', default: 'false', description: 'Disables everything.' },
+  { name: 'accept', type: 'string', default: '—', description: 'Accepted uploads, for picked and dropped files.' },
+  { name: 'maxFileSize', type: 'number', default: '—', description: 'Largest accepted upload, in bytes.' },
+  { name: 'directoryUpload', type: 'boolean', default: 'false', description: 'Upload folder, and dropped folders.' },
+  { name: 'remoteSearch', type: 'boolean', default: 'false', description: 'Search with @search instead of filtering.' },
+  { name: 'searchDebounce', type: 'number', default: '300', description: 'Delay before @search, in ms.' },
+  { name: 'confirmDelete', type: 'boolean', default: 'true', description: 'Confirm deletes in a dialog.' },
+  { name: 'validateName', type: '(name, item) => string | undefined', default: '—', description: 'Extra rename checks.' },
+  { name: 'getIcon', type: 'FileExplorerIconResolver', default: '—', description: 'Custom icons.' },
+  { name: 'messages', type: 'Partial<FileExplorerMessages>', default: '—', description: 'Every user-facing string.' },
+  { name: 'dir', type: '"ltr" | "rtl"', default: 'inherited', description: 'Reading direction.' },
+  { name: 'rootLabel · label · class', type: 'string', default: '"root" · "Files"', description: 'Breadcrumb root, list accessible name, root classes.' },
 ]
 
 const itemProps = [
-  { name: 'id', type: 'string', description: 'Required. Stable and unique across the whole tree — never the name or an index.' },
-  { name: 'name', type: 'string', description: 'Required. Displayed, filtered, sorted and used for type-ahead.' },
-  { name: 'type', type: '"file" | "folder"', description: 'Required.' },
-  { name: 'children', type: 'FileExplorerItem<TData>[]', description: 'A folder\'s contents. Omit or [] for an empty folder.' },
-  { name: 'size', type: 'number', description: 'Bytes. Shown on cards, rows and in the status bar; used for sorting.' },
-  { name: 'modifiedAt', type: 'Date | string', description: 'Shown as “10m ago”; used for sorting.' },
-  { name: 'description', type: 'string', description: 'Card subtitle and details “Type” column. Defaults to the file type.' },
-  { name: 'preview', type: 'string', description: 'The first lines are shown on the card with light syntax coloring.' },
-  { name: 'thumbnail', type: 'string', description: 'Image URL shown on the card instead of preview.' },
-  { name: 'mimeType', type: 'string', description: 'Shown in the status bar.' },
-  { name: 'extension', type: 'string', description: 'Overrides the extension parsed from name.' },
-  { name: 'disabled', type: 'boolean', description: 'Visible but cannot be selected, opened or dragged.' },
-  { name: 'data', type: 'TData', description: 'Your own metadata, typed in slots and events.' },
+  { name: 'id · name · type', type: 'string · string · "file" | "folder"', description: 'Required. Ids are stable and unique across the tree.' },
+  { name: 'children', type: 'FileExplorerItem[]', description: 'A folder\'s contents. With @load-children, undefined means "not loaded".' },
+  { name: 'hasChildren · hasMore · cursor', type: 'boolean · boolean · unknown', description: 'Lazy loading and pagination.' },
+  { name: 'size', type: 'number', description: 'Bytes.' },
+  { name: 'createdAt · modifiedAt · accessedAt', type: 'Date | string', description: 'Shown relative; used for sorting.' },
+  { name: 'owner · mimeType · extension', type: 'string', description: 'Metadata for columns, icons and the status bar.' },
+  { name: 'description · preview · thumbnail', type: 'string', description: 'Card subtitle, text preview, image URL.' },
+  { name: 'permissions', type: 'FileExplorerPermissions', description: 'read, write, delete, rename, move, copy, download, share.' },
+  { name: 'trashed · disabled', type: 'boolean', description: 'In the trash; not interactive.' },
+  { name: 'data', type: 'TData', description: 'Your metadata, typed everywhere.' },
 ]
 
 const events = [
-  { name: 'update:folder', payload: 'string | null', description: 'The open folder changed.' },
-  { name: 'update:selected', payload: 'string[]', description: 'The selection changed.' },
-  { name: 'update:view', payload: '"grid" | "list"', description: 'The view was switched.' },
-  { name: 'update:search', payload: 'string', description: 'The filter changed.' },
-  { name: 'update:sort', payload: 'FileExplorerSort', description: 'A details column header was clicked.' },
-  { name: 'open', payload: 'FileExplorerItem<TData>', description: 'A file was opened (double-click, Enter or Open File).' },
-  { name: 'move', payload: 'FileExplorerMoveEvent<TData>', description: '{ items, target } after a drop; target is null for the root breadcrumb.' },
-  { name: 'upload', payload: '(files: File[], folder) => void', description: 'Handler. Enables the Upload button, drop tile and desktop drops.' },
-  { name: 'create-folder', payload: '(parent) => void', description: 'Handler. Enables the New Folder button.' },
-  { name: 'rename', payload: '(item, name) => void', description: 'Handler. Enables inline renaming (F2 and rename() in the context menu).' },
-  { name: 'delete', payload: '(items) => void', description: 'Handler. Called after the confirmation dialog, for the Delete key or remove() in the context menu.' },
+  { name: 'upload', payload: '(files, folder, context)', description: 'Picked or dropped files. context has relativePaths and conflicts.' },
+  { name: 'create-folder · create-file', payload: '(parent, context)', description: 'Return { rename: id } to rename the new item.' },
+  { name: 'rename', payload: '(item, name, context)', description: 'Inline rename (F2).' },
+  { name: 'move', payload: '({ items, target, conflicts }, context)', description: 'Drag and drop.' },
+  { name: 'paste', payload: '({ items, target, operation, conflicts }, context)', description: 'Enables Copy, Cut and Paste.' },
+  { name: 'duplicate · download · share · copy-link · properties', payload: '({ items }, context)', description: 'Actions on the selection.' },
+  { name: 'preview', payload: '({ item }, context)', description: 'Quick look (Space).' },
+  { name: 'open', payload: 'item', description: 'Double-click, Enter, status bar.' },
+  { name: 'delete', payload: '(items, context)', description: 'After confirmation. Shift+Delete when @trash is also set.' },
+  { name: 'trash · restore · delete-permanently', payload: '({ items }, context)', description: 'Trash workflow.' },
+  { name: 'empty-trash', payload: '({ folder }, context)', description: 'From a trash listing, after confirmation.' },
+  { name: 'favorite · unfavorite', payload: '({ items }, context)', description: 'Starring.' },
+  { name: 'refresh', payload: '({ folder }, context)', description: 'Toolbar refresh.' },
+  { name: 'load-children', payload: '(folder, context)', description: 'Lazy folders.' },
+  { name: 'load-more', payload: '({ folder, cursor }, context)', description: 'Next page.' },
+  { name: 'search', payload: '({ query, folder }, context)', description: 'With remote-search.' },
+  { name: 'copy · cut', payload: '{ items }', description: 'Items put on the clipboard.' },
+  { name: 'cancel-operation · retry-operation · dismiss-operation', payload: 'FileExplorerOperationState', description: 'For your own operations.' },
+  { name: 'operation-error', payload: 'FileExplorerOperationState', description: 'One of the explorer\'s operations failed.' },
+  { name: 'update:*', payload: 'folder, selected, view, sort, search, clipboard, location', description: 'v-model updates.' },
+]
+
+const results = [
+  { name: 'select', type: 'string[]', description: 'Select and focus these ids once they appear in items.' },
+  { name: 'rename', type: 'string', description: 'Start renaming this id once it appears.' },
+  { name: 'undo', type: '() => FileExplorerHandlerResult', description: 'Offer Undo; its own result may carry undo (Redo).' },
+  { name: 'message', type: 'string', description: 'Success text in the operations panel.' },
+  { name: 'failed', type: '{ source, error }[]', description: 'Partial failure; Retry sends only these.' },
 ]
 
 const slots = [
-  { name: '#preview', payload: '{ item }', description: 'The preview area of a card.' },
-  { name: '#context-menu', payload: '{ item, rename, remove }', description: 'Context menu entries; enables the menu. rename() and remove() run the built-in actions.' },
-  { name: '#delete-description', payload: '{ items }', description: 'Body of the delete confirmation dialog.' },
-  { name: '#empty', payload: '{ query }', description: 'Empty folder or filter without matches.' },
+  { name: '#context-menu', payload: '{ item, actions, rename, remove, defer }', description: 'Replaces the built-in menu.' },
+  { name: '#preview', payload: '{ item }', description: 'A card\'s preview area.' },
+  { name: '#cell', payload: '{ item, column }', description: 'Custom details columns.' },
+  { name: '#empty', payload: '{ query }', description: 'Empty folder or no matches.' },
+  { name: '#delete-description', payload: '{ items }', description: 'Delete confirmation text.' },
   { name: '#toolbar-actions', payload: '—', description: 'Extra toolbar buttons.' },
-  { name: '#status-actions', payload: '{ items }', description: 'Right side of the status bar.' },
+  { name: '#status-actions', payload: '{ items, actions }', description: 'Status bar actions.' },
+]
+
+const exposed = [
+  { name: 'rename(id) · remove(ids)', description: 'Inline rename; delete through the dialog.' },
+  { name: 'copy(ids) · cut(ids) · paste(folderId?)', description: 'Clipboard.' },
+  { name: 'undo() · redo() · refresh()', description: 'History and reload.' },
+  { name: 'resolveConflicts(conflicts)', description: 'Open the conflict dialog yourself.' },
+  { name: 'getActions(ids?)', description: 'Available actions, for command palettes.' },
+  { name: 'operations', description: 'Every operation currently shown.' },
 ]
 
 const keyboard = [
-  { keys: ['← → ↑ ↓'], description: 'Move between items (in two dimensions in the grid) and select.' },
-  { keys: ['Shift', 'Arrows'], description: 'Extend the selection from the anchor.' },
-  { keys: ['Ctrl / ⌘', 'Arrows'], description: 'Move focus without selecting; Space then toggles.' },
+  { keys: ['← → ↑ ↓'], description: 'Move (two-dimensional in the grid, mirrored in RTL) and select.' },
+  { keys: ['Shift', 'Arrows'], description: 'Extend the selection.' },
+  { keys: ['Ctrl / ⌘', 'Arrows'], description: 'Move focus only; Ctrl/⌘+Space toggles.' },
   { keys: ['Home', 'End'], description: 'First / last item.' },
-  { keys: ['Enter'], description: 'Open a folder, or emit open for a file.' },
-  { keys: ['Backspace'], description: 'Up to the parent folder, selecting the folder you left.' },
-  { keys: ['Alt', '← / → / ↑'], description: 'Back, forward, up.' },
-  { keys: ['Ctrl / ⌘', 'A'], description: 'Select everything in the folder.' },
-  { keys: ['Space'], description: 'Toggle the focused item in the selection.' },
-  { keys: ['Esc'], description: 'Clear the selection (or the filter, in the filter field).' },
-  { keys: ['F2'], description: 'Rename the focused item inline (Enter to save, Esc to cancel).' },
-  { keys: ['Delete'], description: 'Delete the selection, after confirmation.' },
-  { keys: ['a–z'], description: 'Jump to the next item whose name starts with the typed text.' },
+  { keys: ['Enter'], description: 'Open.' },
+  { keys: ['Space'], description: 'Preview (with @preview), else toggle selection.' },
+  { keys: ['Alt', 'Enter'], description: 'Properties.' },
+  { keys: ['F2'], description: 'Rename.' },
+  { keys: ['Ctrl / ⌘', 'C · X · V'], description: 'Copy, cut, paste.' },
+  { keys: ['Ctrl / ⌘', 'D'], description: 'Duplicate.' },
+  { keys: ['Delete', '⌘⌫'], description: 'Move to trash, or delete after confirmation.' },
+  { keys: ['Shift', 'Delete'], description: 'Delete permanently.' },
+  { keys: ['Ctrl / ⌘', 'Z'], description: 'Undo. Ctrl+Y or Ctrl/⌘+Shift+Z redo.' },
+  { keys: ['Ctrl / ⌘', 'A'], description: 'Select all.' },
+  { keys: ['Backspace', 'Alt ↑'], description: 'Up, selecting the folder you left.' },
+  { keys: ['Alt', '← / →'], description: 'Back, forward.' },
+  { keys: ['Esc'], description: 'Clear the selection.' },
+  { keys: ['a–z'], description: 'Type-ahead.' },
 ]
 
-const types = [
-  { name: 'FileExplorerItem<TData>', description: 'A node of the tree.' },
-  { name: 'FileExplorerView · FileExplorerSort', description: '"grid" | "list", and { key, direction }.' },
-  { name: 'FileExplorerMoveEvent<TData>', description: 'Payload of move.' },
-  { name: 'FileExplorerProps / Emits / Slots', description: 'The explorer contract, for wrappers.' },
-  { name: 'FileTree · FileTreeProps / Emits / Slots', description: 'The standalone tree and its contract. It supports the same rename and delete handlers.' },
-  { name: 'FileExplorerContextMenuSlotProps', description: '{ item, rename, remove }.' },
-  { name: 'validateItemName(index, items, item, name)', description: 'The built-in name checks, for server-side reuse.' },
-  { name: 'ref.rename(id) · ref.remove(ids)', description: 'Exposed on a template ref, e.g. for toolbar buttons.' },
-  { name: 'formatBytes(bytes)', description: '1536 → "1.5 KB".' },
-  { name: 'formatRelativeTime(date, now?)', description: '"just now", "10m ago", "3d ago".' },
-  { name: 'getFileKind(item)', description: '{ label, badge, tone } used for tiles and the type column.' },
-  { name: 'sortFileItems(items, sort)', description: 'Folders first, then by key, then by name.' },
-  { name: 'indexFileTree(items)', description: 'Map of id → { item, parentId, depth }, for paths and parents.' },
-  { name: 'filterFileTree(items, query)', description: 'The tree search as a pure function.' },
+const migration = [
+  'Handlers get a trailing context argument (signal, progress, resolveConflicts). Existing handlers keep working.',
+  'move is now a handler: @move="fn" is unchanged in templates, and the payload gains conflicts. wrapper.emitted("move") no longer records it in tests.',
+  'The status bar\'s default action reads "Open" (it was "Open File"), and the New Folder button\'s label is "New Folder" — both configurable through messages.',
+  'FileExplorerSort.key also accepts custom column keys.',
+  'A built-in context menu now appears when you do not provide #context-menu. Its scope gained actions and defer.',
 ]
 </script>
 
@@ -814,9 +730,10 @@ const types = [
     <div class="flex flex-col gap-1.5">
       <h1 class="text-3xl sm:text-4xl md:text-5xl font-base tracking-tighter text-foreground">File Explorer</h1>
       <p class="text-base md:text-lg text-muted-foreground mt-1 leading-relaxed">
-        A desktop-style file explorer: a directory tree, breadcrumbs with back and forward, grid and details views,
-        desktop selection and keyboard shortcuts, context menus, drag and drop and uploads. It is a UI component — you
-        bring the data and decide what every action does.
+        The UI layer of a file manager — for cloud drives, media libraries, document managers and IDE sidebars.
+        It owns navigation, selection, keyboard, menus, dialogs, drag and drop and the state of running operations.
+        Your application owns everything else: it handles the events, talks to its storage, and updates
+        <code>items</code>.
       </p>
     </div>
 
@@ -872,21 +789,32 @@ const types = [
       </div>
     </div>
 
+    <!-- Architecture -->
+    <div class="flex flex-col mt-4">
+      <h2 class="text-4xl mt-8 mb-5 tracking-tight text-foreground">How it works</h2>
+      <p class="text-sm text-muted-foreground leading-relaxed">
+        The explorer emits intent, your application performs it, and the explorer renders the new <code>items</code>.
+        It never calls an API, reads a disk, stores data or mutates what you pass in. Listening to an event is what
+        enables its action; handlers may return a promise, which the explorer tracks as an operation with progress,
+        errors, retry, cancellation and undo — all of which you control.
+      </p>
+      <div class="my-4 rounded-xl border border-border bg-background p-4 font-mono text-xs leading-6 text-muted-foreground">
+        <p>user action ─▶ FileExplorer ─▶ <span class="text-foreground">@paste(event, context)</span> ─▶ your API</p>
+        <p class="ps-24">◀─ progress · error · { undo, select } ─┘</p>
+        <p>your API ─▶ <span class="text-foreground">items</span> ─▶ FileExplorer renders the result</p>
+      </div>
+    </div>
+
     <!-- File Structure -->
     <div class="flex flex-col mt-4">
       <h2 class="text-4xl mt-8 mb-5 tracking-tight text-foreground">File Structure</h2>
-      <p class="text-sm text-muted-foreground leading-relaxed">
-        <code>FileExplorer</code> owns the state and composes small parts. The directory tree is <code>FileTree</code>,
-        which renders one <code>FileTreeNode</code> per item; each node renders its children with another
-        <code>FileTreeNode</code>. All state is keyed by id, so nothing copies or mutates your data.
-      </p>
       <div class="my-4 rounded-xl border border-border overflow-hidden bg-background">
         <div class="p-4 w-full relative font-mono text-sm text-muted-foreground">
           <div class="flex items-center gap-2 text-foreground">components/ui/file-explorer</div>
           <div class="relative ml-2 mt-1 before:absolute before:left-0 before:inset-y-0 before:w-px before:bg-border">
-            <div v-for="file in fileStructure" :key="file.name" class="flex items-center gap-2 py-1 pl-4">
-              <span :class="file.name.endsWith('.vue') ? 'text-pink-500' : 'text-foreground/80'">{{ file.name }}</span>
-              <span v-if="file.note" class="hidden sm:inline text-xs text-muted-foreground/70 font-sans">— {{ file.note }}</span>
+            <div v-for="file in fileStructure" :key="file.name" class="flex flex-wrap items-center gap-x-2 py-1 pl-4">
+              <span :class="file.name.includes('.vue') ? 'text-pink-500' : 'text-foreground/80'">{{ file.name }}</span>
+              <span v-if="file.note" class="text-xs text-muted-foreground/70 font-sans">— {{ file.note }}</span>
             </div>
           </div>
         </div>
@@ -897,7 +825,7 @@ const types = [
     <div class="flex flex-col mt-4">
       <h2 class="text-4xl mt-8 mb-5 tracking-tight text-foreground">Usage</h2>
 
-      <div v-for="example in examples" :key="example.title" class="flex flex-col mb-8">
+      <div v-for="example in examples" :id="example.id" :key="example.id" class="flex flex-col mb-8">
         <h3 class="text-2xl mt-5 mb-2 text-foreground">{{ example.title }}</h3>
         <p class="text-sm text-muted-foreground leading-relaxed mb-3">
           <template v-for="(part, i) in inlineCode(example.description)" :key="i">
@@ -913,11 +841,14 @@ const types = [
 
     <!-- Keyboard -->
     <div class="flex flex-col mt-4">
-      <h2 class="text-4xl mt-8 mb-5 tracking-tight text-foreground">Keyboard Interactions</h2>
+      <h2 class="text-4xl mt-8 mb-5 tracking-tight text-foreground">Keyboard & accessibility</h2>
       <p class="text-sm text-muted-foreground leading-relaxed">
-        The items form a single-tab-stop <code>listbox</code> with <code>aria-selected</code> and
-        <code>aria-multiselectable</code>. The directory tree is a separate tab stop following the WAI-ARIA tree pattern:
-        arrows move and expand, Enter opens the folder.
+        Items form a single-tab-stop <code>listbox</code> (<code>aria-selected</code>, <code>aria-multiselectable</code>,
+        <code>aria-busy</code> while an operation runs); the directory tree is a WAI-ARIA tree. Operations are announced
+        through a polite live region, errors as alerts, progress as <code>progressbar</code>. Focus lands on the new
+        item after create, on the renamed item after rename, on the neighbour after delete, on the first item after
+        opening a folder, and on the folder you came from after Up or Back. Everything drag and drop does is also
+        available as Cut and Paste.
       </p>
       <div class="rounded-none border-t border-border mt-6 overflow-hidden">
         <div v-for="(entry, i) in keyboard" :key="i" class="flex flex-col sm:flex-row items-start gap-2 sm:gap-4 px-5 py-3 border-b border-border">
@@ -937,7 +868,7 @@ const types = [
       <div class="rounded-none border-t border-border mt-4 overflow-hidden">
         <div v-for="prop in props" :key="prop.name" class="flex flex-col sm:flex-row items-start gap-2 sm:gap-4 px-5 py-4 border-b border-border">
           <div class="w-full sm:w-44 shrink-0">
-            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg">{{ prop.name }}</code>
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg break-all">{{ prop.name }}</code>
           </div>
           <div class="flex-1 min-w-0 flex flex-col gap-1.5">
             <div class="flex flex-wrap items-center gap-2 min-w-0">
@@ -951,13 +882,10 @@ const types = [
       </div>
 
       <h3 class="text-2xl mt-8 mb-3 text-foreground">Item</h3>
-      <p class="text-sm text-muted-foreground leading-relaxed mb-2">
-        The shape of each entry in <code>items</code>. Only <code>id</code>, <code>name</code> and <code>type</code> are required.
-      </p>
       <div class="rounded-none border-t border-border mt-4 overflow-hidden">
         <div v-for="item in itemProps" :key="item.name" class="flex flex-col sm:flex-row items-start gap-2 sm:gap-4 px-5 py-4 border-b border-border">
           <div class="w-full sm:w-44 shrink-0">
-            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg">{{ item.name }}</code>
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg break-all">{{ item.name }}</code>
           </div>
           <div class="flex-1 min-w-0 flex flex-col gap-1.5">
             <code class="text-xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md self-start break-all">{{ item.type }}</code>
@@ -966,19 +894,32 @@ const types = [
         </div>
       </div>
 
-      <h3 class="text-2xl mt-8 mb-3 text-foreground">Events &amp; handlers</h3>
+      <h3 class="text-2xl mt-8 mb-3 text-foreground">Events</h3>
       <p class="text-sm text-muted-foreground leading-relaxed mb-2">
-        <code>upload</code>, <code>create-folder</code>, <code>rename</code> and <code>delete</code> are declared as handler props, so the
-        explorer can tell whether you listen and only shows those actions when you do.
+        Action events are handler props: listening to one enables the action. Each receives a
+        <code>FileExplorerOperationContext</code> last and may return (or resolve to) a result.
       </p>
       <div class="rounded-none border-t border-border mt-4 overflow-hidden">
         <div v-for="event in events" :key="event.name" class="flex flex-col sm:flex-row items-start gap-2 sm:gap-4 px-5 py-4 border-b border-border">
-          <div class="w-full sm:w-44 shrink-0">
-            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg">{{ event.name }}</code>
+          <div class="w-full sm:w-52 shrink-0">
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg break-all">{{ event.name }}</code>
           </div>
           <div class="flex-1 min-w-0 flex flex-col gap-1.5">
             <code class="text-xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md self-start break-all">{{ event.payload }}</code>
             <p class="text-sm text-muted-foreground leading-relaxed">{{ event.description }}</p>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="text-2xl mt-8 mb-3 text-foreground">Handler results</h3>
+      <div class="rounded-none border-t border-border mt-4 overflow-hidden">
+        <div v-for="result in results" :key="result.name" class="flex flex-col sm:flex-row items-start gap-2 sm:gap-4 px-5 py-4 border-b border-border">
+          <div class="w-full sm:w-44 shrink-0">
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg">{{ result.name }}</code>
+          </div>
+          <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+            <code class="text-xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md self-start break-all">{{ result.type }}</code>
+            <p class="text-sm text-muted-foreground leading-relaxed">{{ result.description }}</p>
           </div>
         </div>
       </div>
@@ -996,103 +937,48 @@ const types = [
         </div>
       </div>
 
-      <h3 class="text-2xl mt-8 mb-3 text-foreground">TypeScript</h3>
-      <p class="text-sm text-muted-foreground leading-relaxed mb-2">
-        Everything is exported from <code>@/components/ui/file-explorer</code>. Both components are generic over
-        <code>TData</code>, inferred from <code>items</code>, so <code>item.data</code> is typed in slots and events.
-      </p>
+      <h3 class="text-2xl mt-8 mb-3 text-foreground">Exposed</h3>
       <div class="rounded-none border-t border-border mt-4 overflow-hidden">
-        <div v-for="type in types" :key="type.name" class="flex flex-col sm:flex-row items-start gap-2 sm:gap-4 px-5 py-3 border-b border-border">
+        <div v-for="entry in exposed" :key="entry.name" class="flex flex-col sm:flex-row items-start gap-2 sm:gap-4 px-5 py-3 border-b border-border">
           <div class="w-full sm:w-64 shrink-0">
-            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg break-all">{{ type.name }}</code>
+            <code class="text-sm bg-muted text-foreground py-1 px-2 rounded-lg break-all">{{ entry.name }}</code>
           </div>
-          <p class="flex-1 text-sm text-muted-foreground leading-relaxed">{{ type.description }}</p>
+          <p class="flex-1 text-sm text-muted-foreground leading-relaxed">{{ entry.description }}</p>
         </div>
       </div>
+
+      <h3 class="text-2xl mt-8 mb-3 text-foreground">TypeScript</h3>
+      <p class="text-sm text-muted-foreground leading-relaxed">
+        Everything is exported from <code>@/components/ui/file-explorer</code>: <code>FileExplorerItem</code>,
+        <code>FileExplorerPermissions</code>, <code>FileExplorerOperationState</code>,
+        <code>FileExplorerOperationContext</code>, <code>FileExplorerOperationResult</code>,
+        <code>FileExplorerPasteEvent</code>, <code>FileExplorerMoveEvent</code>, <code>FileExplorerItemsEvent</code>
+        (download, duplicate, trash…), <code>FileExplorerConflict</code> and its resolution,
+        <code>FileExplorerClipboard</code>, <code>FileExplorerListing</code>, <code>FileExplorerLocation</code>,
+        <code>FileExplorerColumn</code>, <code>FileExplorerAction</code>, <code>FileExplorerMessages</code>, and the
+        helpers <code>getFileKind</code>, <code>isPotentiallyUnsafe</code>, <code>can</code>, <code>formatBytes</code>,
+        <code>formatRelativeTime</code>, <code>uniqueName</code>, <code>matchesAccept</code> and
+        <code>sortFileItems</code>. Both components are generic over <code>TData</code>.
+      </p>
+
+      <h3 class="text-2xl mt-8 mb-3 text-foreground">Migrating from the previous version</h3>
+      <ul class="flex list-disc flex-col gap-2 ps-5 text-sm text-muted-foreground leading-relaxed">
+        <li v-for="note in migration" :key="note">{{ note }}</li>
+      </ul>
     </div>
 
     <!-- RIGHT PANE: Preview -->
     <template #preview>
-      <div class="flex size-full flex-col gap-2 p-3 sm:p-4">
-        <FileExplorer
-          v-model:folder="folder"
-          v-model:selected="selected"
-          v-model:view="view"
-          :items="files"
-          :multiple="multiple"
-          :draggable="draggable"
-          :sidebar="sidebar"
-          :loading="loading"
-          :on-upload="uploads ? onUpload : undefined"
-          :on-create-folder="uploads ? onCreateFolder : undefined"
-          :on-delete="uploads ? onDelete : undefined"
-          :on-rename="uploads ? onRename : undefined"
-          label="Project files"
-          class="min-h-0 w-full flex-1 shadow-sm"
-          @move="onMove"
-          @open="onOpen"
-        >
-          <template #status-actions="{ items }">
-            <template v-if="items.length === 1 && items[0]?.type === 'file'">
-              <button type="button" class="rounded-sm text-primary outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring/50" @click="items[0] && onOpen(items[0])">
-                Open File
-              </button>
-              <span aria-hidden="true">·</span>
-              <button type="button" class="rounded-sm outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50" @click="items[0] && download(items[0])">
-                Download
-              </button>
-            </template>
-            <span v-else-if="items.length > 1" class="tabular-nums">
-              {{ formatBytes(items.reduce((sum, item) => sum + (item.size ?? 0), 0)) }}
-            </span>
-          </template>
-
-          <template #context-menu="{ item, rename, remove }">
-            <template v-if="item">
-              <ContextMenuLabel class="max-w-56 truncate font-mono text-xs font-normal text-muted-foreground">
-                {{ pathOf(item.id) }}
-              </ContextMenuLabel>
-              <template v-if="item.type === 'file'">
-                <ContextMenuItem @select="onOpen(item)">
-                  <ExternalLink />
-                  Open
-                  <ContextMenuShortcut>↵</ContextMenuShortcut>
-                </ContextMenuItem>
-                <ContextMenuItem @select="duplicate(item)">
-                  <CopyPlus />
-                  Duplicate
-                </ContextMenuItem>
-                <ContextMenuItem @select="download(item)">
-                  <Download />
-                  Download
-                </ContextMenuItem>
-              </template>
-              <ContextMenuItem :disabled="!uploads" @select="rename">
-                <PencilLine />
-                Rename
-                <ContextMenuShortcut>F2</ContextMenuShortcut>
-              </ContextMenuItem>
-              <ContextMenuItem @select="copyPath(item)">
-                <Link />
-                Copy path
-              </ContextMenuItem>
-              <ContextMenuSeparator />
-              <ContextMenuItem variant="destructive" :disabled="!uploads" @select="remove">
-                <Trash2 />
-                Delete
-                <ContextMenuShortcut>Del</ContextMenuShortcut>
-              </ContextMenuItem>
-            </template>
-            <ContextMenuItem v-else :disabled="!uploads" @select="createFolderHere">
-              <FolderPlus />
-              New folder
-            </ContextMenuItem>
-          </template>
-        </FileExplorer>
-        <p class="h-4 shrink-0 truncate px-1 text-center font-mono text-[11px] text-muted-foreground" aria-live="polite">
-          <template v-if="lastOpened">opened {{ lastOpened }}</template>
-        </p>
-      </div>
+      <FileExplorerDemo
+        ref="demo"
+        v-model:view="view"
+        :multiple="multiple"
+        :draggable="draggable"
+        :sidebar="sidebar"
+        :readonly="readonly"
+        :loading="loading"
+        :slow="slow"
+      />
     </template>
 
     <template #code>
@@ -1100,12 +986,12 @@ const types = [
     </template>
 
     <template #settings>
-      <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center justify-between mb-5">
         <span class="font-semibold text-base text-foreground tracking-tight">Settings</span>
         <button class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors" @click="resetSettings">Reset</button>
       </div>
 
-      <div v-for="toggle in toggles" :key="toggle.label" class="flex items-center justify-between gap-4 mb-4">
+      <div v-for="toggle in toggles" :key="toggle.label" class="flex items-center justify-between gap-4 mb-3.5">
         <div class="flex flex-col gap-0.5">
           <span class="text-sm font-medium text-foreground">{{ toggle.label }}</span>
           <span class="text-xs text-muted-foreground">{{ toggle.hint }}</span>
@@ -1121,9 +1007,9 @@ const types = [
         </button>
       </div>
 
-      <div class="flex flex-col gap-2 mt-2">
-        <label for="file-explorer-view" class="text-sm font-medium text-foreground">View</label>
-        <div class="relative">
+      <div class="flex items-center gap-2 mt-1">
+        <label for="file-explorer-view" class="sr-only">View</label>
+        <div class="relative flex-1">
           <select id="file-explorer-view" v-model="view" class="w-full appearance-none bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-muted-foreground transition-all">
             <option value="grid">Grid</option>
             <option value="list">Details</option>
@@ -1132,6 +1018,13 @@ const types = [
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7" /></svg>
           </div>
         </div>
+        <button
+          type="button"
+          class="shrink-0 rounded-lg border border-border px-3 py-2 text-sm text-destructive hover:bg-destructive/10"
+          @click="demo?.failNext()"
+        >
+          Fail next call
+        </button>
       </div>
     </template>
   </DocContent>

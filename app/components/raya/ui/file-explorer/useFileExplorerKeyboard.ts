@@ -24,6 +24,8 @@ interface UseFileExplorerKeyboardOptions {
   up: () => void
   remove?: () => void
   rename?: () => void
+  /** In right-to-left layouts, ArrowLeft moves forward in the grid. */
+  dir?: Readonly<Ref<'ltr' | 'rtl'>>
 }
 
 const TYPEAHEAD_RESET = 700
@@ -34,6 +36,7 @@ const TYPEAHEAD_RESET = 700
  * without selecting (Space then toggles), and typing jumps to a name.
  */
 export function useFileExplorerKeyboard(options: UseFileExplorerKeyboardOptions) {
+  const rtl = () => options.dir?.value === 'rtl'
   let typeahead = ''
   let typeaheadTimer: ReturnType<typeof setTimeout> | undefined
 
@@ -49,8 +52,8 @@ export function useFileExplorerKeyboard(options: UseFileExplorerKeyboardOptions)
     switch (key) {
       case 'ArrowDown': return grid ? options.columns() : 1
       case 'ArrowUp': return grid ? -options.columns() : -1
-      case 'ArrowRight': return grid ? 1 : undefined
-      case 'ArrowLeft': return grid ? -1 : undefined
+      case 'ArrowRight': return grid ? (rtl() ? -1 : 1) : undefined
+      case 'ArrowLeft': return grid ? (rtl() ? 1 : -1) : undefined
       case 'Home': return 'start'
       case 'End': return 'end'
     }

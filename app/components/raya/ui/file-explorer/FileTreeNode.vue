@@ -7,7 +7,7 @@ import {
   type TreeItemSelectEvent,
   type TreeItemToggleEvent,
 } from 'reka-ui'
-import { ChevronRight } from 'lucide-vue-next'
+import { ChevronRight, CircleAlert, LoaderCircle } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
 import FileExplorerRenameInput from './FileExplorerRenameInput.vue'
 import FileTreeNode from './FileTreeNode.vue'
@@ -18,7 +18,7 @@ import type {
   FileExplorerItemSlotProps,
   FileTreeNodeSlots,
 } from './types'
-import { getFileIcon, isFolder, splitByQuery } from './utils'
+import { getFileIcon, isExpandableFolder, isFolder, splitByQuery } from './utils'
 import { fileTreeIconVariants, fileTreeRowVariants } from './variants'
 
 const props = defineProps<{
@@ -37,9 +37,11 @@ const ctx = injectFileTreeContext()
 const folder = computed(() => isFolder(props.item))
 const children = computed(() => props.item.children ?? [])
 // In a folders-only tree, a folder without subfolders is a leaf, like Windows' navigation pane.
-const expandable = computed(() => folder.value && (!ctx.foldersOnly.value || children.value.length > 0))
+const expandable = computed(() => isExpandableFolder(props.item, { lazy: ctx.lazy.value, foldersOnly: ctx.foldersOnly.value }))
+const loadState = computed(() => ctx.loadState(props.item.id))
 const isDragging = computed(() => ctx.dragDrop.draggingIds.value.includes(props.item.id))
 const isDropTarget = computed(() => ctx.dragDrop.dropTargetId.value === props.item.id)
+const isDropInvalid = computed(() => ctx.dragDrop.invalidTargetId.value === props.item.id)
 const renaming = computed(() => ctx.renamingId.value === props.item.id)
 
 function slotProps(expanded: boolean, selected: boolean, disabled: boolean): FileExplorerItemSlotProps<TData> {
@@ -114,6 +116,7 @@ function onDragOver(event: DragEvent) {
       :data-disabled="isDisabled ? '' : undefined"
       :data-dragging="isDragging ? '' : undefined"
       :data-drop-target="isDropTarget ? '' : undefined"
+      :data-drop-invalid="isDropInvalid ? '' : undefined"
       :draggable="ctx.draggable.value && !isDisabled && !renaming ? 'true' : undefined"
       @dblclick="!isDisabled && ctx.onItemOpen(item.id)"
       @dragstart="ctx.dragDrop.onDragStart(item.id, $event)"
@@ -150,6 +153,7 @@ function onDragOver(event: DragEvent) {
           v-if="renaming"
           :name="item.name"
           :is-folder="folder"
+          :label="ctx.messages.value.newName"
           :validate="name => ctx.validateRename(item.id, name)"
           class="-ms-1 h-5"
           @commit="name => ctx.commitRename(item.id, name)"
@@ -207,6 +211,31 @@ function onDragOver(event: DragEvent) {
             <slot name="actions" v-bind="scope" />
           </template>
         </FileTreeNode>
+        <li
+          v-if="loadState"
+          role="none"
+          :style="{ '--file-tree-depth': depth + 1 }"
+          :class="cn(
+            'flex h-7 items-center gap-1.5 ps-[calc(var(--file-tree-depth)_*_var(--file-tree-indent)_+_1.5rem)] pe-2 text-xs text-muted-foreground',
+            loadState.status === 'error' && 'text-destructive',
+          )"
+        >
+          <template v-if="loadState.status === 'loading'">
+            <LoaderCircle aria-hidden="true" class="size-3.5 animate-spin motion-reduce:animate-none" />
+            <span role="status">{{ ctx.messages.value.loading }}</span>
+          </template>
+          <template v-else>
+            <CircleAlert aria-hidden="true" class="size-3.5 shrink-0" />
+            <span role="alert" class="truncate" :title="loadState.error">{{ ctx.messages.value.loadFailed }}</span>
+            <button
+              type="button"
+              class="ms-auto shrink-0 rounded-sm font-medium text-foreground underline-offset-2 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring/50"
+              @click.stop="ctx.retryLoad(item.id)"
+            >
+              {{ ctx.messages.value.retry }}
+            </button>
+          </template>
+        </li>
       </CollapsibleContent>
     </CollapsibleRoot>
   </TreeItem>
