@@ -13,7 +13,9 @@ export default defineNuxtConfig({
         // registers both Foo.vue and index.ts under the same auto-import name and
         // Nuxt warns about the collision. Explicit `@/components/.../` imports still
         // resolve index.ts through normal module resolution.
-        { path: '~/components', pathPrefix: false, ignore: ['**/index.ts'] },
+        // Only `.vue` files are components; colocated `variants.ts`, `types.ts`,
+        // composables, etc. would otherwise be registered as auto-import names too.
+        { path: '~/components', pathPrefix: false, extensions: ['vue'], ignore: ['**/index.ts'] },
     ],
 
     runtimeConfig: {

@@ -1428,8 +1428,10 @@ html.lenis, html.lenis body {
 }
 
 /* ── Keyboard accessibility ────────────────────────────────────────────────── */
-:focus:not(:focus-visible) { outline: none; }
-:focus-visible {
+/* Scoped to the homepage: this block is unscoped and unlayered, so a bare
+   `:focus-visible` would override Tailwind's outline utilities site-wide. */
+.home-root :focus:not(:focus-visible) { outline: none; }
+.home-root :focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 3px;
   border-radius: 2px;

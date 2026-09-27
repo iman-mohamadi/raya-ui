@@ -333,6 +333,70 @@
       ]
     },
     {
+      "name": "file-explorer",
+      "type": "registry:ui",
+      "title": "File Explorer",
+      "description": "A recursive, accessible file tree with keyboard navigation, ID-based selection, search, context menus and optional drag and drop.",
+      "dependencies": [
+        "reka-ui",
+        "lucide-vue-next",
+        "@vueuse/core",
+        "class-variance-authority",
+        "clsx",
+        "tailwind-merge"
+      ],
+      "devDependencies": [
+        "tw-animate-css"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "app/components/raya/ui/file-explorer/FileExplorer.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/FileExplorerTree.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/FileExplorerNode.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/context.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/types.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/utils.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/variants.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/useFileExplorerSearch.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/useFileExplorerSelection.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/useFileExplorerDragDrop.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/index.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "file-upload",
       "type": "registry:ui",
       "title": "File Upload",

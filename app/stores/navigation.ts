@@ -50,6 +50,11 @@ export const useNavigationStore = defineStore('navigation', () => {
                     img: '/components/encrypted-text.png'
                 },
                 {
+                    label: 'File Explorer',
+                    to: '/docs/components/file-explorer',
+                    description: 'Accessible, recursive file tree with search, selection and drag and drop.'
+                },
+                {
                     label: 'File Upload',
                     to: '/docs/components/file-upload',
                     description: 'Drag and drop file upload with preview and progress tracking.',

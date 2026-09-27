@@ -1,0 +1,141 @@
+import { onBeforeUnmount, ref, shallowRef, type Ref } from 'vue'
+import type { FileExplorerMoveEvent } from './types'
+import { isDescendantOf, isFolder, type FileExplorerIndex } from './utils'
+
+const AUTO_EXPAND_DELAY = 600
+
+interface UseFileExplorerDragDropOptions<TData> {
+  enabled: Readonly<Ref<boolean>>
+  index: Readonly<Ref<FileExplorerIndex<TData>>>
+  selected: Readonly<Ref<string[]>>
+  isExpanded: (id: string) => boolean
+  expand: (id: string) => void
+  onMove: (event: FileExplorerMoveEvent<TData>) => void
+}
+
+/**
+ * Native HTML5 drag and drop. The component only reports the intent through
+ * `onMove`; moving the data is up to the consumer.
+ *
+ * Dragging a selected item drags the whole selection. Dropping on a file drops
+ * into that file's folder. Drops into the item itself, into one of its own
+ * descendants, or back into the folder it already lives in are refused.
+ */
+export function useFileExplorerDragDrop<TData>(options: UseFileExplorerDragDropOptions<TData>) {
+  const { enabled, index, selected, isExpanded, expand, onMove } = options
+
+  const draggingIds = shallowRef<readonly string[]>([])
+  const dropTargetId = ref<string | null | undefined>(undefined)
+
+  let expandTimer: ReturnType<typeof setTimeout> | undefined
+  let expandCandidate: string | null = null
+
+  function clearAutoExpand() {
+    clearTimeout(expandTimer)
+    expandTimer = undefined
+    expandCandidate = null
+  }
+
+  function scheduleAutoExpand(folderId: string | null) {
+    if (folderId === expandCandidate) return
+    clearAutoExpand()
+    if (folderId === null || isExpanded(folderId)) return
+    expandCandidate = folderId
+    expandTimer = setTimeout(() => expand(folderId), AUTO_EXPAND_DELAY)
+  }
+
+  function reset() {
+    clearAutoExpand()
+    draggingIds.value = []
+    dropTargetId.value = undefined
+  }
+
+  function onDragStart(id: string, event: DragEvent) {
+    if (!enabled.value) return
+    const source = selected.value.includes(id) ? selected.value : [id]
+    const ids = source.filter((candidate) => {
+      const entry = index.value.get(candidate)
+      if (!entry || entry.item.disabled) return false
+      // Moving a folder already moves its contents.
+      return !source.some(other => other !== candidate && isDescendantOf(index.value, candidate, other))
+    })
+    if (!ids.length) {
+      event.preventDefault()
+      return
+    }
+
+    draggingIds.value = ids
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move'
+      // Some browsers refuse to start a drag without data.
+      event.dataTransfer.setData('text/plain', ids.map(itemId => index.value.get(itemId)?.item.name ?? itemId).join('\n'))
+    }
+  }
+
+  /** A folder receives the drop itself; a file forwards it to its parent. */
+  function resolveTarget(id: string | null): string | null {
+    if (id === null) return null
+    const entry = index.value.get(id)
+    if (!entry) return null
+    return isFolder(entry.item) ? id : entry.parentId
+  }
+
+  function canDropInto(targetId: string | null): boolean {
+    const ids = draggingIds.value
+    if (!ids.length) return false
+    if (targetId !== null && index.value.get(targetId)?.item.disabled) return false
+
+    const intoItself = ids.some(id => id === targetId || (targetId !== null && isDescendantOf(index.value, targetId, id)))
+    const alreadyThere = ids.every(id => index.value.get(id)?.parentId === targetId)
+    return !intoItself && !alreadyThere
+  }
+
+  function onDragOver(id: string | null, event: DragEvent) {
+    if (!draggingIds.value.length) return
+    const targetId = resolveTarget(id)
+    if (!canDropInto(targetId)) {
+      dropTargetId.value = undefined
+      clearAutoExpand()
+      return
+    }
+
+    event.preventDefault()
+    if (event.dataTransfer) event.dataTransfer.dropEffect = 'move'
+    dropTargetId.value = targetId
+    // Only hovering the folder row itself opens it, not hovering its files.
+    scheduleAutoExpand(id !== null && id === targetId ? id : null)
+  }
+
+  function onDrop(event: DragEvent) {
+    const targetId = dropTargetId.value
+    if (targetId !== undefined && draggingIds.value.length) {
+      event.preventDefault()
+      const items = draggingIds.value.flatMap((id) => {
+        const item = index.value.get(id)?.item
+        return item ? [item] : []
+      })
+      const target = targetId === null ? null : index.value.get(targetId)?.item ?? null
+      onMove({ items, target })
+    }
+    reset()
+  }
+
+  onBeforeUnmount(clearAutoExpand)
+
+  return {
+    draggingIds,
+    dropTargetId,
+    onDragStart,
+    onDragOver,
+    onDrop,
+    onDragEnd: reset,
+    /** Clears the highlight when the pointer leaves the explorer altogether. */
+    onDragLeave(event: DragEvent) {
+      const next = event.relatedTarget
+      const container = event.currentTarget
+      if (container instanceof Node && next instanceof Node && container.contains(next)) return
+      dropTargetId.value = undefined
+      clearAutoExpand()
+    },
+  }
+}
