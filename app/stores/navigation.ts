@@ -52,7 +52,7 @@ export const useNavigationStore = defineStore('navigation', () => {
                 {
                     label: 'File Explorer',
                     to: '/docs/components/file-explorer',
-                    description: 'Accessible, recursive file tree with search, selection and drag and drop.'
+                    description: 'Desktop-style file explorer with a directory tree, grid and details views, and drag and drop.'
                 },
                 {
                     label: 'File Upload',

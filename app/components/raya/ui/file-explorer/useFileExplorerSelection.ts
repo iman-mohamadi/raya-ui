@@ -45,5 +45,10 @@ export function useFileExplorerSelection(options: UseFileExplorerSelectionOption
     selected.value = visibleIds.value.filter(isSelectable)
   }
 
-  return { anchor, replace, toggle, extend, selectAll }
+  function clear() {
+    selected.value = []
+    anchor.value = null
+  }
+
+  return { anchor, replace, toggle, extend, selectAll, clear }
 }

@@ -1,4 +1,5 @@
 export { default as FileExplorer } from './FileExplorer.vue'
+export { default as FileTree } from './FileTree.vue'
 export type {
   FileExplorerEmits,
   FileExplorerIconResolver,
@@ -10,8 +11,24 @@ export type {
   FileExplorerMoveEvent,
   FileExplorerProps,
   FileExplorerSelectEvent,
-  FileExplorerSize,
   FileExplorerSlots,
+  FileExplorerSort,
+  FileExplorerSortKey,
+  FileExplorerView,
+  FileTreeEmits,
+  FileTreeProps,
+  FileTreeSize,
+  FileTreeSlots,
 } from './types'
-export { filterFileTree, getFileExtension, getFileIcon, indexFileTree } from './utils'
-export { fileExplorerIconVariants, fileExplorerRowVariants } from './variants'
+export {
+  filterFileTree,
+  formatBytes,
+  formatRelativeTime,
+  getFileExtension,
+  getFileIcon,
+  getFileKind,
+  indexFileTree,
+  sortFileItems,
+  type FileKind,
+} from './utils'
+export { fileExplorerButtonVariants, fileTreeIconVariants, fileTreeRowVariants } from './variants'

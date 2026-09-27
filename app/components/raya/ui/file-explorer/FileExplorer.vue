@@ -1,25 +1,37 @@
 <script setup lang="ts" generic="TData = unknown">
-import { computed, ref, toRef, useSlots, useTemplateRef, watch } from 'vue'
+import { computed, nextTick, ref, useSlots, useTemplateRef, watch, type ComponentPublicInstance } from 'vue'
 import { ContextMenuContent, ContextMenuPortal, ContextMenuRoot, ContextMenuTrigger } from 'reka-ui'
-import { useVModel } from '@vueuse/core'
-import { FolderOpen, Search, X } from 'lucide-vue-next'
+import { useNow, useVModel } from '@vueuse/core'
 import { cn } from '@/lib/utils'
-import FileExplorerTree from './FileExplorerTree.vue'
-import { provideFileExplorerContext } from './context'
-import type { FileExplorerEmits, FileExplorerProps, FileExplorerSlots } from './types'
+import FileExplorerContent from './FileExplorerContent.vue'
+import FileExplorerSidebar from './FileExplorerSidebar.vue'
+import FileExplorerStatusBar from './FileExplorerStatusBar.vue'
+import FileExplorerToolbar from './FileExplorerToolbar.vue'
+import { provideFileExplorerContext, provideSharedDragDrop } from './context'
+import type {
+  FileExplorerEmits,
+  FileExplorerItem,
+  FileExplorerProps,
+  FileExplorerSlots,
+  FileExplorerSort,
+  FileExplorerView,
+} from './types'
 import { useFileExplorerDragDrop } from './useFileExplorerDragDrop'
-import { useFileExplorerSearch } from './useFileExplorerSearch'
+import { useFileExplorerKeyboard } from './useFileExplorerKeyboard'
+import { useFileExplorerNavigation } from './useFileExplorerNavigation'
 import { useFileExplorerSelection } from './useFileExplorerSelection'
-import { getVisibleIds, indexFileTree, isFolder } from './utils'
+import { formatBytes, indexFileTree, isFolder, sortFileItems } from './utils'
 
 const props = withDefaults(defineProps<FileExplorerProps<TData>>(), {
   items: () => [],
+  folder: undefined,
   selected: undefined,
-  expanded: undefined,
+  view: undefined,
   search: undefined,
-  searchPlaceholder: 'Search files…',
-  size: 'md',
-  guides: true,
+  sort: undefined,
+  multiple: true,
+  sidebar: true,
+  rootLabel: 'root',
   label: 'Files',
 })
 
@@ -30,285 +42,407 @@ defineSlots<FileExplorerSlots<TData>>()
 
 // --- Controlled / uncontrolled state ------------------------------------------
 
+const folderModel = useVModel(props, 'folder', emit, { passive: true, defaultValue: props.defaultFolder ?? null })
 const selectedModel = useVModel(props, 'selected', emit, { passive: true, defaultValue: props.defaultSelected ?? [] })
-const expandedModel = useVModel(props, 'expanded', emit, { passive: true, defaultValue: props.defaultExpanded ?? [] })
+const viewModel = useVModel(props, 'view', emit, { passive: true, defaultValue: props.defaultView ?? 'grid' })
 const searchModel = useVModel(props, 'search', emit, { passive: true, defaultValue: '' })
+const sortModel = useVModel(props, 'sort', emit, { passive: true, defaultValue: { key: 'name', direction: 'asc' } })
 
+const folderId = computed<string | null>({
+  get: () => folderModel.value ?? null,
+  set: (value) => { folderModel.value = value },
+})
 const selectedIds = computed<string[]>({
   get: () => selectedModel.value ?? [],
   set: (value) => { selectedModel.value = value },
 })
-const searchQuery = computed<string>({
+const view = computed<FileExplorerView>({
+  get: () => viewModel.value ?? 'grid',
+  set: (value) => { viewModel.value = value },
+})
+const search = computed<string>({
   get: () => searchModel.value ?? '',
   set: (value) => { searchModel.value = value },
 })
+const sort = computed<FileExplorerSort>({
+  get: () => sortModel.value ?? { key: 'name', direction: 'asc' },
+  set: (value) => { sortModel.value = value },
+})
 
-// --- Derived tree ---------------------------------------------------------------
+// --- Folder contents ---------------------------------------------------------------
 
 const index = computed(() => indexFileTree(props.items))
-const search = useFileExplorerSearch(toRef(props, 'items'), searchQuery)
-const displayItems = search.items
+const navigation = useFileExplorerNavigation({ folder: folderId, index })
 
-// While searching, folders on the way to a match open in a separate, throwaway
-// state, so the consumer's `expanded` is exactly as they left it afterwards.
-const searchExpanded = ref<string[]>([])
-watch(search.revealIds, (revealIds) => {
-  if (search.isSearching.value)
-    searchExpanded.value = [...new Set([...(expandedModel.value ?? []), ...revealIds])]
-}, { immediate: true })
-
-const expandedIds = computed(() => (search.isSearching.value ? searchExpanded.value : expandedModel.value ?? []))
-const expandedSet = computed(() => new Set(expandedIds.value))
-
-function setExpanded(ids: string[]) {
-  if (search.isSearching.value) searchExpanded.value = ids
-  else expandedModel.value = ids
-}
-
-function toggleExpanded(id: string) {
-  setExpanded(expandedSet.value.has(id) ? expandedIds.value.filter(value => value !== id) : [...expandedIds.value, id])
-}
-
-const visibleIds = computed(() => getVisibleIds(displayItems.value, expandedSet.value))
-const selectedItems = computed(() => selectedIds.value.flatMap((id) => {
+const currentFolder = computed(() => (navigation.current.value === null ? null : index.value.get(navigation.current.value)?.item ?? null))
+const path = computed(() => navigation.path.value.flatMap((id) => {
   const item = index.value.get(id)?.item
   return item ? [item] : []
 }))
 
-// --- Selection --------------------------------------------------------------------
+const query = computed(() => search.value.trim())
+const contentItems = computed(() => {
+  const children = currentFolder.value ? currentFolder.value.children ?? [] : props.items
+  const needle = query.value.toLowerCase()
+  const filtered = needle ? children.filter(item => item.name.toLowerCase().includes(needle)) : children
+  return sortFileItems(filtered, sort.value)
+})
+const contentIds = computed(() => contentItems.value.map(item => item.id))
+
+// --- Selection & focus ----------------------------------------------------------
+
+const isSelectable = (id: string) => {
+  const item = index.value.get(id)?.item
+  return item !== undefined && !item.disabled
+}
 
 const selection = useFileExplorerSelection({
   selected: selectedIds,
-  multiple: toRef(props, 'multiple'),
-  visibleIds,
-  isSelectable: id => index.value.get(id)?.item.disabled !== true,
+  multiple: computed(() => props.multiple),
+  visibleIds: contentIds,
+  isSelectable,
 })
 
-function onItemSelect(id: string, event: Event) {
+const selectedSet = computed(() => new Set(selectedIds.value))
+const selectedItems = computed(() => selectedIds.value.flatMap((id) => {
   const item = index.value.get(id)?.item
-  if (!item || props.disabled) return
+  return item ? [item] : []
+}))
+const selectedSize = computed(() => {
+  const files = selectedItems.value.filter(item => !isFolder(item))
+  return files.length ? formatBytes(files.reduce((sum, item) => sum + (item.size ?? 0), 0)) : ''
+})
 
-  if (event instanceof KeyboardEvent) {
-    if (event.key === ' ' && props.multiple) selection.toggle(id)
-    else selection.replace(id)
+const content = useTemplateRef<ComponentPublicInstance>('content')
+const contentElement = computed<HTMLElement | null>(() => {
+  const el: unknown = content.value?.$el
+  return el instanceof HTMLElement ? el : null
+})
 
-    if (event.key === 'Enter') {
-      if (isFolder(item)) toggleExpanded(id)
-      else emit('open', item)
-    }
-  }
-  else if (event instanceof MouseEvent && props.multiple && event.shiftKey) {
-    selection.extend(id)
-  }
-  else if (event instanceof MouseEvent && props.multiple && (event.metaKey || event.ctrlKey)) {
-    selection.toggle(id)
-  }
-  else {
-    selection.replace(id)
-  }
+// The roving tab stop: the last focused item, else the first selected one, else the first.
+const lastFocusedId = ref<string | null>(null)
+const focusedId = computed<string | null>({
+  get: () => {
+    const ids = contentIds.value
+    if (lastFocusedId.value !== null && ids.includes(lastFocusedId.value)) return lastFocusedId.value
+    return ids.find(id => selectedSet.value.has(id)) ?? ids[0] ?? null
+  },
+  set: (value) => { lastFocusedId.value = value },
+})
 
-  emit('select', { item, selected: selectedIds.value, originalEvent: event })
+function findItemElement(id: string) {
+  const elements = contentElement.value?.querySelectorAll<HTMLElement>('[role="option"][data-item-id]') ?? []
+  return Array.from(elements).find(el => el.dataset.itemId === id)
 }
 
-function onItemOpen(id: string) {
+function focusItem(id: string) {
+  lastFocusedId.value = id
+  nextTick(() => findItemElement(id)?.focus())
+}
+
+/** Cards per row, measured from the rendered grid. */
+function gridColumns(): number {
+  const options = Array.from(contentElement.value?.querySelectorAll<HTMLElement>('[role="option"]') ?? [])
+  const top = options[0]?.offsetTop
+  const perRow = options.filter(option => option.offsetTop === top).length
+  return Math.max(1, perRow)
+}
+
+// --- Navigation --------------------------------------------------------------------
+
+// Leaving a folder resets the selection; going Up selects the folder you came from.
+let pendingSelection: string | null = null
+watch(navigation.current, () => {
+  const hadFocus = contentElement.value?.contains(document.activeElement) ?? false
+  selectedIds.value = pendingSelection === null ? [] : [pendingSelection]
+  lastFocusedId.value = pendingSelection
+  selection.anchor.value = pendingSelection
+  pendingSelection = null
+  search.value = ''
+  if (hadFocus) {
+    nextTick(() => {
+      const id = focusedId.value
+      if (id !== null) findItemElement(id)?.focus()
+      else contentElement.value?.focus()
+    })
+  }
+})
+
+function goUp() {
+  if (!navigation.canGoUp.value) return
+  pendingSelection = navigation.current.value
+  navigation.up()
+}
+
+function openItem(id: string) {
   const item = index.value.get(id)?.item
-  if (item && !isFolder(item) && !props.disabled) emit('open', item)
+  if (!item || item.disabled || props.disabled) return
+  if (isFolder(item)) navigation.navigate(id)
+  else emit('open', item)
 }
 
-// --- Context menu ---------------------------------------------------------------
+// Keep the directory tree open down to the current folder.
+const treeExpanded = ref<string[]>([])
+watch(navigation.path, (ids) => {
+  const missing = ids.filter(id => !treeExpanded.value.includes(id))
+  if (missing.length) treeExpanded.value = [...treeExpanded.value, ...missing]
+}, { immediate: true })
 
-const hasContextMenu = computed(() => Boolean(slots['context-menu']))
-const contextItemId = ref<string | null>(null)
-const contextItem = computed(() => (contextItemId.value === null ? null : index.value.get(contextItemId.value)?.item ?? null))
+// --- Pointer & keyboard ---------------------------------------------------------
 
-function onItemContextMenu(id: string) {
-  contextItemId.value = id
-  // Right-clicking outside the selection acts on that item alone, like a desktop file manager.
-  if (hasContextMenu.value && !selectedIds.value.includes(id) && index.value.get(id)?.item.disabled !== true)
-    selection.replace(id)
+function onItemClick(id: string, event: MouseEvent) {
+  if (props.disabled || !isSelectable(id)) return
+  lastFocusedId.value = id
+  if (props.multiple && event.shiftKey) selection.extend(id)
+  else if (props.multiple && (event.metaKey || event.ctrlKey)) selection.toggle(id)
+  else selection.replace(id)
 }
 
-// --- Drag and drop --------------------------------------------------------------
+function onContentClick(event: MouseEvent) {
+  // A click on empty space clears the selection, as on a desktop.
+  if (event.target instanceof Element && !event.target.closest('[role="option"], button')) selection.clear()
+}
+
+const keyboard = useFileExplorerKeyboard({
+  ids: contentIds,
+  focusedId,
+  view,
+  multiple: computed(() => props.multiple),
+  isSelectable,
+  nameOf: id => index.value.get(id)?.item.name ?? '',
+  columns: gridColumns,
+  focus: focusItem,
+  replace: selection.replace,
+  toggle: selection.toggle,
+  extend: selection.extend,
+  selectAll: selection.selectAll,
+  clear: selection.clear,
+  open: openItem,
+  back: navigation.back,
+  forward: navigation.forward,
+  up: goUp,
+  remove: () => {
+    if (props.onDelete && selectedItems.value.length) props.onDelete(selectedItems.value)
+  },
+})
+
+function onContentKeydown(event: KeyboardEvent) {
+  if (props.disabled || props.loading) return
+  // Let buttons (the drop tile, sort headers) handle their own keys.
+  if (event.target instanceof Element && event.target.closest('button')) return
+  keyboard.onKeydown(event)
+}
+
+// --- Uploads -------------------------------------------------------------------------
+
+const uploadable = computed(() => Boolean(props.onUpload) && !props.disabled)
+const fileInput = useTemplateRef<HTMLInputElement>('fileInput')
+const externalDrag = ref(false)
+
+function upload(files: File[]) {
+  if (files.length && props.onUpload) props.onUpload(files, currentFolder.value)
+}
+
+function onFileInput(event: Event) {
+  if (!(event.target instanceof HTMLInputElement)) return
+  upload(Array.from(event.target.files ?? []))
+  event.target.value = ''
+}
+
+// --- Drag and drop -----------------------------------------------------------------
 
 const dragDropEnabled = computed(() => props.draggable && !props.disabled)
 const dragDrop = useFileExplorerDragDrop({
   enabled: dragDropEnabled,
   index,
   selected: selectedIds,
-  isExpanded: id => expandedSet.value.has(id),
+  isExpanded: id => treeExpanded.value.includes(id),
   expand: (id) => {
-    if (!expandedSet.value.has(id)) setExpanded([...expandedIds.value, id])
+    if (!treeExpanded.value.includes(id)) treeExpanded.value = [...treeExpanded.value, id]
   },
   onMove: event => emit('move', event),
 })
+provideSharedDragDrop(dragDrop)
 
-// --- Search field ---------------------------------------------------------------
+const isExternalDrag = (event: DragEvent) =>
+  !dragDrop.draggingIds.value.length && Boolean(event.dataTransfer?.types.includes('Files'))
 
-const viewport = useTemplateRef<HTMLElement>('viewport')
-
-function onSearchKeydown(event: KeyboardEvent) {
-  if (event.key === 'ArrowDown') {
-    const target = viewport.value?.querySelector<HTMLElement>('[role="treeitem"][tabindex="0"]')
-      ?? viewport.value?.querySelector<HTMLElement>('[role="treeitem"]')
-    if (target) {
-      event.preventDefault()
-      target.focus()
-    }
-  }
-  else if (event.key === 'Escape' && searchQuery.value) {
+function onContentDragOver(event: DragEvent) {
+  if (isExternalDrag(event)) {
+    if (!uploadable.value) return
     event.preventDefault()
-    searchQuery.value = ''
+    if (event.dataTransfer) event.dataTransfer.dropEffect = 'copy'
+    externalDrag.value = true
+    return
   }
+  // Empty space targets the open folder, where the items already are: refused,
+  // which also clears any folder highlight left behind.
+  dragDrop.onDragOver(navigation.current.value, event)
 }
 
-const skeletonRows = [
-  { depth: 0, width: 'w-20' },
-  { depth: 1, width: 'w-28' },
-  { depth: 2, width: 'w-24' },
-  { depth: 2, width: 'w-16' },
-  { depth: 1, width: 'w-32' },
-  { depth: 0, width: 'w-16' },
-] as const
+function onContentDragLeave(event: DragEvent) {
+  const next = event.relatedTarget
+  if (!(next instanceof Node && event.currentTarget instanceof Node && event.currentTarget.contains(next)))
+    externalDrag.value = false
+  dragDrop.onDragLeave(event)
+}
+
+function onContentDrop(event: DragEvent) {
+  if (externalDrag.value) {
+    event.preventDefault()
+    externalDrag.value = false
+    upload(Array.from(event.dataTransfer?.files ?? []))
+    return
+  }
+  dragDrop.onDrop(event)
+}
+
+// --- Context menu -------------------------------------------------------------------
+
+const hasContextMenu = computed(() => Boolean(slots['context-menu']))
+const contextItemId = ref<string | null>(null)
+const contextItem = computed<FileExplorerItem<TData> | null>(() =>
+  contextItemId.value === null ? null : index.value.get(contextItemId.value)?.item ?? null)
+
+function onItemContextMenu(id: string) {
+  contextItemId.value = id
+  lastFocusedId.value = id
+  if (!selectedSet.value.has(id) && isSelectable(id)) selection.replace(id)
+}
 
 provideFileExplorerContext({
-  query: search.query,
-  size: toRef(props, 'size'),
-  guides: toRef(props, 'guides'),
+  selected: selectedSet,
+  focusedId,
+  now: useNow({ interval: 60_000 }),
   draggable: dragDropEnabled,
-  dropTargetId: dragDrop.dropTargetId,
-  draggingIds: dragDrop.draggingIds,
-  onItemSelect,
-  onItemOpen,
+  dragDrop,
+  onItemClick,
+  onItemOpen: openItem,
   onItemContextMenu,
-  extendSelection: selection.extend,
-  selectAll: selection.selectAll,
-  onDragStart: dragDrop.onDragStart,
-  onDragOver: dragDrop.onDragOver,
-  onDrop: dragDrop.onDrop,
-  onDragEnd: dragDrop.onDragEnd,
 })
 </script>
 
 <template>
   <div
     data-slot="file-explorer"
-    :class="cn('flex min-h-0 flex-col gap-2 text-sm [--file-explorer-indent:1rem]', props.class)"
     :data-disabled="disabled ? '' : undefined"
+    :class="cn(
+      '@container flex min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-card text-sm text-card-foreground',
+      disabled && 'pointer-events-none opacity-60',
+      props.class,
+    )"
   >
-    <div v-if="searchable" data-slot="file-explorer-search" class="relative shrink-0">
-      <Search aria-hidden="true" class="pointer-events-none absolute start-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-      <input
-        v-model="searchQuery"
-        type="text"
-        role="searchbox"
-        autocomplete="off"
-        spellcheck="false"
-        :aria-label="searchPlaceholder"
-        :placeholder="searchPlaceholder"
+    <FileExplorerToolbar
+      v-model:search="search"
+      v-model:view="view"
+      :path="path"
+      :root-label="rootLabel"
+      :item-count="contentItems.length"
+      :can-go-back="navigation.canGoBack.value"
+      :can-go-forward="navigation.canGoForward.value"
+      :can-go-up="navigation.canGoUp.value"
+      :show-new-folder="Boolean(onCreateFolder)"
+      :show-upload="uploadable"
+      :disabled="disabled"
+      @back="navigation.back"
+      @forward="navigation.forward"
+      @up="goUp"
+      @navigate="navigation.navigate"
+      @new-folder="onCreateFolder?.(currentFolder)"
+      @upload="fileInput?.click()"
+    >
+      <template v-if="$slots['toolbar-actions']" #actions>
+        <slot name="toolbar-actions" />
+      </template>
+    </FileExplorerToolbar>
+
+    <div class="flex min-h-0 flex-1">
+      <FileExplorerSidebar
+        v-if="sidebar"
+        v-model:expanded="treeExpanded"
+        :items="items"
+        :folder="navigation.current.value"
+        :item-count="contentItems.length"
+        :selected-size="selectedSize"
+        :draggable="dragDropEnabled"
         :disabled="disabled"
-        :class="cn(
-          'h-8 w-full min-w-0 rounded-md border border-input bg-transparent ps-8 pe-8 text-sm shadow-xs outline-none',
-          'transition-[color,box-shadow] placeholder:text-muted-foreground dark:bg-input/30',
-          'focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50',
-          'disabled:cursor-not-allowed disabled:opacity-50',
-        )"
-        @keydown="onSearchKeydown"
+        :get-icon="getIcon"
+        @navigate="navigation.navigate"
       >
-      <button
-        v-if="searchQuery"
-        type="button"
-        aria-label="Clear search"
-        class="absolute end-1.5 top-1/2 flex size-5 -translate-y-1/2 items-center justify-center rounded-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
-        @click="searchQuery = ''"
-      >
-        <X aria-hidden="true" class="size-3.5" />
-      </button>
+        <template v-if="hasContextMenu" #context-menu="scope">
+          <slot name="context-menu" v-bind="scope" />
+        </template>
+      </FileExplorerSidebar>
+
+      <div class="flex min-w-0 flex-1 flex-col">
+        <ContextMenuRoot>
+          <ContextMenuTrigger as-child :disabled="!hasContextMenu || loading || disabled">
+            <FileExplorerContent
+              ref="content"
+              tabindex="-1"
+              :items="contentItems"
+              :view="view"
+              :sort="sort"
+              :query="query"
+              :loading="loading"
+              :multiple="multiple"
+              :uploadable="uploadable"
+              :external-drag="externalDrag"
+              :folder-name="currentFolder?.name ?? rootLabel"
+              :label="label"
+              :get-icon="getIcon"
+              class="outline-none"
+              @update:sort="sort = $event"
+              @pick="fileInput?.click()"
+              @click="onContentClick"
+              @keydown="onContentKeydown"
+              @contextmenu.capture="contextItemId = null"
+              @dragover="onContentDragOver"
+              @dragleave="onContentDragLeave"
+              @drop="onContentDrop"
+            >
+              <template v-if="$slots.preview" #preview="scope">
+                <slot name="preview" v-bind="scope" />
+              </template>
+              <template v-if="$slots.empty" #empty="scope">
+                <slot name="empty" v-bind="scope" />
+              </template>
+            </FileExplorerContent>
+          </ContextMenuTrigger>
+
+          <ContextMenuPortal v-if="hasContextMenu">
+            <ContextMenuContent
+              data-slot="file-explorer-context-menu"
+              :class="cn(
+                'z-50 max-h-(--reka-context-menu-content-available-height) min-w-[8rem] origin-(--reka-context-menu-content-transform-origin) overflow-x-hidden overflow-y-auto',
+                'rounded-md border bg-popover p-1 text-popover-foreground shadow-md',
+                'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
+                'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
+              )"
+            >
+              <slot name="context-menu" :item="contextItem" />
+            </ContextMenuContent>
+          </ContextMenuPortal>
+        </ContextMenuRoot>
+
+        <FileExplorerStatusBar :selected-items="selectedItems" :item-count="contentItems.length" @open="emit('open', $event)">
+          <template v-if="$slots['status-actions']" #actions="scope">
+            <slot name="status-actions" v-bind="scope" />
+          </template>
+        </FileExplorerStatusBar>
+      </div>
     </div>
 
-    <ContextMenuRoot>
-      <ContextMenuTrigger as-child :disabled="!hasContextMenu || loading || disabled">
-        <div
-          ref="viewport"
-          data-slot="file-explorer-viewport"
-          :aria-busy="loading ? 'true' : undefined"
-          :data-drop-target="dragDrop.dropTargetId.value === null ? '' : undefined"
-          class="relative min-h-0 flex-1 overflow-y-auto rounded-md p-px data-[drop-target]:bg-primary/5 data-[drop-target]:ring-1 data-[drop-target]:ring-inset data-[drop-target]:ring-primary/30"
-          @contextmenu.capture="contextItemId = null"
-          @dragover="dragDrop.onDragOver(null, $event)"
-          @dragleave="dragDrop.onDragLeave"
-          @drop="dragDrop.onDrop"
-        >
-          <slot v-if="loading" name="loading">
-            <div role="status" aria-label="Loading files" class="flex flex-col">
-              <div
-                v-for="(row, i) in skeletonRows"
-                :key="i"
-                :style="{ '--file-explorer-depth': row.depth }"
-                :class="cn(
-                  'flex items-center gap-2 ps-[calc(var(--file-explorer-depth)_*_var(--file-explorer-indent)_+_1.5rem)]',
-                  size === 'sm' ? 'h-6' : 'h-7',
-                )"
-              >
-                <div class="size-4 shrink-0 animate-pulse rounded-sm bg-accent motion-reduce:animate-none" />
-                <div :class="cn('h-3 animate-pulse rounded-sm bg-accent motion-reduce:animate-none', row.width)" />
-              </div>
-            </div>
-          </slot>
-
-          <slot v-else-if="!displayItems.length" name="empty" :query="search.query.value">
-            <div class="flex flex-col items-center justify-center gap-2 px-4 py-10 text-center">
-              <FolderOpen aria-hidden="true" class="size-5 text-muted-foreground/70" />
-              <p class="text-sm text-muted-foreground">
-                <template v-if="search.query.value">
-                  No results for “{{ search.query.value }}”
-                </template>
-                <template v-else>
-                  No files
-                </template>
-              </p>
-            </div>
-          </slot>
-
-          <FileExplorerTree
-            v-else
-            :items="displayItems"
-            :expanded="expandedIds"
-            :selected-items="selectedItems"
-            :multiple="multiple"
-            :disabled="disabled"
-            :get-icon="getIcon"
-            :aria-label="label"
-            @update:expanded="setExpanded"
-          >
-            <template v-if="$slots.item" #item="scope">
-              <slot name="item" v-bind="scope" />
-            </template>
-            <template v-if="$slots.icon" #icon="scope">
-              <slot name="icon" v-bind="scope" />
-            </template>
-            <template v-if="$slots.label" #label="scope">
-              <slot name="label" v-bind="scope" />
-            </template>
-            <template v-if="$slots.actions" #actions="scope">
-              <slot name="actions" v-bind="scope" />
-            </template>
-          </FileExplorerTree>
-        </div>
-      </ContextMenuTrigger>
-
-      <ContextMenuPortal v-if="hasContextMenu">
-        <ContextMenuContent
-          data-slot="file-explorer-context-menu"
-          :class="cn(
-            'z-50 max-h-(--reka-context-menu-content-available-height) min-w-[8rem] origin-(--reka-context-menu-content-transform-origin) overflow-x-hidden overflow-y-auto',
-            'rounded-md border bg-popover p-1 text-popover-foreground shadow-md',
-            'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
-            'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
-          )"
-        >
-          <slot name="context-menu" :item="contextItem" />
-        </ContextMenuContent>
-      </ContextMenuPortal>
-    </ContextMenuRoot>
+    <input
+      v-if="uploadable"
+      ref="fileInput"
+      type="file"
+      multiple
+      :accept="accept"
+      class="sr-only"
+      tabindex="-1"
+      aria-hidden="true"
+      @change="onFileInput"
+    >
   </div>
 </template>

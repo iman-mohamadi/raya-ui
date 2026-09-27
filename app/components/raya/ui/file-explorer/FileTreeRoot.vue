@@ -1,9 +1,9 @@
 <script setup lang="ts" generic="TData">
 import { computed, nextTick } from 'vue'
 import { TreeRoot } from 'reka-ui'
-import FileExplorerNode from './FileExplorerNode.vue'
-import { injectFileExplorerContext } from './context'
-import type { FileExplorerIconResolver, FileExplorerItem, FileExplorerNodeSlots } from './types'
+import FileTreeNode from './FileTreeNode.vue'
+import { injectFileTreeContext } from './context'
+import type { FileExplorerIconResolver, FileExplorerItem, FileTreeNodeSlots } from './types'
 
 const props = defineProps<{
   items: FileExplorerItem<TData>[]
@@ -19,13 +19,18 @@ const emit = defineEmits<{
   'update:expanded': [value: string[]]
 }>()
 
-defineSlots<FileExplorerNodeSlots<TData>>()
+defineSlots<FileTreeNodeSlots<TData>>()
 
-const ctx = injectFileExplorerContext()
+const ctx = injectFileTreeContext()
 
 const getKey = (item: FileExplorerItem<TData>) => item.id
-// Folders always report children (possibly empty) so Reka treats them as expandable.
-const getChildren = (item: FileExplorerItem<TData>) => (item.type === 'folder' ? item.children ?? [] : undefined)
+// Folders report children (possibly empty) so Reka treats them as expandable,
+// except leaf folders in a folders-only tree, which match FileTreeNode.
+const getChildren = (item: FileExplorerItem<TData>) => {
+  if (item.type !== 'folder') return undefined
+  if (ctx.foldersOnly.value && !item.children?.length) return undefined
+  return item.children ?? []
+}
 
 const modelValue = computed(() => (props.multiple ? props.selectedItems : props.selectedItems[0]))
 
@@ -65,12 +70,12 @@ function onKeydown(event: KeyboardEvent) {
     :multiple="multiple"
     :expanded="expanded"
     :disabled="disabled"
-    data-slot="file-explorer-tree"
+    data-slot="file-tree-tree"
     class="outline-none"
     @update:expanded="emit('update:expanded', $event)"
     @keydown="onKeydown"
   >
-    <FileExplorerNode
+    <FileTreeNode
       v-for="(item, i) in items"
       :key="item.id"
       :item="item"
@@ -91,6 +96,6 @@ function onKeydown(event: KeyboardEvent) {
       <template v-if="$slots.actions" #actions="scope">
         <slot name="actions" v-bind="scope" />
       </template>
-    </FileExplorerNode>
+    </FileTreeNode>
   </TreeRoot>
 </template>

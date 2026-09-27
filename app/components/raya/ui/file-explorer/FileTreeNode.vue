@@ -9,16 +9,16 @@ import {
 } from 'reka-ui'
 import { ChevronRight } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
-import FileExplorerNode from './FileExplorerNode.vue'
-import { injectFileExplorerContext } from './context'
+import FileTreeNode from './FileTreeNode.vue'
+import { injectFileTreeContext } from './context'
 import type {
   FileExplorerIconResolver,
   FileExplorerItem,
   FileExplorerItemSlotProps,
-  FileExplorerNodeSlots,
+  FileTreeNodeSlots,
 } from './types'
 import { getFileIcon, isFolder, splitByQuery } from './utils'
-import { fileExplorerIconVariants, fileExplorerRowVariants } from './variants'
+import { fileTreeIconVariants, fileTreeRowVariants } from './variants'
 
 const props = defineProps<{
   item: FileExplorerItem<TData>
@@ -29,14 +29,16 @@ const props = defineProps<{
   getIcon?: FileExplorerIconResolver<TData>
 }>()
 
-defineSlots<FileExplorerNodeSlots<TData>>()
+defineSlots<FileTreeNodeSlots<TData>>()
 
-const ctx = injectFileExplorerContext()
+const ctx = injectFileTreeContext()
 
 const folder = computed(() => isFolder(props.item))
 const children = computed(() => props.item.children ?? [])
-const isDragging = computed(() => ctx.draggingIds.value.includes(props.item.id))
-const isDropTarget = computed(() => ctx.dropTargetId.value === props.item.id)
+// In a folders-only tree, a folder without subfolders is a leaf, like Windows' navigation pane.
+const expandable = computed(() => folder.value && (!ctx.foldersOnly.value || children.value.length > 0))
+const isDragging = computed(() => ctx.dragDrop.draggingIds.value.includes(props.item.id))
+const isDropTarget = computed(() => ctx.dragDrop.dropTargetId.value === props.item.id)
 
 function slotProps(expanded: boolean, selected: boolean, disabled: boolean): FileExplorerItemSlotProps<TData> {
   return { item: props.item, depth: props.depth, expanded, selected, disabled }
@@ -50,16 +52,19 @@ function hasModifier(event: Event) {
   return event instanceof MouseEvent && (event.shiftKey || event.metaKey || event.ctrlKey)
 }
 
-// Selection is owned by FileExplorer (id-based, desktop-style), so Reka's
+// Selection is owned by FileTree (id-based, desktop-style), so Reka's
 // default object-based handling is always prevented.
 function onSelect(event: TreeItemSelectEvent<FileExplorerItem<TData>>) {
   event.preventDefault()
   ctx.onItemSelect(props.item.id, event.detail.originalEvent)
 }
 
-// Modifier clicks build a selection; they shouldn't also open folders.
+// Modifier clicks build a selection; they shouldn't also open folders. With
+// `expandOnClick` off, only the chevron and the arrow keys open folders.
 function onToggle(event: TreeItemToggleEvent<FileExplorerItem<TData>>) {
-  if (hasModifier(event.detail.originalEvent)) event.preventDefault()
+  const original = event.detail.originalEvent
+  if (hasModifier(original) || (!ctx.expandOnClick.value && original instanceof MouseEvent))
+    event.preventDefault()
 }
 
 function onContextMenu(event: MouseEvent) {
@@ -75,7 +80,7 @@ function stopHorizontalArrowKeys(event: KeyboardEvent) {
 }
 
 function onDragOver(event: DragEvent) {
-  ctx.onDragOver(props.item.id, event)
+  ctx.dragDrop.onDragOver(props.item.id, event)
   // The explorer's own handler treats unclaimed space as the root folder.
   event.stopPropagation()
 }
@@ -90,35 +95,35 @@ function onDragOver(event: DragEvent) {
     :aria-setsize="setsize"
     :aria-posinset="posinset"
     :data-item-id="item.id"
-    data-slot="file-explorer-item"
+    data-slot="file-tree-item"
     :class="cn(
       'outline-none',
-      '[&:focus-visible>[data-slot=file-explorer-row]]:ring-2 [&:focus-visible>[data-slot=file-explorer-row]]:ring-inset [&:focus-visible>[data-slot=file-explorer-row]]:ring-ring/50',
+      '[&:focus-visible>[data-slot=file-tree-row]]:ring-2 [&:focus-visible>[data-slot=file-tree-row]]:ring-inset [&:focus-visible>[data-slot=file-tree-row]]:ring-ring/50',
     )"
-    :style="{ '--file-explorer-depth': depth }"
+    :style="{ '--file-tree-depth': depth }"
     @select="onSelect"
     @toggle="onToggle"
     @contextmenu="onContextMenu"
   >
     <div
-      data-slot="file-explorer-row"
-      :class="fileExplorerRowVariants({ size: ctx.size.value })"
+      data-slot="file-tree-row"
+      :class="fileTreeRowVariants({ size: ctx.size.value })"
       :data-selected="isSelected ? '' : undefined"
       :data-disabled="isDisabled ? '' : undefined"
       :data-dragging="isDragging ? '' : undefined"
       :data-drop-target="isDropTarget ? '' : undefined"
       :draggable="ctx.draggable.value && !isDisabled ? 'true' : undefined"
       @dblclick="!isDisabled && ctx.onItemOpen(item.id)"
-      @dragstart="ctx.onDragStart(item.id, $event)"
+      @dragstart="ctx.dragDrop.onDragStart(item.id, $event)"
       @dragover="onDragOver"
-      @drop.stop="ctx.onDrop($event)"
-      @dragend="ctx.onDragEnd()"
+      @drop.stop="ctx.dragDrop.onDrop($event)"
+      @dragend="ctx.dragDrop.onDragEnd()"
     >
       <!-- Pointer-only affordance: keyboard users toggle with ArrowLeft/Right on the treeitem. -->
       <span
-        v-if="folder"
+        v-if="expandable"
         aria-hidden="true"
-        data-slot="file-explorer-chevron"
+        data-slot="file-tree-chevron"
         class="flex size-4 shrink-0 items-center justify-center rounded-sm text-muted-foreground/80 hover:text-foreground"
         @click.stop="!isDisabled && handleToggle()"
       >
@@ -136,7 +141,7 @@ function onDragOver(event: DragEvent) {
           <component
             :is="resolveIcon(slotProps(isExpanded, isSelected, isDisabled))"
             aria-hidden="true"
-            :class="fileExplorerIconVariants({ size: ctx.size.value })"
+            :class="fileTreeIconVariants({ size: ctx.size.value })"
           />
         </slot>
         <slot name="label" v-bind="slotProps(isExpanded, isSelected, isDisabled)" :query="ctx.query.value">
@@ -157,19 +162,19 @@ function onDragOver(event: DragEvent) {
       </span>
     </div>
 
-    <CollapsibleRoot v-if="folder" :open="isExpanded" as-child>
+    <CollapsibleRoot v-if="expandable" :open="isExpanded" as-child>
       <CollapsibleContent
         as="ul"
         role="group"
-        data-slot="file-explorer-group"
+        data-slot="file-tree-group"
         :class="cn(
           'relative overflow-hidden',
           'data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up duration-150 motion-reduce:animate-none',
-          ctx.guides.value && 'before:pointer-events-none before:absolute before:inset-y-0 before:start-[calc(var(--file-explorer-depth)_*_var(--file-explorer-indent)_+_0.75rem_-_0.5px)] before:w-px before:bg-border',
+          ctx.guides.value && 'before:pointer-events-none before:absolute before:inset-y-0 before:start-[calc(var(--file-tree-depth)_*_var(--file-tree-indent)_+_0.75rem_-_0.5px)] before:w-px before:bg-border',
         )"
         @keydown="stopHorizontalArrowKeys"
       >
-        <FileExplorerNode
+        <FileTreeNode
           v-for="(child, i) in children"
           :key="child.id"
           :item="child"
@@ -190,7 +195,7 @@ function onDragOver(event: DragEvent) {
           <template v-if="$slots.actions" #actions="scope">
             <slot name="actions" v-bind="scope" />
           </template>
-        </FileExplorerNode>
+        </FileTreeNode>
       </CollapsibleContent>
     </CollapsibleRoot>
   </TreeItem>

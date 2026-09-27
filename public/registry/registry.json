@@ -336,7 +336,7 @@
       "name": "file-explorer",
       "type": "registry:ui",
       "title": "File Explorer",
-      "description": "A recursive, accessible file tree with keyboard navigation, ID-based selection, search, context menus and optional drag and drop.",
+      "description": "A desktop-style file explorer: directory tree, breadcrumbs, grid and details views, keyboard navigation, multi-selection, filtering, context menus, drag and drop and uploads. Also exports the standalone FileTree.",
       "dependencies": [
         "reka-ui",
         "lucide-vue-next",
@@ -355,11 +355,43 @@
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/FileExplorerTree.vue",
+          "path": "app/components/raya/ui/file-explorer/FileExplorerToolbar.vue",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/FileExplorerNode.vue",
+          "path": "app/components/raya/ui/file-explorer/FileExplorerSidebar.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/FileExplorerContent.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/FileExplorerCard.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/FileExplorerRow.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/FileExplorerFileIcon.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/FileExplorerStatusBar.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/FileTree.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/FileTreeRoot.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/FileTreeNode.vue",
           "type": "registry:ui"
         },
         {
@@ -379,11 +411,23 @@
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/useFileExplorerSearch.ts",
+          "path": "app/components/raya/ui/file-explorer/useFileExplorerNavigation.ts",
           "type": "registry:ui"
         },
         {
           "path": "app/components/raya/ui/file-explorer/useFileExplorerSelection.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/useFileExplorerKeyboard.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/useFileExplorerItem.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/useFileExplorerSearch.ts",
           "type": "registry:ui"
         },
         {
