@@ -10,7 +10,7 @@ export default async function globalSetup(config: FullConfig) {
   const baseURL = project?.use.baseURL ?? 'http://localhost:3000'
   const browser = await chromium.launch({ channel: project?.use.channel })
   const page = await browser.newPage()
-  for (const path of ['/docs/components/file-explorer?slow=0', '/__e2e/file-explorer?count=10']) {
+  for (const path of ['/docs/components/file-manager?slow=0', '/__e2e/file-manager?count=10']) {
     // Load until a visit completes without a reload in the middle of it.
     for (let attempt = 0; attempt < 5; attempt++) {
       let reloaded = false

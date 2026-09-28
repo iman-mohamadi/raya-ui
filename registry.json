@@ -333,10 +333,10 @@
       ]
     },
     {
-      "name": "file-explorer",
+      "name": "file-manager",
       "type": "registry:ui",
-      "title": "File Explorer",
-      "description": "A desktop-style, backend-agnostic file explorer: directory tree, sidebar locations, breadcrumbs, grid and details views with configurable columns, keyboard navigation, multi-selection, clipboard, drag and drop, uploads, conflict resolution, trash, permissions, lazy loading and pagination, and async operations with progress, retry, cancel and undo. Also exports the standalone FileTree.",
+      "title": "File Manager",
+      "description": "A desktop-style, backend-agnostic file manager: directory tree, sidebar locations, breadcrumbs, grid and details views with configurable columns, keyboard navigation, multi-selection, clipboard, drag and drop, uploads, conflict resolution, trash, permissions, lazy loading and pagination, and async operations with progress, retry, cancel and undo. Also exports the standalone FileTree.",
       "dependencies": [
         "reka-ui",
         "lucide-vue-next",
@@ -351,171 +351,171 @@
       "registryDependencies": [],
       "files": [
         {
-          "path": "app/components/raya/ui/file-explorer/FileExplorer.vue",
+          "path": "app/components/raya/ui/file-manager/FileManager.vue",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/FileExplorerToolbar.vue",
+          "path": "app/components/raya/ui/file-manager/FileManagerToolbar.vue",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/FileExplorerBreadcrumbs.vue",
+          "path": "app/components/raya/ui/file-manager/FileManagerBreadcrumbs.vue",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/FileExplorerSidebar.vue",
+          "path": "app/components/raya/ui/file-manager/FileManagerSidebar.vue",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/FileExplorerContent.vue",
+          "path": "app/components/raya/ui/file-manager/FileManagerContent.vue",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/FileExplorerDetailsHeader.vue",
+          "path": "app/components/raya/ui/file-manager/FileManagerDetailsHeader.vue",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/FileExplorerCard.vue",
+          "path": "app/components/raya/ui/file-manager/FileManagerCard.vue",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/FileExplorerCardBody.vue",
+          "path": "app/components/raya/ui/file-manager/FileManagerCardBody.vue",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/FileExplorerRow.vue",
+          "path": "app/components/raya/ui/file-manager/FileManagerRow.vue",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/FileExplorerRowCells.vue",
+          "path": "app/components/raya/ui/file-manager/FileManagerRowCells.vue",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/FileExplorerFileIcon.vue",
+          "path": "app/components/raya/ui/file-manager/FileManagerFileIcon.vue",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/FileExplorerStatusBar.vue",
+          "path": "app/components/raya/ui/file-manager/FileManagerStatusBar.vue",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/FileExplorerRenameInput.vue",
+          "path": "app/components/raya/ui/file-manager/FileManagerRenameInput.vue",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/FileExplorerDeleteDialog.vue",
+          "path": "app/components/raya/ui/file-manager/FileManagerDeleteDialog.vue",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/FileExplorerConflictDialog.vue",
+          "path": "app/components/raya/ui/file-manager/FileManagerConflictDialog.vue",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/FileExplorerOperations.vue",
+          "path": "app/components/raya/ui/file-manager/FileManagerOperations.vue",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/FileExplorerMenuItems.vue",
+          "path": "app/components/raya/ui/file-manager/FileManagerMenuItems.vue",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/FileExplorerCommandPalette.vue",
+          "path": "app/components/raya/ui/file-manager/FileManagerCommandPalette.vue",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/FileTree.vue",
+          "path": "app/components/raya/ui/file-manager/FileTree.vue",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/FileTreeRoot.vue",
+          "path": "app/components/raya/ui/file-manager/FileTreeRoot.vue",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/FileTreeNode.vue",
+          "path": "app/components/raya/ui/file-manager/FileTreeNode.vue",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/context.ts",
+          "path": "app/components/raya/ui/file-manager/context.ts",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/slot.ts",
+          "path": "app/components/raya/ui/file-manager/slot.ts",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/types.ts",
+          "path": "app/components/raya/ui/file-manager/types.ts",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/utils.ts",
+          "path": "app/components/raya/ui/file-manager/utils.ts",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/variants.ts",
+          "path": "app/components/raya/ui/file-manager/variants.ts",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/messages.ts",
+          "path": "app/components/raya/ui/file-manager/messages.ts",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/columns.ts",
+          "path": "app/components/raya/ui/file-manager/columns.ts",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/useFileExplorerNavigation.ts",
+          "path": "app/components/raya/ui/file-manager/useFileManagerNavigation.ts",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/useFileExplorerSelection.ts",
+          "path": "app/components/raya/ui/file-manager/useFileManagerSelection.ts",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/useFileExplorerKeyboard.ts",
+          "path": "app/components/raya/ui/file-manager/useFileManagerKeyboard.ts",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/useFileExplorerItem.ts",
+          "path": "app/components/raya/ui/file-manager/useFileManagerItem.ts",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/useFileExplorerActions.ts",
+          "path": "app/components/raya/ui/file-manager/useFileManagerActions.ts",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/useFileExplorerSearch.ts",
+          "path": "app/components/raya/ui/file-manager/useFileManagerSearch.ts",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/useFileExplorerDragDrop.ts",
+          "path": "app/components/raya/ui/file-manager/useFileManagerDragDrop.ts",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/useFileExplorerOperations.ts",
+          "path": "app/components/raya/ui/file-manager/useFileManagerOperations.ts",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/useFileExplorerConflicts.ts",
+          "path": "app/components/raya/ui/file-manager/useFileManagerConflicts.ts",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/useFileExplorerLoader.ts",
+          "path": "app/components/raya/ui/file-manager/useFileManagerLoader.ts",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/useFileExplorerCommands.ts",
+          "path": "app/components/raya/ui/file-manager/useFileManagerCommands.ts",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/useFocusRetention.ts",
+          "path": "app/components/raya/ui/file-manager/useFocusRetention.ts",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/useTouchDragDrop.ts",
+          "path": "app/components/raya/ui/file-manager/useTouchDragDrop.ts",
           "type": "registry:ui"
         },
         {
-          "path": "app/components/raya/ui/file-explorer/index.ts",
+          "path": "app/components/raya/ui/file-manager/index.ts",
           "type": "registry:ui"
         }
       ]

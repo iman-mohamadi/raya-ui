@@ -19,6 +19,11 @@ export default defineNuxtConfig({
         { path: '~/components', pathPrefix: false, extensions: ['vue'], ignore: ['**/index.ts'] },
     ],
 
+    // The File Explorer was renamed File Manager: keep old links working.
+    routeRules: {
+        '/docs/components/file-explorer': { redirect: { to: '/docs/components/file-manager', statusCode: 301 } },
+    },
+
     runtimeConfig: {
         public: {
             version: pkg.version
@@ -39,9 +44,9 @@ export default defineNuxtConfig({
             if (!nuxt.options.dev && !process.env.E2E_HARNESS) return
             nuxt.hook('pages:extend', (pages) => {
                 pages.push({
-                    name: 'e2e-file-explorer',
-                    path: '/__e2e/file-explorer',
-                    file: fileURLToPath(new URL('./e2e/harness/FileExplorerHarness.vue', import.meta.url)),
+                    name: 'e2e-file-manager',
+                    path: '/__e2e/file-manager',
+                    file: fileURLToPath(new URL('./e2e/harness/FileManagerHarness.vue', import.meta.url)),
                 })
             })
         },

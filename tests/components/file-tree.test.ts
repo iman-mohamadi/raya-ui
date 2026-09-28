@@ -6,13 +6,13 @@ import {
   FileTree,
   filterFileTree,
   getFileIcon,
-  type FileExplorerItem,
-  type FileExplorerMoveEvent,
+  type FileManagerItem,
+  type FileManagerMoveEvent,
   type FileTreeProps,
-  type FileExplorerSelectEvent,
-} from '@/components/raya/ui/file-explorer'
+  type FileManagerSelectEvent,
+} from '@/components/raya/ui/file-manager'
 
-const createItems = (): FileExplorerItem<{ owner: string }>[] => [
+const createItems = (): FileManagerItem<{ owner: string }>[] => [
   {
     id: 'src',
     name: 'src',
@@ -191,7 +191,7 @@ describe('FileTree: selection', () => {
 
     expect(lastEmit(w, 'update:selected')).toEqual(['README.md'])
     expect(treeitem(w, 'README.md').attributes('aria-selected')).toBe('true')
-    expect(lastEmit<FileExplorerSelectEvent>(w, 'select')?.item.id).toBe('README.md')
+    expect(lastEmit<FileManagerSelectEvent>(w, 'select')?.item.id).toBe('README.md')
   })
 
   it('selects a folder on click', async () => {
@@ -256,7 +256,7 @@ describe('FileTree: selection', () => {
     expect(secret.attributes('aria-selected')).toBe('false')
   })
 
-  it('selects nothing when the whole explorer is disabled', async () => {
+  it('selects nothing when the whole file manager is disabled', async () => {
     const w = render({ disabled: true })
     await row(w, 'README.md').trigger('click')
     expect(w.emitted('update:selected')).toBeUndefined()
@@ -308,7 +308,7 @@ describe('FileTree: keyboard', () => {
     await press(w, 'README.md', 'Enter')
 
     expect(lastEmit(w, 'update:selected')).toEqual(['README.md'])
-    expect(lastEmit<FileExplorerItem>(w, 'open')?.id).toBe('README.md')
+    expect(lastEmit<FileManagerItem>(w, 'open')?.id).toBe('README.md')
   })
 
   it('selects and toggles a folder with Enter', async () => {
@@ -418,9 +418,9 @@ describe('FileTree: states and slots', () => {
 
   it('passes typed item state to the item slots at every depth', () => {
     const w = render({ defaultExpanded: ['src', 'src/components'] }, {
-      label: ({ item, depth }: { item: FileExplorerItem<{ owner: string }>, depth: number }) =>
+      label: ({ item, depth }: { item: FileManagerItem<{ owner: string }>, depth: number }) =>
         h('span', { class: 'custom-label' }, `${depth}:${item.name}:${item.data?.owner ?? '-'}`),
-      actions: ({ item }: { item: FileExplorerItem }) => (item.type === 'file' ? h('span', { class: 'meta' }, 'file') : null),
+      actions: ({ item }: { item: FileManagerItem }) => (item.type === 'file' ? h('span', { class: 'meta' }, 'file') : null),
     })
 
     const labels = w.findAll('.custom-label').map(el => el.text())
@@ -438,7 +438,7 @@ describe('FileTree: rename & delete', () => {
     await press(w, 'README.md', 'F2')
     await new Promise(resolve => setTimeout(resolve, 40))
 
-    const input = w.find<HTMLInputElement>('[data-slot="file-explorer-rename-input"]')
+    const input = w.find<HTMLInputElement>('[data-slot="file-manager-rename-input"]')
     // Drawn over the item, not inside it: a treeitem must not contain an input.
     expect(treeitem(w, 'README.md').find('input').exists()).toBe(false)
     expect([input.element.selectionStart, input.element.selectionEnd]).toEqual([0, 6])
@@ -451,7 +451,7 @@ describe('FileTree: rename & delete', () => {
     const w = render({ onRename: vi.fn(), defaultExpanded: ['src'] })
     await focus(w, 'src')
     await press(w, 'src', 'F2')
-    const input = w.find('[data-slot="file-explorer-rename-input"]')
+    const input = w.find('[data-slot="file-manager-rename-input"]')
     await input.trigger('keydown', { key: 'ArrowLeft' })
     await settle()
     expect(w.emitted('update:expanded')).toBeUndefined()
@@ -463,7 +463,7 @@ describe('FileTree: rename & delete', () => {
     await focus(w, 'README.md')
     await press(w, 'README.md', 'Delete')
 
-    const confirm = Array.from(document.body.querySelectorAll('[data-slot="file-explorer-delete-dialog"] button'))
+    const confirm = Array.from(document.body.querySelectorAll('[data-slot="file-manager-delete-dialog"] button'))
       .find(button => button.textContent?.trim() === 'Delete')
     expect(confirm).toBeDefined()
     ;(confirm as HTMLElement).click()
@@ -493,7 +493,7 @@ describe('FileTree: drag and drop', () => {
     expect(row(w, 'src/components').attributes('data-drop-target')).toBe('')
 
     await row(w, 'src/components').trigger('drop', { dataTransfer: transfer })
-    const move = lastEmit<FileExplorerMoveEvent>(w, 'move')
+    const move = lastEmit<FileManagerMoveEvent>(w, 'move')
     expect(move?.items.map(item => item.id)).toEqual(['README.md'])
     expect(move?.target?.id).toBe('src/components')
   })

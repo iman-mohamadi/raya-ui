@@ -2,6 +2,6 @@
   "extends": "../.nuxt/tsconfig.app.json",
   "include": [
     "./**/*.ts",
-    "../app/components/raya/ui/file-explorer/**/*"
+    "../app/components/raya/ui/file-manager/**/*"
   ]
 }

@@ -28,7 +28,8 @@ export default defineConfig({
   timeout: 45_000,
   expect: {
     timeout: 8_000,
-    toHaveScreenshot: { maxDiffPixelRatio: 0.01, animations: 'disabled', caret: 'hide' },
+    // Tight enough that a changed word fails; loose enough for anti-aliasing noise.
+    toHaveScreenshot: { maxDiffPixelRatio: 0.002, animations: 'disabled', caret: 'hide' },
   },
   snapshotPathTemplate: '{testDir}/__screenshots__/{testFilePath}/{arg}-{projectName}{ext}',
   use: {
