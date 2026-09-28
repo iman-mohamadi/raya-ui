@@ -1,0 +1,13 @@
+{
+  "extends": "../.nuxt/tsconfig.app.json",
+  "compilerOptions": {
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "./**/*.ts",
+    "./**/*.vue",
+    "../playwright.config.ts"
+  ]
+}

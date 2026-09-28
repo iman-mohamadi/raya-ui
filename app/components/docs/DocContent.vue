@@ -3,6 +3,11 @@ import { ref } from 'vue'
 import AppNav from '~/components/app/AppNav.vue'
 import ThemeSwitcher from '~/components/app/ThemeSwitcher.vue'
 
+const props = defineProps<{
+  /** App-like previews (explorers, editors) need more than half a phone screen. */
+  tallPreview?: boolean
+}>()
+
 const isExpanded = ref(false)
 const showCode = ref(false)
 const isSidebarOpen = ref(false)
@@ -56,7 +61,7 @@ const closeSidebarOnLeave = () => {
 
         <!-- Top Header & Breadcrumb -->
         <div :class="isSidebarOpen ? 'z-[1000]' : 'z-[110]'" class="absolute top-0 left-0 right-0 h-12 flex items-center pointer-events-none select-none w-full lg:w-1/2">
-          <div aria-hidden="true" class="pointer-events-none absolute inset-0 z-50 bg-transparent" style="height: 106px; width: 100%; top: 0px; left: 0px; mask-image: linear-gradient(black 50%, transparent 100%); backdrop-filter: blur(4px);"></div>
+          <div aria-hidden="true" :class="isExpanded && 'lg:hidden'" class="pointer-events-none absolute inset-0 z-50 bg-transparent" style="height: 106px; width: 100%; top: 0px; left: 0px; mask-image: linear-gradient(black 50%, transparent 100%); backdrop-filter: blur(4px);"></div>
 
           <div class="relative flex items-center z-[150] gap-3 pt-6 px-6 pointer-events-auto">
             <button @click="isSidebarOpen = true" class="inline-flex shrink-0 items-center justify-center gap-2 text-sm font-medium transition-all text-muted-foreground hover:bg-background hover:text-foreground size-8 rounded-full">
@@ -103,8 +108,8 @@ const closeSidebarOnLeave = () => {
 
         <!-- RIGHT PANE: Interactive Preview & Code -->
         <div
-            class="order-1 lg:order-2 h-[50vh] lg:h-full transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] p-4 pt-20 lg:pt-6 lg:p-6 z-[100] flex flex-col"
-            :class="isExpanded ? 'lg:w-full' : 'lg:w-1/2'"
+            class="order-1 lg:order-2 lg:h-full transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] p-4 pt-20 lg:pt-6 lg:p-6 z-[100] flex flex-col"
+            :class="[isExpanded ? 'lg:w-full lg:pt-16' : 'lg:w-1/2', props.tallPreview ? 'h-[85svh] min-h-[560px]' : 'h-[50vh]']"
         >
           <div class="flex flex-col h-full z-20">
 
@@ -130,12 +135,12 @@ const closeSidebarOnLeave = () => {
                   </div>
 
                   <div class="flex h-[48px] items-center justify-between px-2 w-full shrink-0">
-                    <button @click="isExpanded = !isExpanded" class="hidden lg:flex h-9 w-10 cursor-pointer items-center justify-center rounded-2xl text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-300">
+                    <button type="button" :aria-label="isExpanded ? 'Collapse preview' : 'Expand preview'" :aria-pressed="isExpanded" @click="isExpanded = !isExpanded" class="hidden lg:flex h-9 w-10 cursor-pointer items-center justify-center rounded-2xl text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-300">
                       <svg v-if="!isExpanded" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="size-4"><path d="M15 3h6v6"></path><path d="m21 3-7 7"></path><path d="m3 21 7-7"></path><path d="M9 21H3v-6"></path></svg>
                       <svg v-else xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="size-4"><path d="M9 9L3 3m0 6V3h6m6 12l6 6m0-6v6h-6"/></svg>
                     </button>
 
-                    <button @click="refreshPreview" class="flex h-9 w-10 cursor-pointer items-center justify-center rounded-2xl text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-300">
+                    <button type="button" aria-label="Reload preview" @click="refreshPreview" class="flex h-9 w-10 cursor-pointer items-center justify-center rounded-2xl text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-300">
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="size-4"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
                     </button>
 
@@ -147,6 +152,9 @@ const closeSidebarOnLeave = () => {
 
                     <button
                         v-if="$slots.settings"
+                        type="button"
+                        aria-label="Preview settings"
+                        :aria-expanded="showSettings"
                         @click="showSettings = !showSettings"
                         :class="['flex h-9 cursor-pointer items-center justify-center rounded-2xl transition-all duration-300 gap-2', showSettings ? 'px-3 bg-muted text-foreground' : 'w-10 text-muted-foreground hover:bg-muted hover:text-foreground']"
                     >
@@ -155,6 +163,9 @@ const closeSidebarOnLeave = () => {
                     </button>
 
                     <button
+                        type="button"
+                        :aria-label="showCode ? 'Hide code' : 'Show code'"
+                        :aria-pressed="showCode"
                         @click="showCode = !showCode"
                         :class="['flex h-9 w-10 cursor-pointer items-center justify-center rounded-2xl transition-colors duration-300', showCode ? 'text-success bg-success/10 hover:bg-success/20' : 'text-muted-foreground hover:bg-muted hover:text-foreground']"
                     >

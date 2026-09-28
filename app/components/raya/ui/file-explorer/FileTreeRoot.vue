@@ -3,7 +3,7 @@ import { computed, nextTick } from 'vue'
 import { TreeRoot } from 'reka-ui'
 import FileTreeNode from './FileTreeNode.vue'
 import { injectFileTreeContext } from './context'
-import type { FileExplorerIconResolver, FileExplorerItem, FileTreeNodeSlots } from './types'
+import type { FileExplorerIconResolver, FileExplorerItem } from './types'
 import { isExpandableFolder } from './utils'
 
 const props = defineProps<{
@@ -20,8 +20,6 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:expanded': [value: string[]]
 }>()
-
-defineSlots<FileTreeNodeSlots<TData>>()
 
 const ctx = injectFileTreeContext()
 
@@ -93,18 +91,6 @@ function onKeydown(event: KeyboardEvent) {
       :setsize="items.length"
       :get-icon="getIcon"
     >
-      <template v-if="$slots.item" #item="scope">
-        <slot name="item" v-bind="scope" />
-      </template>
-      <template v-if="$slots.icon" #icon="scope">
-        <slot name="icon" v-bind="scope" />
-      </template>
-      <template v-if="$slots.label" #label="scope">
-        <slot name="label" v-bind="scope" />
-      </template>
-      <template v-if="$slots.actions" #actions="scope">
-        <slot name="actions" v-bind="scope" />
-      </template>
     </FileTreeNode>
   </TreeRoot>
 </template>

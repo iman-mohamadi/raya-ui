@@ -80,6 +80,9 @@ async function press(w: VueWrapper, key: string, init: KeyboardEventInit = {}) {
   await settle()
 }
 
+/** Text of every alert on the page (live regions included). */
+const alerts = () => [...document.body.querySelectorAll('[role="alert"]')].map(node => node.textContent ?? '').join(' | ')
+
 describe('FileExplorer: browsing', () => {
   it('shows the root as cards in a listbox, folders first', () => {
     const w = render()
@@ -194,7 +197,7 @@ describe('FileExplorer: selection', () => {
     await option(w, 'src/App.vue').trigger('click')
 
     expect(statusBar(w).text()).toContain('App.vue')
-    expect(statusBar(w).text()).toContain('1000 B, text/x-vue')
+    expect(statusBar(w).text()).toContain('1000 B, Vue component')
     expect(w.find('[data-slot="file-explorer-sidebar"]').text()).toContain('1000 B selected')
   })
 
@@ -386,13 +389,13 @@ describe('FileExplorer: rename', () => {
     await renameInput(w).setValue('COMPONENTS')
     await renameInput(w).trigger('keydown', { key: 'Enter' })
     await nextTick()
-    expect(document.body.querySelector('[role="alert"]')?.textContent).toContain('already exists')
+    expect(alerts()).toContain('already exists')
     expect(renameInput(w).attributes('aria-invalid')).toBe('true')
 
     await renameInput(w).setValue('.env')
     await renameInput(w).trigger('keydown', { key: 'Enter' })
     await nextTick()
-    expect(document.body.querySelector('[role="alert"]')?.textContent).toContain('Hidden files')
+    expect(alerts()).toContain('Hidden files')
     expect(onRename).not.toHaveBeenCalled()
   })
 
@@ -411,7 +414,7 @@ describe('FileExplorer: rename', () => {
     await node.trigger('keydown', { key: 'F2' })
     await settleFrame()
 
-    const input = node.find<HTMLInputElement>('[data-slot="file-explorer-rename-input"]')
+    const input = w.find<HTMLInputElement>('[data-slot="file-explorer-rename-input"]')
     await input.setValue('source')
     await input.trigger('keydown', { key: 'Enter' })
     expect(onRename).toHaveBeenCalledWith(expect.objectContaining({ id: 'src' }), 'source', expect.anything())

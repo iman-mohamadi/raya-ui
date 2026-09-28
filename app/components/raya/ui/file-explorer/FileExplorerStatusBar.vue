@@ -22,15 +22,15 @@ const m = computed(() => ctx.messages.value)
 const single = computed(() => (props.selectedItems.length === 1 ? props.selectedItems[0] : undefined))
 const totalSize = computed(() => {
   const files = props.selectedItems.filter(item => !isFolder(item))
-  return files.length ? formatBytes(files.reduce((sum, item) => sum + (item.size ?? 0), 0)) : ''
+  return files.length ? formatBytes(files.reduce((sum, item) => sum + (item.size ?? 0), 0), m.value) : ''
 })
 const details = computed(() => {
   const item = single.value
   if (!item) return ''
   if (isFolder(item)) return item.children ? m.value.items(item.children.length) : ''
   const kind = getFileKind(item)
-  const type = item.mimeType ?? m.value.fileKind(kind.category, getFileExtension(item), kind.label)
-  return [formatBytes(item.size), type].filter(Boolean).join(', ')
+  const type = m.value.fileKind(kind.category, getFileExtension(item), kind.label)
+  return [formatBytes(item.size, m.value), type].filter(Boolean).join(m.value.listSeparator)
 })
 
 const shown = computed(() => props.actions.filter(action =>
@@ -43,8 +43,8 @@ const shown = computed(() => props.actions.filter(action =>
     <p aria-live="polite" class="flex min-w-0 items-center gap-2 text-muted-foreground">
       <template v-if="single">
         <span aria-hidden="true" class="size-1.5 shrink-0 rounded-full bg-primary" />
-        <span class="truncate font-medium text-foreground/90">{{ single.name }}</span>
-        <span v-if="details" class="hidden shrink-0 @md:inline">({{ details }})</span>
+        <bdi class="truncate font-medium text-foreground/90">{{ single.name }}</bdi>
+        <span v-if="details" class="hidden shrink-0 @md:inline">(<bdi>{{ details }}</bdi>)</span>
       </template>
       <template v-else-if="selectedItems.length">
         {{ m.itemsSelected(selectedItems.length) }}<template v-if="totalSize"> · {{ totalSize }}</template>
@@ -62,7 +62,8 @@ const shown = computed(() => props.actions.filter(action =>
             :data-action="action.id"
             :class="cn(
               'rounded-sm outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring/50',
-              i === 0 ? 'text-primary' : 'hover:text-foreground',
+              // The default action: a themed underline in light mode, where primary text is too pale.
+              i === 0 ? 'text-foreground underline decoration-primary decoration-2 underline-offset-2 dark:text-primary dark:no-underline dark:hover:underline' : 'hover:text-foreground',
             )"
             @click="action.run()"
           >

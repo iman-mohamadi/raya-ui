@@ -1,6 +1,7 @@
 <script setup lang="ts" generic="TData">
-import { computed } from 'vue'
+import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
 import { DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuRoot, DropdownMenuTrigger } from 'reka-ui'
+import { useElementSize } from '@vueuse/core'
 import { Ellipsis, Folder, FolderOpen } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
 import { injectFileExplorerContext } from './context'
@@ -30,9 +31,37 @@ const all = computed<Crumb[]>(() => [
   ...props.path.map(folder => ({ id: folder.id, label: folder.name })),
 ])
 
-/** Long paths keep the root, the parent and the open folder; the rest sits in a menu. */
-const collapsed = computed(() => (all.value.length > 3 ? all.value.slice(1, -2) : []))
-const visible = computed(() => (collapsed.value.length ? [all.value[0], ...all.value.slice(-2)] : all.value).filter(crumb => crumb !== undefined))
+/** Folders between the root and the open one. */
+const between = computed(() => all.value.slice(1, -1))
+
+/**
+ * Long paths keep the root, the parent and the open folder; the rest sits in a
+ * menu. When even that does not fit, the parent joins the menu too (`squeeze`)
+ * before any label is truncated.
+ */
+const squeeze = ref(0)
+const hiddenCount = computed(() => Math.min(between.value.length, Math.max(0, between.value.length - 1) + squeeze.value))
+const collapsed = computed(() => between.value.slice(0, hiddenCount.value))
+const visible = computed(() => {
+  const [root] = all.value
+  const current = all.value.length > 1 ? all.value.at(-1) : undefined
+  return [root, ...between.value.slice(hiddenCount.value), current].filter(crumb => crumb !== undefined)
+})
+
+const list = useTemplateRef<HTMLElement>('list')
+const { width } = useElementSize(list)
+const truncated = () => [...(list.value?.querySelectorAll<HTMLElement>('[data-crumb]') ?? [])]
+  .some(label => label.scrollWidth > label.clientWidth + 1)
+
+async function fit() {
+  squeeze.value = 0
+  await nextTick()
+  while (hiddenCount.value < between.value.length && truncated()) {
+    squeeze.value += 1
+    await nextTick()
+  }
+}
+watch([width, all, () => props.listingLabel], fit, { flush: 'post' })
 
 function onDragOver(id: string | null, event: DragEvent) {
   ctx.dragDrop.onDragOver(id, event)
@@ -45,7 +74,7 @@ const crumbButton = 'block max-w-full truncate rounded px-1 py-0.5 text-muted-fo
 <template>
   <nav :aria-label="ctx.messages.value.folderPath" class="flex min-w-0 flex-1 items-center gap-1.5 font-mono text-xs">
     <component :is="listingLabel ? FolderOpen : Folder" aria-hidden="true" class="size-4 shrink-0 text-muted-foreground" />
-    <ol class="flex min-w-0 flex-1 items-center gap-1">
+    <ol ref="list" class="flex min-w-0 flex-1 items-center gap-1">
       <li v-if="listingLabel" class="min-w-0 max-w-[80%] shrink-0">
         <span aria-current="page" class="block truncate rounded bg-muted px-1.5 py-0.5 text-foreground">{{ listingLabel }}</span>
       </li>
@@ -54,7 +83,7 @@ const crumbButton = 'block max-w-full truncate rounded px-1 py-0.5 text-muted-fo
 
         <template v-if="i === 1 && collapsed.length">
           <li class="shrink-0">
-            <DropdownMenuRoot :dir="dir">
+            <DropdownMenuRoot :dir="dir" :modal="false">
               <DropdownMenuTrigger
                 :aria-label="ctx.messages.value.hiddenFolders"
                 :disabled="disabled"
@@ -84,12 +113,14 @@ const crumbButton = 'block max-w-full truncate rounded px-1 py-0.5 text-muted-fo
           <span
             v-if="i === visible.length - 1"
             aria-current="page"
+            data-crumb
             :data-drop-target="ctx.dragDrop.dropTargetId.value === crumb.id ? '' : undefined"
             class="block max-w-full truncate rounded bg-muted px-1.5 py-0.5 text-foreground data-[drop-target]:bg-primary/15 data-[drop-target]:text-primary"
           >{{ crumb.label }}</span>
           <button
             v-else
             type="button"
+            data-crumb
             :disabled="disabled"
             :data-drop-target="ctx.dragDrop.dropTargetId.value === crumb.id ? '' : undefined"
             :class="crumbButton"

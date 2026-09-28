@@ -179,7 +179,8 @@ export interface FileExplorerOperationContext<TData = unknown> {
 
 // --- Conflicts --------------------------------------------------------------------
 
-export type FileExplorerConflictReason = 'exists' | 'invalid-name' | 'permission' | 'unknown'
+/** `into-itself`: a folder pasted into itself or one of its own subfolders. */
+export type FileExplorerConflictReason = 'exists' | 'invalid-name' | 'permission' | 'into-itself' | 'unknown'
 
 export interface FileExplorerConflict<TData = unknown> {
   /** Name of the incoming item. */
@@ -418,6 +419,19 @@ export interface FileExplorerColumn<TData = unknown> {
   pinned?: boolean
 }
 
+/** A line in the command palette (`command-palette`): an action, or a place to go. */
+export interface FileExplorerCommand {
+  id: string
+  label: string
+  /** Secondary text, e.g. a folder's path. */
+  hint?: string
+  icon?: Component
+  shortcut?: string
+  group: 'actions' | 'go'
+  destructive?: boolean
+  run: () => void
+}
+
 /** A flat set of items shown instead of the open folder: search results, Recent, Starred, Trash… */
 export interface FileExplorerListing<TData = unknown> {
   items: FileExplorerItem<TData>[]
@@ -506,6 +520,8 @@ export interface FileExplorerProps<TData = unknown> {
   search?: string
   /** Bind with `v-model:sort`. Folders always come first. */
   sort?: FileExplorerSort
+  /** Initial sort when `sort` is not bound. Defaults to name, ascending. */
+  defaultSort?: FileExplorerSort
   /** Copied or cut items. Bind with `v-model:clipboard` to share it between explorers. */
   clipboard?: FileExplorerClipboard<TData> | null
   /** Active sidebar location without a folder. Bind with `v-model:location`. */
@@ -516,8 +532,21 @@ export interface FileExplorerProps<TData = unknown> {
   locations?: FileExplorerLocationSection[]
   /** Your own operations (e.g. per-file upload progress), shown next to the explorer's. */
   operations?: FileExplorerOperationState[]
-  /** Details view columns. Defaults to name, modified, type and size. */
+  /**
+   * Details view columns. Defaults to name, modified, type and size. `v-model:columns`
+   * receives the new list when a column is resized or moved.
+   */
   columns?: (FileExplorerColumnKey | FileExplorerColumn<TData>)[]
+  /**
+   * A command palette on Ctrl/Cmd+K (while focus is in the explorer): the
+   * selection's actions and every loaded folder and location, searchable.
+   * Off by default, since apps often own Ctrl/Cmd+K.
+   */
+  commandPalette?: boolean
+  /** Columns can be resized by dragging (or with the keyboard on) their edge. Default `true`. */
+  resizableColumns?: boolean
+  /** Columns other than the name can be dragged (or moved with Alt+Shift+Arrow). Default `true`. */
+  reorderableColumns?: boolean
   /** Starred item ids. */
   favorites?: string[]
   /** Ctrl/Cmd-click, Shift-click, Shift+Arrow and Ctrl/Cmd+A. */
@@ -604,6 +633,8 @@ export interface FileExplorerEmits<TData = unknown> {
   'update:view': [value: FileExplorerView]
   'update:search': [value: string]
   'update:sort': [value: FileExplorerSort]
+  /** A column was resized or moved. */
+  'update:columns': [value: FileExplorerColumn<TData>[]]
   'update:clipboard': [value: FileExplorerClipboard<TData> | null]
   'update:location': [value: string | null]
   /** A file was opened with a double-click, Enter or the status bar. */

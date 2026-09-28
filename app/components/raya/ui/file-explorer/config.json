@@ -19,8 +19,11 @@
     "FileExplorerBreadcrumbs.vue",
     "FileExplorerSidebar.vue",
     "FileExplorerContent.vue",
+    "FileExplorerDetailsHeader.vue",
     "FileExplorerCard.vue",
+    "FileExplorerCardBody.vue",
     "FileExplorerRow.vue",
+    "FileExplorerRowCells.vue",
     "FileExplorerFileIcon.vue",
     "FileExplorerStatusBar.vue",
     "FileExplorerRenameInput.vue",
@@ -28,10 +31,12 @@
     "FileExplorerConflictDialog.vue",
     "FileExplorerOperations.vue",
     "FileExplorerMenuItems.vue",
+    "FileExplorerCommandPalette.vue",
     "FileTree.vue",
     "FileTreeRoot.vue",
     "FileTreeNode.vue",
     "context.ts",
+    "slot.ts",
     "types.ts",
     "utils.ts",
     "variants.ts",
@@ -48,6 +53,8 @@
     "useFileExplorerConflicts.ts",
     "useFileExplorerLoader.ts",
     "useFileExplorerCommands.ts",
+    "useFocusRetention.ts",
+    "useTouchDragDrop.ts",
     "index.ts"
   ]
 }

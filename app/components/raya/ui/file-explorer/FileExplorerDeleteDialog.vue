@@ -81,7 +81,7 @@ function onOpenChange(open: boolean) {
           <AlertDialogTitle class="truncate text-lg font-semibold text-foreground">
             {{ shown.title }}
           </AlertDialogTitle>
-          <AlertDialogDescription class="text-sm text-muted-foreground">
+          <AlertDialogDescription class="text-sm text-foreground/70">
             <slot name="description" :items="shown.items">
               {{ shown.description }}
             </slot>
@@ -92,7 +92,7 @@ function onOpenChange(open: boolean) {
             {{ messages.cancel }}
           </AlertDialogCancel>
           <AlertDialogAction
-            :class="cn(fileExplorerButtonVariants(), 'h-9 bg-destructive px-4 text-sm text-white hover:bg-destructive/90 hover:text-white focus-visible:ring-destructive/40')"
+            :class="cn(fileExplorerButtonVariants(), 'h-9 bg-destructive px-4 text-sm text-white hover:bg-destructive/90 hover:text-white focus-visible:ring-destructive/40 dark:bg-destructive/60 dark:hover:bg-destructive/70')"
             @click="emit('confirm', shown.items)"
           >
             {{ shown.confirm }}

@@ -438,7 +438,9 @@ describe('FileTree: rename & delete', () => {
     await press(w, 'README.md', 'F2')
     await new Promise(resolve => setTimeout(resolve, 40))
 
-    const input = treeitem(w, 'README.md').find<HTMLInputElement>('[data-slot="file-explorer-rename-input"]')
+    const input = w.find<HTMLInputElement>('[data-slot="file-explorer-rename-input"]')
+    // Drawn over the item, not inside it: a treeitem must not contain an input.
+    expect(treeitem(w, 'README.md').find('input').exists()).toBe(false)
     expect([input.element.selectionStart, input.element.selectionEnd]).toEqual([0, 6])
     await input.setValue('CHANGELOG.md')
     await input.trigger('keydown', { key: 'Enter' })
@@ -449,7 +451,7 @@ describe('FileTree: rename & delete', () => {
     const w = render({ onRename: vi.fn(), defaultExpanded: ['src'] })
     await focus(w, 'src')
     await press(w, 'src', 'F2')
-    const input = treeitem(w, 'src').find('[data-slot="file-explorer-rename-input"]')
+    const input = w.find('[data-slot="file-explorer-rename-input"]')
     await input.trigger('keydown', { key: 'ArrowLeft' })
     await settle()
     expect(w.emitted('update:expanded')).toBeUndefined()

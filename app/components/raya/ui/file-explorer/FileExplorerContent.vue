@@ -1,21 +1,22 @@
 <script setup lang="ts" generic="TData">
-import { computed, useTemplateRef, watch } from 'vue'
-import { useIntersectionObserver } from '@vueuse/core'
-import { ArrowDown, ArrowUp, CircleAlert, CloudUpload, FolderOpen, LoaderCircle, SearchX } from 'lucide-vue-next'
+import { computed, nextTick, ref, useTemplateRef, watch, type ComponentPublicInstance } from 'vue'
+import { useElementSize, useIntersectionObserver } from '@vueuse/core'
+import { CircleAlert, CloudUpload, FolderOpen, Inbox, LoaderCircle, SearchX, Trash2 } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
 import FileExplorerCard from './FileExplorerCard.vue'
+import FileExplorerDetailsHeader from './FileExplorerDetailsHeader.vue'
 import FileExplorerRow from './FileExplorerRow.vue'
-import type { ResolvedColumn } from './columns'
+import { CHECK_WIDTH, fitColumns, type ResolvedColumn } from './columns'
 import { injectFileExplorerContext } from './context'
+import { SlotOutlet } from './slot'
 import type {
-  FileExplorerColumn,
   FileExplorerIconResolver,
   FileExplorerItem,
   FileExplorerSort,
   FileExplorerView,
 } from './types'
 import type { LoadState } from './useFileExplorerLoader'
-import { fileExplorerButtonVariants, fileExplorerColumns } from './variants'
+import { fileExplorerButtonVariants } from './variants'
 
 const props = defineProps<{
   items: FileExplorerItem<TData>[]
@@ -32,23 +33,24 @@ const props = defineProps<{
   uploadable: boolean
   externalDrag: boolean
   folderName: string
+  /** What an empty view is: a folder, a listing (Recent, Starred…) or the trash. */
+  emptyKind: 'folder' | 'listing' | 'trash'
   label: string
   hasMore: boolean
+  resizableColumns: boolean
+  reorderableColumns: boolean
+  dir: 'ltr' | 'rtl'
   moreState: LoadState | undefined
   getIcon?: FileExplorerIconResolver<TData>
 }>()
 
 const emit = defineEmits<{
   'update:sort': [value: FileExplorerSort]
+  'resizeColumn': [key: string, width: string | undefined]
+  'moveColumn': [key: string, index: number]
   'pick': []
   'loadMore': []
   'retry': []
-}>()
-
-defineSlots<{
-  preview?: (props: { item: FileExplorerItem<TData> }) => unknown
-  empty?: (props: { query: string }) => unknown
-  cell?: (props: { item: FileExplorerItem<TData>, column: FileExplorerColumn<TData> }) => unknown
 }>()
 
 const ctx = injectFileExplorerContext()
@@ -60,42 +62,56 @@ const SKELETON_WIDTHS = ['w-2/5', 'w-1/2', 'w-1/3', 'w-3/5', 'w-1/4', 'w-2/5', '
 const busy = computed(() => props.loading || props.loadState?.status === 'loading')
 const failed = computed(() => props.loadState?.status === 'error')
 
-/** CSS grid tracks for the details view: every column wide, pinned ones narrow. */
-const tracks = computed(() => {
-  const check = props.multiple ? ['1.25rem'] : []
-  return {
-    '--file-explorer-columns': [...check, ...props.columns.map(column => column.width)].join(' '),
-    '--file-explorer-columns-narrow': [...check, ...props.columns.filter(column => column.pinned).map(column => column.width)].join(' '),
-  }
-})
+/** The details header: its width is the room the columns share. */
+const header = useTemplateRef<ComponentPublicInstance>('header')
+const { width: headerWidth } = useElementSize(header)
+const rootFontSize = () => (typeof document === 'undefined' ? 16 : Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16)
 
-function sortBy(column: ResolvedColumn<TData>) {
-  if (!column.sortable) return
-  const direction = props.sort.key === column.key && props.sort.direction === 'asc' ? 'desc' : 'asc'
-  emit('update:sort', { key: column.key, direction })
-}
+/** Columns that fit next to a readable name; the rest reappear as the explorer grows. */
+const visibleColumns = computed(() => fitColumns(props.columns, headerWidth.value / rootFontSize(), props.multiple))
 
-function sortLabel(column: ResolvedColumn<TData>) {
-  if (props.sort.key !== column.key) return m.value.sortBy(column.label)
-  return `${m.value.sortBy(column.label)}, ${props.sort.direction === 'asc' ? m.value.ascending : m.value.descending}`
-}
+/**
+ * A column being resized: its live width, applied to the grid tracks only, so
+ * the rows follow the pointer without rendering. The new width is committed
+ * (and the rows render once) when the drag ends.
+ */
+const draftWidth = ref<{ key: string, width: number } | null>(null)
 
-// Load the next page when the end of the list scrolls into view.
+/** CSS grid tracks for the details view. */
+const tracks = computed(() => ({
+  '--file-explorer-columns': [
+    ...(props.multiple ? [CHECK_WIDTH] : []),
+    ...visibleColumns.value.map(column => (draftWidth.value?.key === column.key ? `${draftWidth.value.width}px` : column.width)),
+  ].join(' '),
+}))
+
+// Load the next page when the end of the list comes within 200px of view. The
+// scroller is the observer's root: with the viewport as root, the scroller's
+// clipping would cancel the margin.
+const scroller = useTemplateRef<HTMLElement>('scroller')
 const sentinel = useTemplateRef<HTMLElement>('sentinel')
 const { isActive, pause, resume } = useIntersectionObserver(sentinel, ([entry]) => {
   if (entry?.isIntersecting && props.hasMore && !props.moreState) emit('loadMore')
-}, { rootMargin: '200px' })
-watch(() => props.moreState?.status === 'error', (error) => {
+}, { root: scroller, rootMargin: '200px' })
+watch(() => props.moreState?.status, (status, previous) => {
   // After a failure, wait for an explicit Retry instead of hammering the server.
-  if (error) pause()
-  else if (!isActive.value) resume()
+  if (status === 'error') pause()
+  // A page arrived: observe afresh. An observer only reports changes, so if the
+  // end is still in view (a short page, a tall explorer) loading would stall;
+  // observing again reports the current state.
+  else if (status === undefined && (previous === 'loading' || !isActive.value)) {
+    pause()
+    nextTick(resume)
+  }
 })
 </script>
 
 <template>
   <div
+    ref="scroller"
     data-slot="file-explorer-content"
     :aria-busy="busy ? 'true' : undefined"
+    :class="view === 'list' && 'scroll-pt-11'"
     class="relative min-h-0 flex-1 overflow-y-auto p-3"
   >
     <div
@@ -136,24 +152,23 @@ watch(() => props.moreState?.status === 'error', (error) => {
       </button>
     </div>
 
-    <slot v-else-if="!items.length && (query || view === 'list' || !uploadable)" name="empty" :query="query">
+    <SlotOutlet v-else-if="!items.length && (query || view === 'list' || !uploadable)" :slot="ctx.slots.empty" :scope="{ query }">
       <div class="flex h-full min-h-40 flex-col items-center justify-center gap-2 px-4 text-center text-sm text-muted-foreground">
-        <component :is="query ? SearchX : FolderOpen" aria-hidden="true" class="size-6 text-muted-foreground/60" />
+        <component :is="query ? SearchX : emptyKind === 'trash' ? Trash2 : emptyKind === 'listing' ? Inbox : FolderOpen" aria-hidden="true" class="size-6 text-muted-foreground/60" />
         <p v-if="query">{{ m.noMatches(query) }}</p>
+        <p v-else-if="emptyKind === 'trash'">{{ m.trashEmpty }}</p>
+        <p v-else-if="emptyKind === 'listing'">{{ m.noFiles }}</p>
         <template v-else>
           <p>{{ m.emptyFolder }}</p>
           <p v-if="uploadable" class="text-xs">{{ m.emptyFolderHint }}</p>
         </template>
       </div>
-    </slot>
+    </SlotOutlet>
 
     <div v-else-if="view === 'grid'" :class="GRID">
       <!-- `contents` lets the drop tile share the grid while staying outside the listbox. -->
       <div role="listbox" :aria-label="label" :aria-multiselectable="multiple || undefined" class="contents">
         <FileExplorerCard v-for="item in items" :key="item.id" :item="item" :get-icon="getIcon">
-          <template v-if="$slots.preview" #preview="scope">
-            <slot name="preview" v-bind="scope" />
-          </template>
         </FileExplorerCard>
       </div>
       <button
@@ -172,38 +187,21 @@ watch(() => props.moreState?.status === 'error', (error) => {
     </div>
 
     <div v-else class="flex flex-col" :style="tracks">
-      <div
-        role="presentation"
-        :class="cn(fileExplorerColumns, 'sticky top-0 z-10 -mx-3 -mt-3 mb-1 border-b border-border bg-card px-5 py-1.5')"
-      >
-        <span v-if="multiple" aria-hidden="true" />
-        <button
-          v-for="column in columns"
-          :key="column.key"
-          type="button"
-          :disabled="!column.sortable"
-          :aria-label="sortLabel(column)"
-          :class="cn(
-            'flex min-w-0 items-center gap-1 rounded-sm font-mono text-[11px] uppercase tracking-wider text-muted-foreground outline-none enabled:hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50',
-            column.align === 'end' && 'justify-end',
-            !column.pinned && 'hidden @xl:flex',
-          )"
-          @click="sortBy(column)"
-        >
-          <span class="truncate">{{ column.label }}</span>
-          <component
-            :is="sort.direction === 'asc' ? ArrowUp : ArrowDown"
-            v-if="sort.key === column.key"
-            aria-hidden="true"
-            class="size-3 shrink-0"
-          />
-        </button>
-      </div>
+      <FileExplorerDetailsHeader
+        ref="header"
+        :columns="visibleColumns"
+        :sort="sort"
+        :multiple="multiple"
+        :resizable="resizableColumns"
+        :reorderable="reorderableColumns"
+        :dir="dir"
+        @update:sort="emit('update:sort', $event)"
+        @preview="(key, width) => (draftWidth = width === null ? null : { key, width })"
+        @resize="(key, width) => emit('resizeColumn', key, width)"
+        @move="(key, index) => emit('moveColumn', key, index)"
+      />
       <div role="listbox" :aria-label="label" :aria-multiselectable="multiple || undefined" class="flex flex-col gap-px">
-        <FileExplorerRow v-for="item in items" :key="item.id" :item="item" :columns="columns" :get-icon="getIcon">
-          <template v-if="$slots.cell" #cell="scope">
-            <slot name="cell" v-bind="scope" />
-          </template>
+        <FileExplorerRow v-for="item in items" :key="item.id" :item="item" :columns="visibleColumns" :get-icon="getIcon">
         </FileExplorerRow>
       </div>
     </div>

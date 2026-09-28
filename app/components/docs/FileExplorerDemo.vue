@@ -20,6 +20,7 @@ import {
   type FileExplorerUploadContext,
   type FileExplorerView,
 } from '@/components/raya/ui/file-explorer'
+import { arabicMessages } from './fileExplorerArabic'
 
 const props = defineProps<{
   multiple: boolean
@@ -29,7 +30,13 @@ const props = defineProps<{
   loading: boolean
   /** Adds latency to every mock call. */
   slow: boolean
+  /** Arabic strings, right to left. */
+  arabic?: boolean
 }>()
+
+/** The demo's own strings (handler messages, sidebar labels), in the demo language. */
+const t = (en: string, ar: string) => (props.arabic ? ar : en)
+const count = (n: number, en: string) => (props.arabic ? arabicMessages.items(n) : `${n} ${en}${n === 1 ? '' : 's'}`)
 
 const view = defineModel<FileExplorerView>('view', { required: true })
 
@@ -230,7 +237,7 @@ const handlers = {
     const copies = event.items.map(item => cloneTree(item, nameOf(item)))
     files.value = insert(files.value, targetId, copies)
     const ids = new Set(copies.map(copy => copy.id))
-    return { select: [...ids], message: `Copied ${copies.length} item${copies.length === 1 ? '' : 's'}`, undo: () => { files.value = removeIds(files.value, ids) } }
+    return { select: [...ids], message: t(`Copied ${count(copies.length, 'item')}`, `تم نسخ ${count(copies.length, 'item')}`), undo: () => { files.value = removeIds(files.value, ids) } }
   },
 
   async onMove(event: { items: Item[], target: Item | null, conflicts?: FileExplorerConflictResolution[] }, context: FileExplorerOperationContext): Promise<Result> {
@@ -257,7 +264,7 @@ const handlers = {
     files.value = removeIds(files.value, new Set(event.items.map(item => item.id)))
     trash.value = [...trash.value, ...entries]
     return {
-      message: `Moved ${entries.length} item${entries.length === 1 ? '' : 's'} to Trash`,
+      message: t(`Moved ${count(entries.length, 'item')} to Trash`, `تم نقل ${count(entries.length, 'item')} إلى المهملات`),
       undo: () => restoreEntries(entries.map(entry => entry.item.id)),
     }
   },
@@ -265,7 +272,7 @@ const handlers = {
   async onRestore(event: { items: Item[] }, context: FileExplorerOperationContext): Promise<Result> {
     await server(context, 2)
     restoreEntries(event.items.map(item => item.id))
-    return { message: `Restored ${event.items.length} item${event.items.length === 1 ? '' : 's'}` }
+    return { message: t(`Restored ${count(event.items.length, 'item')}`, `تمت استعادة ${count(event.items.length, 'item')}`) }
   },
 
   async onDeletePermanently(event: { items: Item[] }, context: FileExplorerOperationContext) {
@@ -286,7 +293,7 @@ const handlers = {
 
   async onDownload(event: { items: Item[] }, context: FileExplorerOperationContext): Promise<Result> {
     await server(context, 6)
-    return { message: `Prepared ${event.items.length} download${event.items.length === 1 ? '' : 's'} (nothing is saved in this demo)` }
+    return { message: t(`Prepared ${count(event.items.length, 'download')} (nothing is saved in this demo)`, `تم تجهيز ${count(event.items.length, 'download')} (لا يُحفظ شيء في هذا العرض)`) }
   },
 
   async onRefresh(_: unknown, context: FileExplorerOperationContext) {
@@ -326,7 +333,7 @@ const handlers = {
   async onCopyLink(event: { items: Item[] }): Promise<Result> {
     const links = event.items.map(item => `https://files.example.com/${encodeURIComponent(item.id)}`).join('\n')
     await navigator.clipboard?.writeText(links).catch(() => {})
-    return { message: 'Link copied (example.com, not a real link)' }
+    return { message: t('Link copied (example.com, not a real link)', 'تم نسخ الرابط (example.com، ليس رابطًا حقيقيًا)') }
   },
 }
 
@@ -336,7 +343,7 @@ function moveItems(items: Item[], targetId: string | null, nameOf: (item: Item) 
   files.value = insert(removeIds(files.value, new Set(items.map(item => item.id))), targetId, moved)
   return {
     select: moved.map(item => item.id),
-    message: `Moved ${moved.length} item${moved.length === 1 ? '' : 's'}`,
+    message: t(`Moved ${count(moved.length, 'item')}`, `تم نقل ${count(moved.length, 'item')}`),
     undo: () => {
       // Put everything back where it came from.
       let tree = removeIds(files.value, new Set(moved.map(item => item.id)))
@@ -362,12 +369,12 @@ function restoreEntries(ids: string[]) {
 
 const locations = computed<FileExplorerLocationSection[]>(() => [
   {
-    label: 'Quick access',
+    label: t('Quick access', 'الوصول السريع'),
     locations: [
-      { id: 'home', label: 'Home', icon: House, folder: null },
-      { id: 'recent', label: 'Recent', icon: Clock },
-      { id: 'starred', label: 'Starred', icon: Star, badge: favorites.value.length || undefined },
-      { id: 'trash', label: 'Trash', icon: Trash2, trash: true, badge: trash.value.length || undefined },
+      { id: 'home', label: t('Home', 'الرئيسية'), icon: House, folder: null },
+      { id: 'recent', label: t('Recent', 'الأخيرة'), icon: Clock },
+      { id: 'starred', label: t('Starred', 'المميّزة'), icon: Star, badge: favorites.value.length || undefined },
+      { id: 'trash', label: t('Trash', 'المهملات'), icon: Trash2, trash: true, badge: trash.value.length || undefined },
     ],
   },
 ])
@@ -425,15 +432,19 @@ defineExpose({
       :readonly="readonly"
       :loading="loading"
       :columns="['name', 'modified', 'owner', 'type', 'size']"
+      :dir="arabic ? 'rtl' : 'ltr'"
+      :messages="arabic ? arabicMessages : undefined"
+      :root-label="t('root', 'الجذر')"
       directory-upload
-      label="Project files"
+      command-palette
+      :label="t('Project files', 'ملفات المشروع')"
       class="min-h-0 w-full flex-1 shadow-sm"
       v-bind="handlers"
       @open="item => (lastOpened = item.name)"
     />
-    <p class="h-4 shrink-0 truncate px-1 text-center font-mono text-[11px] text-muted-foreground" aria-live="polite">
-      <template v-if="lastOpened">open → {{ lastOpened }}</template>
-      <template v-else>Mock server in memory — try uploading a file named “fail.txt”.</template>
+    <p :dir="arabic ? 'rtl' : 'ltr'" class="h-4 shrink-0 truncate px-1 text-center font-mono text-[11px] text-muted-foreground" aria-live="polite">
+      <template v-if="lastOpened">{{ t('open', 'فتح') }} → {{ lastOpened }}</template>
+      <template v-else>{{ t('Mock server in memory — try uploading a file named “fail.txt”.', 'خادم وهمي في الذاكرة — جرّب رفع ملف باسم «fail.txt».') }}</template>
     </p>
 
     <div
@@ -444,7 +455,7 @@ defineExpose({
       class="absolute inset-x-6 bottom-16 top-6 z-40 flex flex-col overflow-hidden rounded-xl border border-border bg-popover text-popover-foreground shadow-xl sm:inset-x-auto sm:end-8 sm:w-80"
     >
       <div class="flex items-center gap-2 border-b border-border px-3 py-2">
-        <span class="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{{ preview.mode }}</span>
+        <span class="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{{ preview.mode === 'preview' ? t('Preview', 'معاينة') : t('Properties', 'الخصائص') }}</span>
         <span class="min-w-0 flex-1 truncate text-sm font-medium">{{ preview.item.name }}</span>
         <button type="button" aria-label="Close" class="rounded-sm p-1 text-muted-foreground hover:text-foreground" @click="preview = null">
           <X class="size-4" />

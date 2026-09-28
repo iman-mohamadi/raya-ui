@@ -19,7 +19,7 @@ import {
   FolderOpen,
   Presentation,
 } from 'lucide-vue-next'
-import { defaultFileExplorerMessages, type FileExplorerMessages } from './messages'
+import { defaultFileExplorerMessages, type FileExplorerMessages, type FileExplorerSizeUnit, type FileExplorerTimeUnit } from './messages'
 import type {
   FileExplorerColumn,
   FileExplorerConflict,
@@ -185,29 +185,29 @@ interface KindDefinition {
   icon: Component
 }
 
-const NEUTRAL_TONE = 'bg-muted text-muted-foreground'
+const NEUTRAL_TONE = 'bg-muted text-foreground/75'
 const KIND_TABLE: [extensions: string[], definition: KindDefinition][] = [
-  [['vue'], { category: 'code', label: 'Vue component', badge: 'V', tone: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400', icon: FileCode }],
-  [['ts', 'tsx', 'mts', 'cts'], { category: 'code', label: 'TypeScript', badge: 'TS', tone: 'bg-sky-500/10 text-sky-600 dark:text-sky-400', icon: FileCode }],
-  [['js', 'jsx', 'mjs', 'cjs'], { category: 'code', label: 'JavaScript', badge: 'JS', tone: 'bg-amber-500/10 text-amber-600 dark:text-amber-400', icon: FileCode }],
-  [['json', 'jsonc', 'json5'], { category: 'code', label: 'JSON', badge: '{}', tone: 'bg-amber-500/10 text-amber-600 dark:text-amber-400', icon: FileJson }],
-  [['css', 'scss', 'sass', 'less'], { category: 'code', label: 'Stylesheet', badge: '#', tone: 'bg-pink-500/10 text-pink-600 dark:text-pink-400', icon: FileCode }],
-  [['html', 'htm'], { category: 'code', label: 'HTML document', badge: '<>', tone: 'bg-orange-500/10 text-orange-600 dark:text-orange-400', icon: FileCode }],
+  [['vue'], { category: 'code', label: 'Vue component', badge: 'V', tone: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400', icon: FileCode }],
+  [['ts', 'tsx', 'mts', 'cts'], { category: 'code', label: 'TypeScript', badge: 'TS', tone: 'bg-sky-500/10 text-sky-700 dark:text-sky-400', icon: FileCode }],
+  [['js', 'jsx', 'mjs', 'cjs'], { category: 'code', label: 'JavaScript', badge: 'JS', tone: 'bg-amber-500/10 text-amber-700 dark:text-amber-400', icon: FileCode }],
+  [['json', 'jsonc', 'json5'], { category: 'code', label: 'JSON', badge: '{}', tone: 'bg-amber-500/10 text-amber-700 dark:text-amber-400', icon: FileJson }],
+  [['css', 'scss', 'sass', 'less'], { category: 'code', label: 'Stylesheet', badge: '#', tone: 'bg-pink-500/10 text-pink-700 dark:text-pink-400', icon: FileCode }],
+  [['html', 'htm'], { category: 'code', label: 'HTML document', badge: '<>', tone: 'bg-orange-500/10 text-orange-700 dark:text-orange-400', icon: FileCode }],
   [['svelte', 'astro', 'py', 'go', 'rs', 'java', 'kt', 'swift', 'rb', 'php', 'c', 'h', 'cpp', 'cs', 'sql', 'graphql', 'xml'], { category: 'code', label: 'Source code', tone: NEUTRAL_TONE, icon: FileCode }],
   [['md', 'mdx'], { category: 'text', label: 'Markdown', badge: 'MD', tone: NEUTRAL_TONE, icon: FileText }],
   [['txt', 'log', 'rtf'], { category: 'text', label: 'Text document', tone: NEUTRAL_TONE, icon: FileText }],
   [['yml', 'yaml', 'toml', 'ini', 'env', 'conf', 'config', 'editorconfig', 'gitignore'], { category: 'text', label: 'Configuration', tone: NEUTRAL_TONE, icon: FileCog }],
   [['lock'], { category: 'text', label: 'Lock file', tone: NEUTRAL_TONE, icon: FileLock }],
-  [['pdf'], { category: 'pdf', label: 'PDF document', tone: 'bg-red-500/10 text-red-600 dark:text-red-400', icon: FileText }],
-  [['doc', 'docx', 'odt', 'pages'], { category: 'document', label: 'Document', tone: 'bg-blue-500/10 text-blue-600 dark:text-blue-400', icon: FileText }],
-  [['xls', 'xlsx', 'ods', 'csv', 'tsv', 'numbers'], { category: 'spreadsheet', label: 'Spreadsheet', tone: 'bg-green-500/10 text-green-600 dark:text-green-400', icon: FileSpreadsheet }],
-  [['ppt', 'pptx', 'odp', 'key'], { category: 'presentation', label: 'Presentation', tone: 'bg-orange-500/10 text-orange-600 dark:text-orange-400', icon: Presentation }],
-  [['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'avif', 'ico', 'bmp', 'heic', 'tif', 'tiff'], { category: 'image', label: 'image', tone: 'bg-violet-500/10 text-violet-600 dark:text-violet-400', icon: FileImage }],
-  [['mp4', 'mov', 'webm', 'mkv', 'avi', 'm4v'], { category: 'video', label: 'video', tone: 'bg-rose-500/10 text-rose-600 dark:text-rose-400', icon: FileVideo }],
-  [['mp3', 'wav', 'ogg', 'flac', 'm4a', 'aac'], { category: 'audio', label: 'audio', tone: 'bg-rose-500/10 text-rose-600 dark:text-rose-400', icon: FileAudio }],
+  [['pdf'], { category: 'pdf', label: 'PDF document', tone: 'bg-red-500/10 text-red-700 dark:text-red-400', icon: FileText }],
+  [['doc', 'docx', 'odt', 'pages'], { category: 'document', label: 'Document', tone: 'bg-blue-500/10 text-blue-700 dark:text-blue-400', icon: FileText }],
+  [['xls', 'xlsx', 'ods', 'csv', 'tsv', 'numbers'], { category: 'spreadsheet', label: 'Spreadsheet', tone: 'bg-green-500/10 text-green-700 dark:text-green-400', icon: FileSpreadsheet }],
+  [['ppt', 'pptx', 'odp', 'key'], { category: 'presentation', label: 'Presentation', tone: 'bg-orange-500/10 text-orange-700 dark:text-orange-400', icon: Presentation }],
+  [['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'avif', 'ico', 'bmp', 'heic', 'tif', 'tiff'], { category: 'image', label: 'image', tone: 'bg-violet-500/10 text-violet-700 dark:text-violet-400', icon: FileImage }],
+  [['mp4', 'mov', 'webm', 'mkv', 'avi', 'm4v'], { category: 'video', label: 'video', tone: 'bg-rose-500/10 text-rose-700 dark:text-rose-400', icon: FileVideo }],
+  [['mp3', 'wav', 'ogg', 'flac', 'm4a', 'aac'], { category: 'audio', label: 'audio', tone: 'bg-rose-500/10 text-rose-700 dark:text-rose-400', icon: FileAudio }],
   [['zip', 'tar', 'gz', 'tgz', 'rar', '7z', 'bz2', 'xz'], { category: 'archive', label: 'Archive', tone: 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400', icon: FileArchive }],
   [['ttf', 'otf', 'woff', 'woff2'], { category: 'font', label: 'Font', tone: NEUTRAL_TONE, icon: FileType }],
-  [['obj', 'fbx', 'gltf', 'glb', 'stl', 'blend', 'usdz'], { category: '3d', label: '3D model', tone: 'bg-teal-500/10 text-teal-600 dark:text-teal-400', icon: Box }],
+  [['obj', 'fbx', 'gltf', 'glb', 'stl', 'blend', 'usdz'], { category: '3d', label: '3D model', tone: 'bg-teal-500/10 text-teal-700 dark:text-teal-400', icon: Box }],
   [['exe', 'msi', 'dmg', 'pkg', 'app', 'apk', 'deb', 'rpm', 'bat', 'cmd', 'com', 'scr', 'jar', 'vbs'], { category: 'executable', label: 'Application', tone: NEUTRAL_TONE, icon: AppWindow }],
   [['sh', 'bash', 'zsh', 'fish', 'ps1'], { category: 'executable', label: 'Shell script', tone: NEUTRAL_TONE, icon: FileTerminal }],
 ]
@@ -275,16 +275,17 @@ export function getFileIcon<TData>(item: FileExplorerItem<TData>, state: Pick<Fi
 }
 
 /** `1536` → `"1.5 KB"`. */
-export function formatBytes(bytes: number | undefined): string {
+/** "4.2 KB". Pass `messages` to translate the units. */
+export function formatBytes(bytes: number | undefined, messages: Pick<FileExplorerMessages, 'fileSize'> = defaultFileExplorerMessages): string {
   if (bytes === undefined || !Number.isFinite(bytes)) return ''
-  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  const units: FileExplorerSizeUnit[] = ['B', 'KB', 'MB', 'GB', 'TB']
   let value = bytes
   let unit = 0
   while (value >= 1024 && unit < units.length - 1) {
     value /= 1024
     unit += 1
   }
-  return unit === 0 ? `${value} B` : `${value.toFixed(1)} ${units[unit]}`
+  return messages.fileSize(unit === 0 ? String(value) : value.toFixed(1), units[unit] ?? 'B')
 }
 
 export function toDate(value: Date | string | undefined): Date | undefined {
@@ -294,22 +295,27 @@ export function toDate(value: Date | string | undefined): Date | undefined {
 }
 
 /** Compact relative time: `"just now"`, `"10m ago"`, `"3d ago"`. */
-export function formatRelativeTime(value: Date | string | undefined, now: Date = new Date()): string {
+/** "5m ago". Pass `messages` to translate. */
+export function formatRelativeTime(
+  value: Date | string | undefined,
+  now: Date = new Date(),
+  messages: Pick<FileExplorerMessages, 'justNow' | 'timeAgo'> = defaultFileExplorerMessages,
+): string {
   const date = toDate(value)
   if (!date) return ''
   const seconds = Math.round((now.getTime() - date.getTime()) / 1000)
-  if (seconds < 45) return 'just now'
-  const steps: [limit: number, size: number, suffix: string][] = [
-    [60 * 60, 60, 'm'],
-    [60 * 60 * 24, 60 * 60, 'h'],
-    [60 * 60 * 24 * 7, 60 * 60 * 24, 'd'],
-    [60 * 60 * 24 * 30, 60 * 60 * 24 * 7, 'w'],
-    [60 * 60 * 24 * 365, 60 * 60 * 24 * 30, 'mo'],
+  if (seconds < 45) return messages.justNow
+  const steps: [limit: number, size: number, unit: FileExplorerTimeUnit][] = [
+    [60 * 60, 60, 'minute'],
+    [60 * 60 * 24, 60 * 60, 'hour'],
+    [60 * 60 * 24 * 7, 60 * 60 * 24, 'day'],
+    [60 * 60 * 24 * 30, 60 * 60 * 24 * 7, 'week'],
+    [60 * 60 * 24 * 365, 60 * 60 * 24 * 30, 'month'],
   ]
-  for (const [limit, size, suffix] of steps) {
-    if (seconds < limit) return `${Math.max(1, Math.floor(seconds / size))}${suffix} ago`
+  for (const [limit, size, unit] of steps) {
+    if (seconds < limit) return messages.timeAgo(Math.max(1, Math.floor(seconds / size)), unit)
   }
-  return `${Math.floor(seconds / (60 * 60 * 24 * 365))}y ago`
+  return messages.timeAgo(Math.floor(seconds / (60 * 60 * 24 * 365)), 'year')
 }
 
 export type CodeTokenKind = 'keyword' | 'string' | 'tag' | 'comment' | 'plain'
@@ -498,4 +504,25 @@ export async function collectDroppedFiles(dataTransfer: DataTransfer, includeFol
   return Array.from(dataTransfer.files ?? [])
     .filter(file => file.type !== '' || file.size > 0 || file.name.includes('.'))
     .map(file => ({ file, path: '' }))
+}
+
+/**
+ * Focuses an element without the browser's own scroll-into-view, which also
+ * scrolls clipped (`overflow: hidden`) ancestors and can shift the host page
+ * under a fixed header. Only the nearest scroll container moves, just enough to
+ * show the element, honouring its `scroll-padding` (e.g. a sticky header).
+ */
+export function focusElement(element: HTMLElement | null | undefined) {
+  if (!element) return
+  element.focus({ preventScroll: true })
+  let scroller = element.parentElement
+  while (scroller && !/(auto|scroll)/.test(getComputedStyle(scroller).overflowY)) scroller = scroller.parentElement
+  if (!scroller) return
+  const style = getComputedStyle(scroller)
+  const padTop = Number.parseFloat(style.scrollPaddingTop) || 0
+  const padBottom = Number.parseFloat(style.scrollPaddingBottom) || 0
+  const box = element.getBoundingClientRect()
+  const view = scroller.getBoundingClientRect()
+  if (box.top < view.top + padTop) scroller.scrollTop -= view.top + padTop - box.top
+  else if (box.bottom > view.bottom - padBottom) scroller.scrollTop += Math.min(box.bottom - view.bottom + padBottom, box.top - view.top - padTop)
 }

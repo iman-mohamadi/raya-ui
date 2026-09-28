@@ -371,11 +371,23 @@
           "type": "registry:ui"
         },
         {
+          "path": "app/components/raya/ui/file-explorer/FileExplorerDetailsHeader.vue",
+          "type": "registry:ui"
+        },
+        {
           "path": "app/components/raya/ui/file-explorer/FileExplorerCard.vue",
           "type": "registry:ui"
         },
         {
+          "path": "app/components/raya/ui/file-explorer/FileExplorerCardBody.vue",
+          "type": "registry:ui"
+        },
+        {
           "path": "app/components/raya/ui/file-explorer/FileExplorerRow.vue",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/FileExplorerRowCells.vue",
           "type": "registry:ui"
         },
         {
@@ -407,6 +419,10 @@
           "type": "registry:ui"
         },
         {
+          "path": "app/components/raya/ui/file-explorer/FileExplorerCommandPalette.vue",
+          "type": "registry:ui"
+        },
+        {
           "path": "app/components/raya/ui/file-explorer/FileTree.vue",
           "type": "registry:ui"
         },
@@ -420,6 +436,10 @@
         },
         {
           "path": "app/components/raya/ui/file-explorer/context.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/slot.ts",
           "type": "registry:ui"
         },
         {
@@ -484,6 +504,14 @@
         },
         {
           "path": "app/components/raya/ui/file-explorer/useFileExplorerCommands.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/useFocusRetention.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "app/components/raya/ui/file-explorer/useTouchDragDrop.ts",
           "type": "registry:ui"
         },
         {

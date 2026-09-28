@@ -268,7 +268,7 @@ describe('FileExplorer: operations', () => {
     await press(w, 'd', { ctrlKey: true })
     await settle()
 
-    expect(panel(w).find('[role="alert"]').text()).toContain('Couldn’t duplicate 1 item')
+    expect(panel(w).find('li[data-status="error"]').text()).toContain('Couldn’t duplicate 1 item')
     expect(panel(w).text()).toContain('Network error')
     expect(w.emitted('operation-error')?.[0]?.[0]).toMatchObject({ type: 'duplicate', status: 'error' })
 
@@ -406,7 +406,8 @@ describe('FileExplorer: actions', () => {
     await w.setProps({ items })
     await settle(40)
     expect(option(w, 'src/new').attributes('aria-selected')).toBe('true')
-    const input = option(w, 'src/new').find<HTMLInputElement>('[data-slot="file-explorer-rename-input"]')
+    const input = w.find<HTMLInputElement>('[data-slot="file-explorer-rename-input"]')
+    expect(option(w, 'src/new').find('input').exists()).toBe(false)
     expect(input.exists()).toBe(true)
     expect(document.activeElement).toBe(input.element)
   })
@@ -604,11 +605,23 @@ describe('FileExplorer: focus and accessibility', () => {
     expect(document.activeElement?.getAttribute('data-item-id')).toBe('src/main.ts')
   })
 
-  it('announces operations politely and exposes progress', async () => {
-    const w = render({ operations: [{ id: 'x', type: 'copy', status: 'running', progress: 25 }] })
-    expect(panel(w).find('ul').attributes('aria-live')).toBe('polite')
+  it('announces status changes once, politely, and failures assertively', async () => {
+    const w = render({ operations: [] })
+    const polite = () => w.find('[aria-live="polite"][aria-atomic="true"]').text()
+    const assertive = () => w.find('[role="alert"][aria-atomic="true"]').text()
+    expect([polite(), assertive()]).toEqual(['', ''])
+
+    await w.setProps({ operations: [{ id: 'x', type: 'copy', status: 'running', progress: 25, label: 'Copying 2 items…' }] })
+    await flushPromises()
+    expect(polite()).toBe('Copying 2 items…')
     const bar = panel(w).find('[role="progressbar"]')
     expect([bar.attributes('aria-valuemin'), bar.attributes('aria-valuemax'), bar.attributes('aria-valuenow')]).toEqual(['0', '100', '25'])
+
+    await w.setProps({ operations: [{ id: 'x', type: 'copy', status: 'error', label: 'Couldn’t copy 2 items', error: 'Disk full' }] })
+    await flushPromises()
+    expect(assertive()).toBe('Couldn’t copy 2 items: Disk full')
+    // The list itself is not a live region: nothing is read twice.
+    expect(panel(w).find('ul').attributes('aria-live')).toBeUndefined()
   })
 
   it('translates through `messages`', () => {
@@ -619,5 +632,68 @@ describe('FileExplorer: focus and accessibility', () => {
     })
     expect(w.find('[data-action="new-folder"]').text()).toContain('Nouveau dossier')
     expect(w.find('[data-slot="file-explorer-status-bar"]').text()).toContain('3 éléments')
+  })
+})
+
+describe('FileExplorer: command palette', () => {
+  const palette = () => document.body.querySelector<HTMLElement>('[data-slot="file-explorer-command-palette"]')
+  const paletteInput = () => palette()?.querySelector<HTMLInputElement>('input')
+  const commandIds = () => Array.from(palette()?.querySelectorAll('[data-command]') ?? []).map(el => el.getAttribute('data-command'))
+
+  async function type(text: string) {
+    const input = paletteInput()!
+    input.value = text
+    input.dispatchEvent(new Event('input'))
+    await settle()
+  }
+
+  it('is off unless asked for', async () => {
+    const w = render({ defaultFolder: 'src' })
+    await press(w, 'k', { ctrlKey: true })
+    expect(palette()).toBeNull()
+  })
+
+  it('opens on Ctrl+K, filters, and goes to a folder', async () => {
+    const w = render({ defaultFolder: 'src', commandPalette: true })
+    await option(w, 'src/App.vue').trigger('click')
+    await press(w, 'k', { ctrlKey: true })
+    await settle(20)
+    expect(palette()).not.toBeNull()
+    expect(commandIds()).toContain('folder:docs')
+
+    await type('read')
+    expect(commandIds()).toEqual(['folder:readonly'])
+    paletteInput()!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+    await settle(20)
+    expect(palette()).toBeNull()
+    expect(w.emitted('update:folder')?.at(-1)).toEqual(['readonly'])
+  })
+
+  it('runs an action on the selection', async () => {
+    const w = render({ defaultFolder: 'src', commandPalette: true, onRename: vi.fn() })
+    await option(w, 'src/App.vue').trigger('click')
+    ;(w.vm as unknown as { openCommandPalette: () => void }).openCommandPalette()
+    await settle(20)
+    await type('rena')
+    expect(commandIds()).toEqual(['action:rename'])
+    paletteInput()!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+    await settle(40)
+    expect(w.find('[data-slot="file-explorer-rename-input"]').exists()).toBe(true)
+  })
+})
+
+describe('FileExplorer: API', () => {
+  it('starts from defaultSort without taking over the sort', async () => {
+    const w = render({ defaultFolder: 'src', defaultSort: { key: 'size', direction: 'desc' } })
+    expect(optionIds(w)).toEqual(['src/App.vue', 'src/main.ts', 'src/locked.ts'])
+    expect(w.emitted('update:sort')).toBeUndefined()
+  })
+
+  it('exposes focus()', async () => {
+    const w = render({ defaultFolder: 'src', defaultSelected: ['src/main.ts'] })
+    await option(w, 'src/main.ts').trigger('click')
+    ;(document.activeElement as HTMLElement | null)?.blur()
+    ;(w.vm as unknown as { focus: () => void }).focus()
+    expect(document.activeElement?.getAttribute('data-item-id')).toBe('src/main.ts')
   })
 })

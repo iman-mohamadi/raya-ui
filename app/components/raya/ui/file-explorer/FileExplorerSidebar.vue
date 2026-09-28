@@ -42,6 +42,9 @@ defineProps<{
 
 const expanded = defineModel<string[]>('expanded', { required: true })
 
+// Two roots (backdrop + panel): listeners such as @keydown go on the panel.
+defineOptions({ inheritAttrs: false })
+
 const emit = defineEmits<{
   navigate: [id: string]
   selectLocation: [location: FileExplorerLocation]
@@ -98,6 +101,7 @@ function onContextMenuCapture(event: MouseEvent, backgroundMenu: boolean) {
     @click="emit('close')"
   />
   <aside
+    v-bind="$attrs"
     data-slot="file-explorer-sidebar"
     :aria-label="ctx.messages.value.directoryTree"
     :data-open="open ? '' : undefined"
@@ -109,7 +113,7 @@ function onContextMenuCapture(event: MouseEvent, backgroundMenu: boolean) {
   >
     <nav v-if="locations.length" class="flex flex-col gap-3 px-2 pt-3" :aria-label="ctx.messages.value.folders">
       <div v-for="(section, s) in locations" :key="section.id ?? s" class="flex flex-col gap-0.5">
-        <p v-if="section.label" class="px-2 pb-1 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+        <p v-if="section.label" class="px-2 pb-1 font-mono text-[11px] uppercase tracking-wider rtl:tracking-normal text-muted-foreground">
           {{ section.label }}
         </p>
         <button
@@ -132,7 +136,7 @@ function onContextMenuCapture(event: MouseEvent, backgroundMenu: boolean) {
       </div>
     </nav>
 
-    <p aria-hidden="true" class="px-4 pb-1.5 pt-3 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+    <p aria-hidden="true" class="px-4 pb-1.5 pt-3 font-mono text-[11px] uppercase tracking-wider rtl:tracking-normal text-muted-foreground">
       {{ ctx.messages.value.directoryTree }}
     </p>
     <div class="flex min-h-0 flex-1 flex-col" @contextmenu.capture="onContextMenuCapture($event, backgroundMenu)">
@@ -163,7 +167,7 @@ function onContextMenuCapture(event: MouseEvent, backgroundMenu: boolean) {
     </div>
     <div class="flex h-9 shrink-0 items-center justify-between gap-2 border-t border-border px-4 font-mono text-[11px] text-muted-foreground">
       <span>{{ ctx.messages.value.items(itemCount) }}</span>
-      <span v-if="selectedSize" class="truncate text-emerald-600 dark:text-emerald-400">{{ ctx.messages.value.sizeSelected(selectedSize) }}</span>
+      <span v-if="selectedSize" class="truncate text-emerald-700 dark:text-emerald-400">{{ ctx.messages.value.sizeSelected(selectedSize) }}</span>
     </div>
   </aside>
 </template>

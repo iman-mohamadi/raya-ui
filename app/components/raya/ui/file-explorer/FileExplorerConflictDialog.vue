@@ -49,11 +49,11 @@ const sides = computed<Side[]>(() => {
   const now = new Date()
   const source = conflict.source
   const incoming: Side = source instanceof File
-    ? { label: props.messages.conflictIncoming, name: source.name, size: formatBytes(source.size), modified: formatRelativeTime(new Date(source.lastModified), now), item: { id: `incoming:${source.name}`, name: source.name, type: 'file', mimeType: source.type || undefined, size: source.size } }
-    : { label: props.messages.conflictIncoming, name: source.name, size: formatBytes(source.size), modified: formatRelativeTime(source.modifiedAt, now), item: source }
+    ? { label: props.messages.conflictIncoming, name: source.name, size: formatBytes(source.size, props.messages), modified: formatRelativeTime(new Date(source.lastModified), now, props.messages), item: { id: `incoming:${source.name}`, name: source.name, type: 'file', mimeType: source.type || undefined, size: source.size } }
+    : { label: props.messages.conflictIncoming, name: source.name, size: formatBytes(source.size, props.messages), modified: formatRelativeTime(source.modifiedAt, now, props.messages), item: source }
   const destination = conflict.destination
   const existing: Side | undefined = destination
-    ? { label: props.messages.conflictExisting, name: destination.name, size: formatBytes(destination.size), modified: formatRelativeTime(destination.modifiedAt, now), item: destination }
+    ? { label: props.messages.conflictExisting, name: destination.name, size: formatBytes(destination.size, props.messages), modified: formatRelativeTime(destination.modifiedAt, now, props.messages), item: destination }
     : undefined
   return existing ? [incoming, existing] : [incoming]
 })
@@ -83,7 +83,7 @@ const button = (variant: 'outline' | 'solid' | 'ghost') => cn(fileExplorerButton
           <AlertDialogTitle class="text-lg font-semibold text-foreground">
             {{ messages.conflictTitle(shown) }}
           </AlertDialogTitle>
-          <AlertDialogDescription class="text-sm text-muted-foreground">
+          <AlertDialogDescription class="text-sm text-foreground/70">
             {{ messages.conflictDescription(shown, targetName) }}
           </AlertDialogDescription>
         </div>
@@ -96,9 +96,9 @@ const button = (variant: 'outline' | 'solid' | 'ghost') => cn(fileExplorerButton
           >
             <FileExplorerFileIcon v-if="side.item" :item="side.item" />
             <div class="min-w-0 text-start">
-              <p class="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{{ side.label }}</p>
+              <p class="font-mono text-[11px] uppercase tracking-wider rtl:tracking-normal text-foreground/70">{{ side.label }}</p>
               <p class="truncate text-sm font-medium text-foreground">{{ side.name }}</p>
-              <p class="truncate text-xs text-muted-foreground">
+              <p class="truncate text-xs text-foreground/70">
                 {{ [side.size, side.modified].filter(Boolean).join(' · ') }}
               </p>
             </div>
@@ -111,7 +111,7 @@ const button = (variant: 'outline' | 'solid' | 'ghost') => cn(fileExplorerButton
         </label>
 
         <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <button type="button" :class="button('ghost')" @click="emit('cancel')">
+          <button type="button" :class="button('outline')" @click="emit('cancel')">
             {{ messages.cancel }}
           </button>
           <button type="button" :class="button('outline')" @click="emit('choose', 'skip', applyToAll)">

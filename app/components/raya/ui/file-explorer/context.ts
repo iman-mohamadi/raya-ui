@@ -1,4 +1,4 @@
-import type { Ref } from 'vue'
+import type { Ref, Slot } from 'vue'
 import { createContext } from 'reka-ui'
 import type { FileExplorerMessages } from './messages'
 import type { FileExplorerOperationState, FileTreeSize } from './types'
@@ -11,6 +11,12 @@ export interface FileExplorerRenameContext {
   validateRename: (id: string, name: string) => string | undefined
   commitRename: (id: string, name: string) => void
   cancelRename: (id: string) => void
+  /**
+   * Selector of the layer the rename input is drawn in. The input sits over the
+   * item rather than inside it: an option or tree item must not contain
+   * interactive elements.
+   */
+  renameLayer: string
 }
 
 /** One drag session. Shared by every drop target inside a `FileExplorer`. */
@@ -33,6 +39,8 @@ export interface FileExplorerDragDrop {
  * consumer's `data` type, and a node never needs a watcher of its own.
  */
 export interface FileTreeContext extends FileExplorerRenameContext {
+  /** The tree's own slots, rendered by each node through SlotOutlet (see slot.ts). */
+  slots: Readonly<{ item?: Slot, icon?: Slot, label?: Slot, actions?: Slot }>
   /** Trimmed search query, used to highlight matches. */
   query: Readonly<Ref<string>>
   size: Readonly<Ref<FileTreeSize>>
@@ -84,6 +92,10 @@ export interface FileExplorerContext extends FileExplorerRenameContext {
   multiple: Readonly<Ref<boolean>>
   draggable: Readonly<Ref<boolean>>
   dragDrop: FileExplorerDragDrop
+  /** The explorer's own slots, rendered by the items through SlotOutlet (see slot.ts). */
+  slots: Readonly<{ preview?: Slot, empty?: Slot, cell?: Slot }>
+  /** `dragDrop.draggingIds` as a set: every item checks it. */
+  draggingIds: Readonly<Ref<ReadonlySet<string>>>
   messages: Readonly<Ref<FileExplorerMessages>>
   onItemClick: (id: string, event: MouseEvent) => void
   /** Checkbox on a card or row: adds or removes the item without touching the rest. */

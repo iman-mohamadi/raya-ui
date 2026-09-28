@@ -1,12 +1,12 @@
 <script setup lang="ts" generic="TData = unknown">
-import { computed, nextTick, ref, toRef, useSlots, useTemplateRef, watch } from 'vue'
+import { computed, nextTick, ref, toRef, useId, useSlots, useTemplateRef, watch } from 'vue'
 import { ContextMenuContent, ContextMenuPortal, ContextMenuRoot, ContextMenuTrigger, useDirection } from 'reka-ui'
 import { useVModel } from '@vueuse/core'
 import { FolderOpen, Search, X } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
 import FileExplorerDeleteDialog from './FileExplorerDeleteDialog.vue'
 import FileTreeRoot from './FileTreeRoot.vue'
-import { injectSharedDragDrop, provideFileTreeContext, type FileExplorerDragDrop } from './context'
+import { injectSharedDragDrop, provideFileTreeContext, type FileExplorerDragDrop, type FileTreeContext } from './context'
 import { resolveMessages } from './messages'
 import type { FileTreeEmits, FileTreeProps, FileTreeSlots } from './types'
 import { useFileExplorerActions } from './useFileExplorerActions'
@@ -14,7 +14,9 @@ import { useFileExplorerDragDrop } from './useFileExplorerDragDrop'
 import { useFileExplorerLoader } from './useFileExplorerLoader'
 import { useFileExplorerSearch } from './useFileExplorerSearch'
 import { useFileExplorerSelection } from './useFileExplorerSelection'
-import { getVisibleIds, indexFileTree, isFolder, isUnloadedFolder, pruneFiles } from './utils'
+import { useFocusRetention } from './useFocusRetention'
+import { useTouchDragDrop } from './useTouchDragDrop'
+import { focusElement, getVisibleIds, indexFileTree, isFolder, isUnloadedFolder, pruneFiles } from './utils'
 import { fileExplorerMenuContent } from './variants'
 
 const props = withDefaults(defineProps<FileTreeProps<TData>>(), {
@@ -144,11 +146,13 @@ function onItemContextMenu(id: string) {
 // --- Rename & delete ----------------------------------------------------------------
 
 const viewport = useTemplateRef<HTMLElement>('viewport')
+const renameLayerId = `${useId()}-rename`
+useFocusRetention(viewport)
 
 function focusItem(id: string) {
   nextTick(() => {
     const items = viewport.value?.querySelectorAll<HTMLElement>('[role="treeitem"][data-item-id]') ?? []
-    Array.from(items).find(el => el.dataset.itemId === id)?.focus()
+    focusElement(Array.from(items).find(el => el.dataset.itemId === id))
   })
 }
 
@@ -211,8 +215,9 @@ function deleteFrom(id: string) {
 // --- Drag and drop --------------------------------------------------------------
 
 const dragDropEnabled = computed(() => props.draggable && !props.disabled)
-// Inside a FileExplorer the tree joins the explorer's drag session.
-const dragDrop: FileExplorerDragDrop = injectSharedDragDrop(null) ?? useFileExplorerDragDrop({
+// Inside a FileExplorer the tree joins the explorer's drag session (and its touch dragging).
+const sharedDragDrop = injectSharedDragDrop(null)
+const dragDrop: FileExplorerDragDrop = sharedDragDrop ?? useFileExplorerDragDrop({
   enabled: dragDropEnabled,
   index,
   selected: selectedIds,
@@ -231,7 +236,7 @@ function onSearchKeydown(event: KeyboardEvent) {
       ?? viewport.value?.querySelector<HTMLElement>('[role="treeitem"]')
     if (target) {
       event.preventDefault()
-      target.focus()
+      focusElement(target)
     }
   }
   else if (event.key === 'Escape' && searchQuery.value) {
@@ -248,6 +253,14 @@ const skeletonRows = [
   { depth: 1, width: 'w-32' },
   { depth: 0, width: 'w-16' },
 ] as const
+
+if (!sharedDragDrop) {
+  useTouchDragDrop(viewport, {
+    enabled: dragDropEnabled,
+    countLabel: count => messages.value.items(count),
+    count: () => dragDrop.draggingIds.value.length,
+  })
+}
 
 provideFileTreeContext({
   query: search.query,
@@ -269,6 +282,8 @@ provideFileTreeContext({
   startRename: actions.startRename,
   deleteFrom,
   renamingId: actions.renamingId,
+  slots: slots as FileTreeContext['slots'],
+  renameLayer: `#${renameLayerId}`,
   validateRename: actions.validateRename,
   commitRename: actions.commitRename,
   cancelRename: actions.cancelRename,
@@ -278,7 +293,7 @@ provideFileTreeContext({
 <template>
   <div
     data-slot="file-tree"
-    :class="cn('flex min-h-0 flex-col gap-2 text-sm [--file-tree-indent:1rem]', props.class)"
+    :class="cn('relative flex min-h-0 flex-col gap-2 text-sm [--file-tree-indent:1rem]', props.class)"
     :data-disabled="disabled ? '' : undefined"
     :dir="props.dir"
   >
@@ -305,14 +320,14 @@ provideFileTreeContext({
         v-if="searchQuery"
         type="button"
         :aria-label="messages.clearFilter"
-        class="absolute end-1.5 top-1/2 flex size-5 -translate-y-1/2 items-center justify-center rounded-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
+        class="absolute end-1 top-1/2 flex size-6 -translate-y-1/2 items-center justify-center rounded-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
         @click="searchQuery = ''"
       >
         <X aria-hidden="true" class="size-3.5" />
       </button>
     </div>
 
-    <ContextMenuRoot :dir="dir">
+    <ContextMenuRoot :dir="dir" :modal="false">
       <ContextMenuTrigger as-child :disabled="!hasContextMenu || loading || disabled">
         <div
           ref="viewport"
@@ -363,18 +378,6 @@ provideFileTreeContext({
             :aria-label="label"
             @update:expanded="setExpanded"
           >
-            <template v-if="$slots.item" #item="scope">
-              <slot name="item" v-bind="scope" />
-            </template>
-            <template v-if="$slots.icon" #icon="scope">
-              <slot name="icon" v-bind="scope" />
-            </template>
-            <template v-if="$slots.label" #label="scope">
-              <slot name="label" v-bind="scope" />
-            </template>
-            <template v-if="$slots.actions" #actions="scope">
-              <slot name="actions" v-bind="scope" />
-            </template>
           </FileTreeRoot>
         </div>
       </ContextMenuTrigger>
@@ -400,5 +403,7 @@ provideFileTreeContext({
         <slot name="delete-description" v-bind="scope" />
       </template>
     </FileExplorerDeleteDialog>
+    <!-- Rename inputs are drawn here, over their item (see FileExplorerRenameInput). -->
+    <div :id="renameLayerId" class="pointer-events-none absolute inset-0 z-30 overflow-hidden" />
   </div>
 </template>

@@ -16,6 +16,7 @@ export const fileTreeRowVariants = cva(
     'data-[dragging]:opacity-50',
     'data-[drop-target]:bg-primary/10 data-[drop-target]:ring-1 data-[drop-target]:ring-inset data-[drop-target]:ring-primary/40',
     'data-[drop-invalid]:bg-destructive/5 data-[drop-invalid]:ring-1 data-[drop-invalid]:ring-inset data-[drop-invalid]:ring-destructive/40',
+    'data-[touch-lifted]:bg-accent data-[touch-lifted]:shadow-md',
   ],
   {
     variants: {
@@ -72,10 +73,10 @@ export const fileExplorerButtonVariants = cva(
 )
 
 /**
- * Column template shared by the details header and rows. The tracks come from
- * CSS variables set by the content area; narrow explorers keep pinned columns.
+ * Column template shared by the details header and rows. The tracks come from a
+ * CSS variable set by the content area, which drops columns that do not fit.
  */
-export const fileExplorerColumns = 'grid gap-3 grid-cols-(--file-explorer-columns-narrow) @xl:grid-cols-(--file-explorer-columns)'
+export const fileExplorerColumns = 'grid gap-3 grid-cols-(--file-explorer-columns)'
 
 /** Popover surface of context and dropdown menus (shadcn-vue's menu styling). */
 export const fileExplorerMenuContent = [

@@ -16,13 +16,16 @@ useSeoMeta({
 // --- Demo settings ------------------------------------------------------------------
 
 const demo = useTemplateRef<InstanceType<typeof FileExplorerDemo>>('demo')
+// ?slow=0 and ?arabic=1 set the initial demo settings (handy for links and e2e tests).
+const route = useRoute()
 const view = ref<FileExplorerView>('grid')
 const multiple = ref(true)
 const draggable = ref(true)
 const sidebar = ref(true)
 const readonly = ref(false)
-const slow = ref(true)
+const slow = ref(route.query.slow !== '0')
 const loading = ref(false)
+const arabic = ref(route.query.arabic === '1')
 
 const toggles = [
   { label: 'Directory tree', hint: 'Sidebar with locations and folders.', state: sidebar },
@@ -31,6 +34,7 @@ const toggles = [
   { label: 'Read only', hint: 'Hides every action that changes data.', state: readonly },
   { label: 'Slow network', hint: 'Makes progress easy to watch.', state: slow },
   { label: 'Loading', hint: 'Show skeleton cards.', state: loading },
+  { label: 'Arabic (RTL)', hint: 'Translated messages, right to left.', state: arabic },
 ]
 
 const resetSettings = () => {
@@ -41,6 +45,7 @@ const resetSettings = () => {
   readonly.value = false
   slow.value = true
   loading.value = false
+  arabic.value = false
   demo.value?.reset()
 }
 
@@ -112,7 +117,7 @@ async function onTrash({ items }: { items: FileExplorerItem[] }) {
   <FileExplorer
     v-model:folder="folder"
     v-model:selected="selected"
-    :items="files"${view.value !== 'grid' ? `\n    default-view="${view.value}"` : ''}${multiple.value ? '' : '\n    :multiple="false"'}${sidebar.value ? '' : '\n    :sidebar="false"'}${draggable.value ? '\n    draggable' : ''}${readonly.value ? '\n    readonly' : ''}${loading.value ? '\n    loading' : ''}
+    :items="files"${view.value !== 'grid' ? `\n    default-view="${view.value}"` : ''}${multiple.value ? '' : '\n    :multiple="false"'}${sidebar.value ? '' : '\n    :sidebar="false"'}${draggable.value ? '\n    draggable' : ''}${readonly.value ? '\n    readonly' : ''}${loading.value ? '\n    loading' : ''}${arabic.value ? '\n    dir="rtl"\n    :messages="arabicMessages"' : ''}
     directory-upload
     @upload="(files, folder, context) => api.upload(files, folder, context)"
     @create-folder="parent => api.mkdir(parent)"
@@ -498,20 +503,23 @@ async function search({ query, folder }: FileExplorerSearchEvent, context: FileE
   {
     id: 'columns',
     title: 'Details view columns',
-    description: 'Choose built-in columns — `name`, `modified`, `created`, `accessed`, `type`, `size`, `owner`, `permissions` — or add your own with a `value` (to sort by) and `format` (to display); the `#cell` slot renders custom columns any way you like. Columns sort from their header or the toolbar Sort menu. Name, size and `pinned` columns stay on narrow explorers.',
+    description: 'Choose built-in columns — `name`, `modified`, `created`, `accessed`, `type`, `size`, `owner`, `permissions` — or add your own with a `value` (to sort by) and `format` (to display); the `#cell` slot renders custom columns any way you like (its fallback is the formatted value). Columns sort from their header or the toolbar Sort menu. When the explorer is narrow, unpinned columns give way from the end so the name keeps at least 12rem; name, size and `pinned` columns always stay. Drag a column\'s edge to resize it and a header to move it — or, from the keyboard, arrows on the edge and Alt+Shift+Arrow on a header. Bind `v-model:columns` to keep the layout; `resizable-columns` and `reorderable-columns` turn this off.',
     code: `<script setup lang="ts">
-const columns = [
+// Resizing and reordering update this list. To keep the layout across visits,
+// store each column's key and width (functions such as \`value\` cannot be stored).
+const columns = ref<(FileExplorerColumnKey | FileExplorerColumn<Meta>)[]>([
   'name',
   'owner',
   'modified',
   { key: 'version', label: 'Version', width: '5rem', value: (item: FileExplorerItem<Meta>) => item.data?.version },
   { key: 'status', label: 'Sync', width: '6rem', pinned: true },
   'size',
-]
+])
 <\/script>
 
 <template>
-  <FileExplorer :items="files" :columns="columns" default-view="list">
+  <!-- v-model: resized and reordered columns come back as the new list. -->
+  <FileExplorer v-model:columns="columns" :items="files" default-view="list">
     <template #cell="{ item, column }">
       <SyncBadge v-if="column.key === 'status'" :state="item.data?.sync" />
     </template>
@@ -521,7 +529,7 @@ const columns = [
   {
     id: 'menu',
     title: 'Context menu and action availability',
-    description: 'Right-click (or long-press, or the Menu key) opens a built-in menu with every action available for the item, the selection or the empty area. Replace it with the `#context-menu` slot: the scope carries the resolved `actions` (render some, add your own), plus `rename()`, `remove()` and `defer()` — the last runs your own entry once the menu has closed, which dialogs need. The exposed `getActions(ids)` returns the same list, e.g. for a command palette.',
+    description: 'Right-click (or long-press, or the Menu key) opens a built-in menu with every action available for the item, the selection or the empty area. Replace it with the `#context-menu` slot: the scope carries the resolved `actions` (render some, add your own), plus `rename()`, `remove()` and `defer()` — the last runs your own entry once the menu has closed, which dialogs need. The exposed `getActions(ids)` returns the same list, e.g. for your own command palette.',
     code: `<script setup lang="ts">
 import { ContextMenuItem, ContextMenuSeparator } from '@/components/ui/context-menu'
 <\/script>
@@ -537,6 +545,34 @@ import { ContextMenuItem, ContextMenuSeparator } from '@/components/ui/context-m
     </template>
   </FileExplorer>
 </template>`,
+  },
+  {
+    id: 'command-palette',
+    title: 'Command palette',
+    description: 'With `command-palette`, Ctrl/Cmd+K (while focus is in the explorer) opens a searchable list of what can be done to the selection — the same actions as the context menu, with their shortcuts — and every loaded folder and sidebar location to go to. Enter runs the highlighted line and focus returns to the list. It is off by default because many apps own Ctrl/Cmd+K; the exposed `openCommandPalette()` opens it from your own button, and `getActions()` feeds a palette of your own instead.',
+    code: `<template>
+  <FileExplorer ref="explorer" :items="files" command-palette @paste="paste" @rename="rename" />
+  <Button @click="explorer?.openCommandPalette()">Commands</Button>
+</template>`,
+  },
+  {
+    id: 'touch',
+    title: 'Touch',
+    description: 'On touch screens a long-press opens the context menu, and holding an item until it lifts and then moving it drags it — onto a folder, the tree, a breadcrumb or the Trash, with the same checks and highlights as a mouse (browsers have no drag and drop for touch; the explorer replays the drag itself). Moving right away still scrolls. Tap opens folders, check circles stay visible for multi-select, and on phone widths the sidebar becomes an overlay and Download moves to the status bar and menus.',
+    code: `<template>
+  <!-- Nothing to configure: touch works wherever \`draggable\` and @move do. -->
+  <FileExplorer :items="files" draggable @move="move" />
+</template>`,
+  },
+  {
+    id: 'performance',
+    title: 'Large folders',
+    description: 'Measured on a production build in Chrome with 5,000 files in one folder: opening it takes under a second, an arrow key about 60 ms, Select all about 160 ms, sorting about 160 ms. Items render in two parts so that focus and selection only touch the items that change, cards and rows use `content-visibility`, and the clock that ages “5m ago” labels re-renders only labels that change. Beyond a few thousand items per folder, load them in pages with `hasMore` and `@load-more`, and load subfolders on demand with `@load-children`, rather than passing everything at once.',
+    code: `// A page at a time: the explorer asks for the next one as the end scrolls into view.
+async function loadMore({ folder, cursor }: FileExplorerLoadMoreEvent) {
+  const page = await api.list(folder?.id ?? null, { cursor, limit: 500 })
+  files.value = appendChildren(files.value, folder?.id ?? null, page.items, { hasMore: page.next !== null, cursor: page.next })
+}`,
   },
   {
     id: 'upload',
@@ -555,7 +591,7 @@ import { ContextMenuItem, ContextMenuSeparator } from '@/components/ui/context-m
   {
     id: 'i18n',
     title: 'Translations and RTL',
-    description: 'Every visible string — buttons, menus, dialogs, empty states, errors, operation labels — comes from `messages`; pass the ones you want to change. Strings that depend on counts or names are functions, so plurals stay correct. Set `dir="rtl"` (or use Reka\'s `ConfigProvider`) and arrows, indentation, breadcrumbs and menus mirror.',
+    description: 'Every visible string — buttons, menus, dialogs, empty states, errors, operation labels, relative dates (`timeAgo`), file sizes (`fileSize`) and list separators — comes from `messages`; pass the ones you want to change. Strings that depend on counts or names are functions, so plurals stay correct. Set `dir="rtl"` (or use Reka\'s `ConfigProvider`) and arrows, indentation, breadcrumbs, menus and column resizing mirror, while file names, sizes and code previews keep their own direction. Turn on “Arabic (RTL)” in the demo settings for a complete translation.',
     code: `<script setup lang="ts">
 import type { FileExplorerMessages } from '@/components/ui/file-explorer'
 
@@ -564,6 +600,9 @@ const messages: Partial<FileExplorerMessages> = {
   upload: 'Téléverser',
   items: count => \`\${count} élément\${count > 1 ? 's' : ''}\`,
   deleteTitle: items => \`Supprimer \${items.length} élément(s) ?\`,
+  justNow: 'à l’instant',
+  timeAgo: (value, unit) => \`il y a \${value} \${{ minute: 'min', hour: 'h', day: 'j', week: 'sem.', month: 'mois', year: 'an' }[unit]}\`,
+  fileSize: (value, unit) => \`\${value.replace('.', ',')} \${{ B: 'o', KB: 'Ko', MB: 'Mo', GB: 'Go', TB: 'To' }[unit]}\`,
 }
 <\/script>
 
@@ -607,7 +646,10 @@ const props = [
   { name: 'listing', type: 'FileExplorerListing | null', default: 'null', description: 'Flat items shown instead of the open folder: Recent, Starred, Trash, search results.' },
   { name: 'locations', type: 'FileExplorerLocationSection[]', default: '[]', description: 'Sidebar sections above the directory tree.' },
   { name: 'operations', type: 'FileExplorerOperationState[]', default: '—', description: 'Your own operations, shown with the explorer\'s.' },
-  { name: 'columns', type: '(FileExplorerColumnKey | FileExplorerColumn)[]', default: 'name, modified, type, size', description: 'Details view columns.' },
+  { name: 'columns', type: '(FileExplorerColumnKey | FileExplorerColumn)[]', default: 'name, modified, type, size', description: 'Details view columns. v-model:columns receives resized and moved columns.' },
+  { name: 'resizableColumns · reorderableColumns', type: 'boolean', default: 'true', description: 'Resize columns from their edge; move them by their header.' },
+  { name: 'commandPalette', type: 'boolean', default: 'false', description: 'Ctrl/Cmd+K palette of actions and places.' },
+  { name: 'defaultFolder · defaultSelected · defaultView · defaultSort', type: '—', default: '—', description: 'Initial state when the matching v-model is not bound.' },
   { name: 'favorites', type: 'string[]', default: '—', description: 'Starred ids.' },
   { name: 'multiple', type: 'boolean', default: 'true', description: 'Multi-selection.' },
   { name: 'draggable', type: 'boolean', default: 'false', description: 'Drag and drop between folders, the tree, breadcrumbs and Trash.' },
@@ -661,7 +703,7 @@ const events = [
   { name: 'copy · cut', payload: '{ items }', description: 'Items put on the clipboard.' },
   { name: 'cancel-operation · retry-operation · dismiss-operation', payload: 'FileExplorerOperationState', description: 'For your own operations.' },
   { name: 'operation-error', payload: 'FileExplorerOperationState', description: 'One of the explorer\'s operations failed.' },
-  { name: 'update:*', payload: 'folder, selected, view, sort, search, clipboard, location', description: 'v-model updates.' },
+  { name: 'update:*', payload: 'folder, selected, view, sort, search, clipboard, location, columns', description: 'v-model updates.' },
 ]
 
 const results = [
@@ -687,7 +729,8 @@ const exposed = [
   { name: 'copy(ids) · cut(ids) · paste(folderId?)', description: 'Clipboard.' },
   { name: 'undo() · redo() · refresh()', description: 'History and reload.' },
   { name: 'resolveConflicts(conflicts)', description: 'Open the conflict dialog yourself.' },
-  { name: 'getActions(ids?)', description: 'Available actions, for command palettes.' },
+  { name: 'getActions(ids?)', description: 'Available actions, e.g. for your own command palette.' },
+  { name: 'openCommandPalette() · focus()', description: 'Open the built-in palette; move focus into the explorer.' },
   { name: 'operations', description: 'Every operation currently shown.' },
 ]
 
@@ -710,6 +753,10 @@ const keyboard = [
   { keys: ['Alt', '← / →'], description: 'Back, forward.' },
   { keys: ['Esc'], description: 'Clear the selection.' },
   { keys: ['a–z'], description: 'Type-ahead.' },
+  { keys: ['Ctrl / ⌘', 'K'], description: 'Command palette (with command-palette).' },
+  { keys: ['Alt', 'Shift', '← / →'], description: 'On a column header: move the column.' },
+  { keys: ['← / →', 'Home', 'End'], description: 'On a column edge: resize (Shift for bigger steps); Enter resets.' },
+  { keys: ['Ctrl / ⌘', 'C · X · V'], description: 'In the directory tree: copy, cut, paste into the focused folder.' },
 ]
 
 const migration = [
@@ -718,11 +765,16 @@ const migration = [
   'The status bar\'s default action reads "Open" (it was "Open File"), and the New Folder button\'s label is "New Folder" — both configurable through messages.',
   'FileExplorerSort.key also accepts custom column keys.',
   'A built-in context menu now appears when you do not provide #context-menu. Its scope gained actions and defer.',
+  'The Type column shows the kind of item ("TypeScript", "PNG image"), and the status bar shows the kind instead of the MIME type. item.description is free text for the card subtitle; add a column with value: item => item.description to show it in the details view.',
+  'Menus are no longer modal: like desktop context menus they do not trap focus or hide the page from assistive technology, and clicking elsewhere both closes them and acts.',
+  'The rename input is drawn over the item (in a layer inside the explorer) instead of inside it, so tests that look for it inside an option or tree item should look in the explorer.',
+  'FileExplorerConflictReason gained "into-itself", used when a folder is pasted into itself; the conflict dialog explains it.',
+  'Relative dates and file sizes are translatable (justNow, timeAgo, fileSize, listSeparator); formatBytes and formatRelativeTime accept the messages as an optional last argument.',
 ]
 </script>
 
 <template>
-  <DocContent>
+  <DocContent tall-preview>
     <template #breadcrumb-title>
       <span class="text-foreground text-sm font-medium">File Explorer</span>
     </template>
@@ -848,7 +900,9 @@ const migration = [
         through a polite live region, errors as alerts, progress as <code>progressbar</code>. Focus lands on the new
         item after create, on the renamed item after rename, on the neighbour after delete, on the first item after
         opening a folder, and on the folder you came from after Up or Back. Everything drag and drop does is also
-        available as Cut and Paste.
+        available as Cut and Paste. Every state (views, menus, dialogs, rename, errors, trash, right to left, light
+        and dark, phone) is checked automatically against WCAG 2.2 AA with axe; automated checks catch a share of
+        issues, so test with a screen reader in your own product too.
       </p>
       <div class="rounded-none border-t border-border mt-6 overflow-hidden">
         <div v-for="(entry, i) in keyboard" :key="i" class="flex flex-col sm:flex-row items-start gap-2 sm:gap-4 px-5 py-3 border-b border-border">
@@ -955,7 +1009,8 @@ const migration = [
         <code>FileExplorerPasteEvent</code>, <code>FileExplorerMoveEvent</code>, <code>FileExplorerItemsEvent</code>
         (download, duplicate, trash…), <code>FileExplorerConflict</code> and its resolution,
         <code>FileExplorerClipboard</code>, <code>FileExplorerListing</code>, <code>FileExplorerLocation</code>,
-        <code>FileExplorerColumn</code>, <code>FileExplorerAction</code>, <code>FileExplorerMessages</code>, and the
+        <code>FileExplorerColumn</code>, <code>FileExplorerAction</code>, <code>FileExplorerCommand</code>,
+        <code>FileExplorerMessages</code> (with <code>FileExplorerTimeUnit</code> and <code>FileExplorerSizeUnit</code>), and the
         helpers <code>getFileKind</code>, <code>isPotentiallyUnsafe</code>, <code>can</code>, <code>formatBytes</code>,
         <code>formatRelativeTime</code>, <code>uniqueName</code>, <code>matchesAccept</code> and
         <code>sortFileItems</code>. Both components are generic over <code>TData</code>.
@@ -978,6 +1033,7 @@ const migration = [
         :readonly="readonly"
         :loading="loading"
         :slow="slow"
+        :arabic="arabic"
       />
     </template>
 

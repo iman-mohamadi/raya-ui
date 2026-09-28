@@ -136,7 +136,7 @@ const menuContent = cn(fileExplorerMenuContent, 'origin-(--reka-dropdown-menu-co
     <span class="hidden shrink-0 font-mono text-xs text-muted-foreground @4xl:inline">· {{ m.items(itemCount) }}</span>
 
     <div class="flex w-full items-center gap-2 @2xl:w-auto">
-      <div class="relative min-w-0 flex-1 @2xl:w-40 @2xl:flex-none @4xl:w-52">
+      <div class="relative min-w-28 flex-1 @2xl:w-40 @2xl:flex-none @4xl:w-52">
         <Search aria-hidden="true" class="pointer-events-none absolute start-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
         <input
           v-model="search"
@@ -154,14 +154,14 @@ const menuContent = cn(fileExplorerMenuContent, 'origin-(--reka-dropdown-menu-co
           v-if="search"
           type="button"
           :aria-label="m.clearFilter"
-          class="absolute end-1.5 top-1/2 flex size-5 -translate-y-1/2 items-center justify-center rounded-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
+          class="absolute end-1 top-1/2 flex size-6 -translate-y-1/2 items-center justify-center rounded-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
           @click="search = ''"
         >
           <X aria-hidden="true" class="size-3" />
         </button>
       </div>
 
-      <DropdownMenuRoot :dir="dir" @update:open="emit('menuOpen', $event)">
+      <DropdownMenuRoot :dir="dir" :modal="false" @update:open="emit('menuOpen', $event)">
         <DropdownMenuTrigger :aria-label="m.sort" :title="m.sort" :disabled="disabled" :class="icon">
           <ArrowDownUp />
         </DropdownMenuTrigger>
@@ -208,8 +208,9 @@ const menuContent = cn(fileExplorerMenuContent, 'origin-(--reka-dropdown-menu-co
       <slot name="actions" />
 
       <template v-if="download || refresh || emptyTrash || creates.length || uploads.length">
-        <div aria-hidden="true" class="h-5 w-px shrink-0 bg-border" />
+        <div aria-hidden="true" class="hidden h-5 w-px shrink-0 bg-border @md:block" />
 
+        <!-- On phone widths Download lives in the status bar and menus, leaving room to search. -->
         <button
           v-if="download"
           type="button"
@@ -217,7 +218,7 @@ const menuContent = cn(fileExplorerMenuContent, 'origin-(--reka-dropdown-menu-co
           :aria-label="download.label"
           :title="download.label"
           :disabled="disabled || download.disabled"
-          :class="icon"
+          :class="cn(icon, 'hidden @md:inline-flex')"
           @click="download.run()"
         >
           <component :is="download.icon" />
@@ -260,8 +261,8 @@ const menuContent = cn(fileExplorerMenuContent, 'origin-(--reka-dropdown-menu-co
             <span class="hidden @3xl:inline">{{ creates[0].label }}</span>
           </button>
         </template>
-        <DropdownMenuRoot v-else-if="creates.length" :dir="dir" @update:open="emit('menuOpen', $event)">
-          <DropdownMenuTrigger :aria-label="m.new" :disabled="disabled || creates.every(action => action.disabled)" :class="labelled('outline')">
+        <DropdownMenuRoot v-else-if="creates.length" :dir="dir" :modal="false" @update:open="emit('menuOpen', $event)">
+          <DropdownMenuTrigger data-action="new" :aria-label="m.new" :disabled="disabled || creates.every(action => action.disabled)" :class="labelled('outline')">
             <Plus />
             <span class="hidden @3xl:inline">{{ m.new }}</span>
             <ChevronDown class="hidden opacity-60 @3xl:inline" />
@@ -286,7 +287,7 @@ const menuContent = cn(fileExplorerMenuContent, 'origin-(--reka-dropdown-menu-co
             <span class="hidden @3xl:inline">{{ uploads[0].label }}</span>
           </button>
         </template>
-        <DropdownMenuRoot v-else-if="uploads.length" :dir="dir" @update:open="emit('menuOpen', $event)">
+        <DropdownMenuRoot v-else-if="uploads.length" :dir="dir" :modal="false" @update:open="emit('menuOpen', $event)">
           <DropdownMenuTrigger :aria-label="m.upload" :disabled="disabled || uploads.every(action => action.disabled)" :class="labelled('solid')">
             <Upload />
             <span class="hidden @3xl:inline">{{ m.upload }}</span>

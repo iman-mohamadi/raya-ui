@@ -12,12 +12,12 @@ import { cn } from '@/lib/utils'
 import FileExplorerRenameInput from './FileExplorerRenameInput.vue'
 import FileTreeNode from './FileTreeNode.vue'
 import { injectFileTreeContext } from './context'
+import { SlotOutlet } from './slot'
 import type {
   FileExplorerIconResolver,
   FileExplorerItem,
   FileExplorerItemSlotProps,
-  FileTreeNodeSlots,
-} from './types'
+  } from './types'
 import { getFileIcon, isExpandableFolder, isFolder, splitByQuery } from './utils'
 import { fileTreeIconVariants, fileTreeRowVariants } from './variants'
 
@@ -29,8 +29,6 @@ const props = defineProps<{
   setsize: number
   getIcon?: FileExplorerIconResolver<TData>
 }>()
-
-defineSlots<FileTreeNodeSlots<TData>>()
 
 const ctx = injectFileTreeContext()
 
@@ -141,39 +139,40 @@ function onDragOver(event: DragEvent) {
       </span>
       <span v-else aria-hidden="true" class="w-4 shrink-0" />
 
-      <slot name="item" v-bind="slotProps(isExpanded, isSelected, isDisabled)">
-        <slot name="icon" v-bind="slotProps(isExpanded, isSelected, isDisabled)">
+      <SlotOutlet :slot="ctx.slots.item" :scope="slotProps(isExpanded, isSelected, isDisabled)">
+        <SlotOutlet :slot="ctx.slots.icon" :scope="slotProps(isExpanded, isSelected, isDisabled)">
           <component
             :is="resolveIcon(slotProps(isExpanded, isSelected, isDisabled))"
             aria-hidden="true"
             :class="fileTreeIconVariants({ size: ctx.size.value })"
           />
-        </slot>
+        </SlotOutlet>
         <FileExplorerRenameInput
           v-if="renaming"
           :name="item.name"
           :is-folder="folder"
           :label="ctx.messages.value.newName"
+          :layer="ctx.renameLayer"
           :validate="name => ctx.validateRename(item.id, name)"
-          class="-ms-1 h-5"
+          class="-ms-1 -my-0.5 h-6"
           @commit="name => ctx.commitRename(item.id, name)"
           @cancel="ctx.cancelRename(item.id)"
         />
-        <slot v-else name="label" v-bind="slotProps(isExpanded, isSelected, isDisabled)" :query="ctx.query.value">
+        <SlotOutlet v-else :slot="ctx.slots.label" :scope="{ ...slotProps(isExpanded, isSelected, isDisabled), query: ctx.query.value }">
           <span class="min-w-0 truncate">
             <template v-for="(part, i) in splitByQuery(item.name, ctx.query.value)" :key="i">
               <mark v-if="part.match" class="rounded-[3px] bg-primary/20 text-inherit">{{ part.text }}</mark>
               <template v-else>{{ part.text }}</template>
             </template>
           </span>
-        </slot>
-      </slot>
+        </SlotOutlet>
+      </SlotOutlet>
 
       <span
-        v-if="$slots.actions"
+        v-if="ctx.slots.actions"
         class="ms-auto flex shrink-0 items-center gap-1 ps-2 text-xs text-muted-foreground"
       >
-        <slot name="actions" v-bind="slotProps(isExpanded, isSelected, isDisabled)" />
+        <SlotOutlet :slot="ctx.slots.actions" :scope="slotProps(isExpanded, isSelected, isDisabled)" />
       </span>
     </div>
 
@@ -198,18 +197,6 @@ function onDragOver(event: DragEvent) {
           :setsize="children.length"
           :get-icon="getIcon"
         >
-          <template v-if="$slots.item" #item="scope">
-            <slot name="item" v-bind="scope" />
-          </template>
-          <template v-if="$slots.icon" #icon="scope">
-            <slot name="icon" v-bind="scope" />
-          </template>
-          <template v-if="$slots.label" #label="scope">
-            <slot name="label" v-bind="scope" />
-          </template>
-          <template v-if="$slots.actions" #actions="scope">
-            <slot name="actions" v-bind="scope" />
-          </template>
         </FileTreeNode>
         <li
           v-if="loadState"

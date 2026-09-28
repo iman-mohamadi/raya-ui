@@ -12,7 +12,11 @@
     "build:registry": "tsx scripts/build-registry.ts",
     "test": "vitest run",
     "typecheck": "vue-tsc --noEmit -p .nuxt/tsconfig.app.json",
-    "typecheck:tests": "vue-tsc --noEmit -p tests/tsconfig.json"
+    "typecheck:tests": "vue-tsc --noEmit -p tests/tsconfig.json",
+    "test:e2e": "playwright test",
+    "test:e2e:update": "playwright test --update-snapshots",
+    "test:perf": "E2E_HARNESS=1 nuxt build && PERF=1 playwright test --project=desktop",
+    "typecheck:e2e": "vue-tsc --noEmit -p e2e/tsconfig.json"
   },
   "dependencies": {
     "@internationalized/date": "^3.11.0",
@@ -44,6 +48,9 @@
     "vue-sonner": "^2.0.9"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^26.6.3",
     "@types/three": "^0.184.1",
     "@vitejs/plugin-vue": "^6.0.9",
     "@vue/test-utils": "^2.5.1",

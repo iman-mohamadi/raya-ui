@@ -5,6 +5,7 @@ export type {
   FileExplorerActionId,
   FileExplorerClipboard,
   FileExplorerClipboardOperation,
+  FileExplorerCommand,
   FileExplorerColumn,
   FileExplorerColumnKey,
   FileExplorerConflict,
@@ -56,7 +57,7 @@ export type {
   FileTreeSize,
   FileTreeSlots,
 } from './types'
-export { defaultFileExplorerMessages, type FileExplorerMessages } from './messages'
+export { defaultFileExplorerMessages, type FileExplorerMessages, type FileExplorerSizeUnit, type FileExplorerTimeUnit } from './messages'
 export {
   can,
   filterFileTree,

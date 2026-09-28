@@ -28,6 +28,13 @@ export interface FileExplorerMessages {
   listView: string
   sort: string
   sortBy: (column: string) => string
+  resizeColumn: (column: string) => string
+  commandPalette: string
+  commandPlaceholder: string
+  commandActions: string
+  commandGoTo: string
+  commandEmpty: string
+  columnMoved: (column: string, position: number, total: number) => string
   ascending: string
   descending: string
   new: string
@@ -77,6 +84,7 @@ export interface FileExplorerMessages {
   emptyFolderHint: string
   noMatches: (query: string) => string
   noFiles: string
+  trashEmpty: string
   noResults: (query: string) => string
   loading: string
   loadFailed: string
@@ -116,7 +124,21 @@ export interface FileExplorerMessages {
   fileTooLarge: (name: string, maxSize: string) => string
   fileNotAccepted: (name: string) => string
   moreOperations: (count: number) => string
+  // Formatting
+  /** Modified less than a minute ago. */
+  justNow: string
+  /** Compact relative time, e.g. `(5, 'minute')` → "5m ago". */
+  timeAgo: (value: number, unit: FileExplorerTimeUnit) => string
+  /** A size already rounded to one decimal, e.g. `('4.2', 'KB')` → "4.2 KB". */
+  fileSize: (value: string, unit: FileExplorerSizeUnit) => string
+  /** Joins short lists such as "4.2 KB, TypeScript". */
+  listSeparator: string
 }
+
+export type FileExplorerTimeUnit = 'minute' | 'hour' | 'day' | 'week' | 'month' | 'year'
+export type FileExplorerSizeUnit = 'B' | 'KB' | 'MB' | 'GB' | 'TB'
+
+const SHORT_UNITS: Record<FileExplorerTimeUnit, string> = { minute: 'm', hour: 'h', day: 'd', week: 'w', month: 'mo', year: 'y' }
 
 const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`
 
@@ -171,6 +193,13 @@ export const defaultFileExplorerMessages: FileExplorerMessages = {
   listView: 'Details view',
   sort: 'Sort',
   sortBy: column => `Sort by ${column}`,
+  resizeColumn: column => `Resize ${column}`,
+  commandPalette: 'Command palette',
+  commandPlaceholder: 'Search actions and folders…',
+  commandActions: 'Actions',
+  commandGoTo: 'Go to',
+  commandEmpty: 'Nothing found',
+  columnMoved: (column, position, total) => `${column} moved to position ${position} of ${total}`,
   ascending: 'Ascending',
   descending: 'Descending',
   new: 'New',
@@ -225,6 +254,7 @@ export const defaultFileExplorerMessages: FileExplorerMessages = {
   emptyFolderHint: 'Drop files here to upload',
   noMatches: query => `No items match “${query}”`,
   noFiles: 'No files',
+  trashEmpty: 'Trash is empty',
   noResults: query => `No results for “${query}”`,
   loading: 'Loading…',
   loadFailed: 'This folder could not be loaded.',
@@ -252,6 +282,7 @@ export const defaultFileExplorerMessages: FileExplorerMessages = {
       case 'exists': return `An item named “${conflict.name}” already exists in ${targetName}.`
       case 'permission': return `You do not have permission to add “${conflict.name}” to ${targetName}.`
       case 'invalid-name': return `“${conflict.name}” is not a valid name in ${targetName}.`
+      case 'into-itself': return `“${conflict.name}” cannot be pasted into itself or one of its own folders.`
       default: return `“${conflict.name}” could not be added to ${targetName}.`
     }
   },
@@ -275,6 +306,10 @@ export const defaultFileExplorerMessages: FileExplorerMessages = {
   fileTooLarge: (name, maxSize) => `${name} is larger than ${maxSize}.`,
   fileNotAccepted: name => `${name} is not an accepted file type.`,
   moreOperations: count => `+${count} more`,
+  justNow: 'just now',
+  timeAgo: (value, unit) => `${value}${SHORT_UNITS[unit]} ago`,
+  fileSize: (value, unit) => `${value} ${unit}`,
+  listSeparator: ', ',
 }
 
 export function resolveMessages(overrides: Partial<FileExplorerMessages> | undefined): FileExplorerMessages {

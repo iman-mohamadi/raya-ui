@@ -1,5 +1,6 @@
 import tailwindcss from "@tailwindcss/vite";
 import pkg from './package.json'
+import { fileURLToPath } from 'node:url'
 
 export default defineNuxtConfig({
     compatibilityDate: "2025-07-15",
@@ -30,7 +31,21 @@ export default defineNuxtConfig({
         ],
     },
 
-    modules: ["shadcn-nuxt", "@vueuse/nuxt", '@nuxtjs/sitemap', '@nuxt/image', 'motion-v/nuxt', '@pinia/nuxt'],
+    modules: [
+        "shadcn-nuxt", "@vueuse/nuxt", '@nuxtjs/sitemap', '@nuxt/image', 'motion-v/nuxt', '@pinia/nuxt',
+        // End-to-end test harnesses (e2e/harness) are routed in development, or in a
+        // build made with E2E_HARNESS=1 for the performance tests (pnpm test:perf).
+        (_options, nuxt) => {
+            if (!nuxt.options.dev && !process.env.E2E_HARNESS) return
+            nuxt.hook('pages:extend', (pages) => {
+                pages.push({
+                    name: 'e2e-file-explorer',
+                    path: '/__e2e/file-explorer',
+                    file: fileURLToPath(new URL('./e2e/harness/FileExplorerHarness.vue', import.meta.url)),
+                })
+            })
+        },
+    ],
 
     app: {
         head: {

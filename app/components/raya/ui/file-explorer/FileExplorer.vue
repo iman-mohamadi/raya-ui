@@ -7,13 +7,16 @@ import {
   shallowRef,
   toRef,
   useSlots,
+  useId,
   useTemplateRef,
   watch,
   type ComponentPublicInstance,
 } from 'vue'
 import { ContextMenuContent, ContextMenuPortal, ContextMenuRoot, ContextMenuTrigger, useDirection } from 'reka-ui'
 import { useNow, useVModel } from '@vueuse/core'
+import { Folder as FolderIcon } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
+import FileExplorerCommandPalette from './FileExplorerCommandPalette.vue'
 import FileExplorerConflictDialog from './FileExplorerConflictDialog.vue'
 import FileExplorerContent from './FileExplorerContent.vue'
 import FileExplorerDeleteDialog from './FileExplorerDeleteDialog.vue'
@@ -23,11 +26,15 @@ import FileExplorerSidebar from './FileExplorerSidebar.vue'
 import FileExplorerStatusBar from './FileExplorerStatusBar.vue'
 import FileExplorerToolbar from './FileExplorerToolbar.vue'
 import { columnDefinitions as normalizeColumns, resolveColumns } from './columns'
-import { provideFileExplorerContext, provideSharedDragDrop } from './context'
+import { provideFileExplorerContext, provideSharedDragDrop, type FileExplorerContext } from './context'
 import { resolveMessages } from './messages'
 import type {
   FileExplorerAction,
   FileExplorerClipboard,
+  FileExplorerCommand,
+  FileExplorerColumn,
+  FileExplorerActionId,
+  FileExplorerConflict,
   FileExplorerConflictResolution,
   FileExplorerContextMenuSlotProps,
   FileExplorerEmits,
@@ -43,6 +50,8 @@ import type {
   FileExplorerView,
 } from './types'
 import { useFileExplorerActions } from './useFileExplorerActions'
+import { useFocusRetention } from './useFocusRetention'
+import { useTouchDragDrop } from './useTouchDragDrop'
 import { useFileExplorerCommands, type FileExplorerHandlerName } from './useFileExplorerCommands'
 import { useFileExplorerConflicts } from './useFileExplorerConflicts'
 import { useFileExplorerDragDrop } from './useFileExplorerDragDrop'
@@ -56,6 +65,7 @@ import {
   childrenOf,
   collectDroppedFiles,
   findNameConflicts,
+  focusElement,
   formatBytes,
   indexFileTree,
   isDescendantOf,
@@ -89,6 +99,9 @@ const props = withDefaults(defineProps<FileExplorerProps<TData>>(), {
   rootLabel: 'root',
   label: 'Files',
   confirmDelete: true,
+  commandPalette: false,
+  resizableColumns: true,
+  reorderableColumns: true,
   searchDebounce: 300,
 })
 
@@ -99,6 +112,8 @@ defineSlots<FileExplorerSlots<TData>>()
 
 const messages = computed(() => resolveMessages(props.messages))
 const root = useTemplateRef<HTMLElement>('root')
+const renameLayerId = `${useId()}-rename`
+useFocusRetention(root)
 
 // Direction: the prop, then Reka's ConfigProvider, then what the page says.
 const configDir = useDirection(toRef(props, 'dir'))
@@ -116,7 +131,8 @@ const folderModel = useVModel(props, 'folder', emit, { passive: true, defaultVal
 const selectedModel = useVModel(props, 'selected', emit, { passive: true, defaultValue: props.defaultSelected ?? [] })
 const viewModel = useVModel(props, 'view', emit, { passive: true, defaultValue: props.defaultView ?? 'grid' })
 const searchModel = useVModel(props, 'search', emit, { passive: true, defaultValue: '' })
-const sortModel = useVModel(props, 'sort', emit, { passive: true, defaultValue: { key: 'name', direction: 'asc' } })
+const initialSort: FileExplorerSort = props.defaultSort ?? { key: 'name', direction: 'asc' }
+const sortModel = useVModel(props, 'sort', emit, { passive: true, defaultValue: initialSort })
 const locationModel = useVModel(props, 'location', emit, { passive: true, defaultValue: null })
 
 const writable = <T,>(get: () => T, set: (value: T) => void) => computed<T>({ get, set })
@@ -124,7 +140,7 @@ const folderId = writable<string | null>(() => folderModel.value ?? null, (value
 const selectedIds = writable<string[]>(() => selectedModel.value ?? [], (value) => { selectedModel.value = value })
 const view = writable<FileExplorerView>(() => viewModel.value ?? 'grid', (value) => { viewModel.value = value })
 const search = writable<string>(() => searchModel.value ?? '', (value) => { searchModel.value = value })
-const sort = writable<FileExplorerSort>(() => sortModel.value ?? { key: 'name', direction: 'asc' }, (value) => { sortModel.value = value })
+const sort = writable<FileExplorerSort>(() => sortModel.value ?? initialSort, (value) => { sortModel.value = value })
 // Kept by hand: useVModel's typing would unwrap the generic `data` of clipboard items.
 const localClipboard = shallowRef<FileExplorerClipboard<TData> | null>(props.clipboard ?? null)
 watch(() => props.clipboard, (value) => {
@@ -169,7 +185,35 @@ const listingLabel = computed(() => {
 })
 
 const now = useNow({ interval: 60_000 })
-const columnDefinitions = computed(() => normalizeColumns(props.columns))
+// Columns are a two-way model (resizing and reordering). Kept by hand, like the
+// clipboard, so the generic item data in `value`/`format` keeps its type.
+const localColumns = shallowRef(props.columns)
+// An inline `:columns="['name', 'size']"` is a new array on every render of the
+// parent: only a different list replaces the resized or reordered one.
+const sameColumns = (a: typeof props.columns, b: typeof props.columns) =>
+  a === b || (!!a && !!b && a.length === b.length && a.every((column, i) => column === b[i]))
+watch(() => props.columns, (value, previous) => {
+  if (!sameColumns(value, previous)) localColumns.value = value
+})
+const columnDefinitions = computed(() => normalizeColumns(localColumns.value))
+
+function setColumns(next: FileExplorerColumn<TData>[]) {
+  localColumns.value = next
+  emit('update:columns', next)
+}
+
+function resizeColumn(key: string, width: string | undefined) {
+  setColumns(columnDefinitions.value.map(column => (column.key === key ? { ...column, width } : column)))
+}
+
+function moveColumn(key: string, index: number) {
+  const next = [...columnDefinitions.value]
+  const from = next.findIndex(column => column.key === key)
+  const [moved] = from < 0 ? [] : next.splice(from, 1)
+  if (!moved) return
+  next.splice(Math.max(1, Math.min(index, next.length)), 0, moved)
+  setColumns(next)
+}
 const columns = computed(() => resolveColumns(columnDefinitions.value, messages.value, () => now.value))
 
 const sortColumns = computed(() => columns.value.filter(column => column.sortable).map(column => ({ key: column.key, label: column.label })))
@@ -209,7 +253,7 @@ const selectedSet = computed(() => new Set(selectedIds.value))
 const selectedItems = computed(() => itemsOf(selectedIds.value))
 const selectedSize = computed(() => {
   const files = selectedItems.value.filter(item => !isFolder(item))
-  return files.length ? formatBytes(files.reduce((sum, item) => sum + (item.size ?? 0), 0)) : ''
+  return files.length ? formatBytes(files.reduce((sum, item) => sum + (item.size ?? 0), 0), messages.value) : ''
 })
 const favoriteSet = computed(() => new Set(props.favorites ?? []))
 
@@ -237,15 +281,14 @@ function findItemElement(id: string) {
 
 function focusItem(id: string) {
   lastFocusedId.value = id
-  nextTick(() => findItemElement(id)?.focus())
+  nextTick(() => focusElement(findItemElement(id)))
 }
 
 /** Focus stays in the content area after an action, on `id` or the tab stop. */
 function refocus(id: string | null = focusedId.value) {
   nextTick(() => {
     const target = id === null ? undefined : findItemElement(id)
-    if (target) target.focus()
-    else contentElement.value?.focus()
+    focusElement(target ?? contentElement.value)
   })
 }
 
@@ -448,9 +491,9 @@ function toClipboard(operation: 'copy' | 'cut', items: Item[]) {
 const parentOf = (item: Item) => index.value.get(item.id)?.parentId ?? null
 
 /** Asks about name clashes in `target`. `null` means the user canceled. */
-async function resolveClashes(sources: { name: string, source: Item | File }[], target: Item | null) {
+async function resolveClashes(sources: { name: string, source: Item | File }[], target: Item | null, refused: FileExplorerConflict<TData>[] = []) {
   const existing = childrenOf(index.value, props.items, target?.id ?? null)
-  return conflicts.resolve(findNameConflicts(sources, existing, target))
+  return conflicts.resolve([...refused, ...findNameConflicts(sources, existing, target)])
 }
 
 async function paste(target: Item | null) {
@@ -459,12 +502,14 @@ async function paste(target: Item | null) {
   if (!current || !onPaste || !canWrite(target)) return
   const operation = current.operation
   const targetId = target?.id ?? null
-  // Fresh copies of what is still there; nothing may land inside itself.
-  const items = current.items
-    .map(item => itemOf(item.id) ?? item)
-    .filter(item => !(target && (target.id === item.id || isDescendantOf(index.value, target.id, item.id))))
+  // Fresh copies of what is still there. Nothing may land inside itself: those
+  // are shown in the conflict dialog (skip only) rather than dropped silently.
+  const fresh = current.items.map(item => itemOf(item.id) ?? item)
+  const intoItself = fresh.filter(item => target && (target.id === item.id || isDescendantOf(index.value, target.id, item.id)))
+  const items = fresh
+    .filter(item => !intoItself.includes(item))
     .filter(item => operation === 'copy' || parentOf(item) !== targetId)
-  if (!items.length) return
+  if (!items.length && !intoItself.length) return
 
   // Copying next to the original keeps both, like a desktop — no need to ask.
   const taken = childrenOf(index.value, props.items, targetId).map(item => item.name)
@@ -476,7 +521,8 @@ async function paste(target: Item | null) {
   })
 
   const others = items.filter(item => !alongside.includes(item))
-  const resolved = await resolveClashes(others.map(item => ({ name: item.name, source: item })), target)
+  const refused = intoItself.map((item): FileExplorerConflict<TData> => ({ name: item.name, source: item, destination: null, target, reason: 'into-itself' }))
+  const resolved = await resolveClashes(others.map(item => ({ name: item.name, source: item })), target, refused)
   if (resolved === null) return
   const skipped = new Set(resolved.filter(resolution => resolution.action === 'skip').map(resolution => resolution.conflict.source))
   const pasted = items.filter(item => !skipped.has(item))
@@ -535,7 +581,7 @@ async function upload(entries: DroppedFile[], target: Item | null) {
   const rejected: string[] = []
   const accepted = entries.filter(({ file }) => {
     if (!matchesAccept(file, props.accept)) rejected.push(m.fileNotAccepted(file.name))
-    else if (props.maxFileSize !== undefined && file.size > props.maxFileSize) rejected.push(m.fileTooLarge(file.name, formatBytes(props.maxFileSize)))
+    else if (props.maxFileSize !== undefined && file.size > props.maxFileSize) rejected.push(m.fileTooLarge(file.name, formatBytes(props.maxFileSize, m)))
     else return true
     return false
   })
@@ -758,6 +804,82 @@ function onSidebarNavigate(id: string) {
   navigate(id)
 }
 
+// --- Command palette (opt-in: `command-palette`) --------------------------------------
+
+const paletteOpen = ref(false)
+
+/** Where a folder sits, for the palette: "root / components". */
+function parentPath(id: string) {
+  const names: string[] = []
+  let parentId = index.value.get(id)?.parentId ?? null
+  while (parentId !== null) {
+    const entry = index.value.get(parentId)
+    if (!entry) break
+    names.unshift(entry.item.name)
+    parentId = entry.parentId
+  }
+  return [props.rootLabel, ...names].join(' / ')
+}
+
+/** Built only while the palette is open: the selection's actions, then places to go. */
+const paletteCommands = computed<FileExplorerCommand[]>(() => {
+  if (!paletteOpen.value) return []
+  const seen = new Set<string>()
+  const available = [...commands.resolve(selectedItems.value, 'items'), ...commands.resolve([], 'background')]
+    .filter(action => !action.disabled && !seen.has(action.id) && seen.add(action.id))
+  const leaveListing = () => { locationId.value = null }
+  return [
+    ...available.map((action): FileExplorerCommand => ({
+      id: `action:${action.id}`,
+      label: action.label,
+      icon: action.icon,
+      shortcut: action.shortcut,
+      destructive: action.destructive,
+      group: 'actions',
+      run: action.run,
+    })),
+    ...props.locations.flatMap(section => section.locations).filter(entry => !entry.disabled).map((entry): FileExplorerCommand => ({
+      id: `location:${entry.id}`,
+      label: entry.label,
+      icon: entry.icon,
+      group: 'go',
+      run: () => selectLocation(entry),
+    })),
+    { id: 'folder:', label: props.rootLabel, icon: FolderIcon, group: 'go', run: () => { leaveListing(); navigate(null) } },
+    ...[...index.value.values()]
+      .filter(entry => isFolder(entry.item) && !entry.item.trashed && !entry.item.disabled)
+      .map((entry): FileExplorerCommand => ({
+        id: `folder:${entry.item.id}`,
+        label: entry.item.name,
+        hint: parentPath(entry.item.id),
+        icon: FolderIcon,
+        group: 'go',
+        run: () => { leaveListing(); navigate(entry.item.id) },
+      })),
+  ]
+})
+
+function onRootKeydown(event: KeyboardEvent) {
+  if (!props.commandPalette || props.disabled || event.altKey || event.shiftKey) return
+  if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== 'k') return
+  event.preventDefault()
+  event.stopPropagation()
+  paletteOpen.value = true
+}
+
+function runPaletteCommand(command: FileExplorerCommand) {
+  actions.afterMenuCloses(() => {
+    // Back in the list first: actions and navigation carry focus on from there.
+    focusElement(findItemElement(focusedId.value ?? '') ?? contentElement.value)
+    command.run()
+  })
+}
+
+function onPaletteCloseAutoFocus(event: Event) {
+  // A chosen command runs now that focus is back; otherwise Reka restores it.
+  actions.onMenuCloseAutoFocus(event)
+}
+
 // --- Commands: toolbar, menus, shortcuts, status bar ---------------------------------------
 
 const refreshing = ref(false)
@@ -889,6 +1011,34 @@ function onContentKeydown(event: KeyboardEvent) {
   keyboard.onKeydown(event)
 }
 
+/**
+ * Clipboard and history shortcuts in the sidebar tree act on the focused
+ * folder, as in a desktop explorer's navigation pane: Ctrl+C/X take it, Ctrl+V
+ * pastes into it. The tree handles everything else (arrows, F2, Delete).
+ */
+const TREE_SHORTCUTS: Record<string, FileExplorerActionId> = { c: 'copy', x: 'cut', v: 'paste' }
+
+function onSidebarKeydown(event: KeyboardEvent) {
+  if (props.disabled || !(event.ctrlKey || event.metaKey) || event.altKey) return
+  if (!(event.target instanceof Element) || event.target.closest('input') || !event.target.closest('[role="tree"]')) return
+  const key = event.key.toLowerCase()
+  if (key === 'z' || key === 'y') {
+    event.preventDefault()
+    if (key === 'y' || event.shiftKey) operations.redo()
+    else operations.undo()
+    return
+  }
+  const id = TREE_SHORTCUTS[key]
+  const folderId = event.target.closest('[data-item-id]')?.getAttribute('data-item-id')
+  const folderItem = folderId ? itemOf(folderId) : undefined
+  if (!id || event.shiftKey || !folderItem) return
+  const action = commands.resolve([folderItem], 'items').find(candidate => candidate.id === id)
+  if (!action || action.disabled) return
+  event.preventDefault()
+  event.stopPropagation()
+  action.run()
+}
+
 // --- Drag and drop -----------------------------------------------------------------
 
 const dragDropEnabled = computed(() => Boolean(props.draggable) && !isReadonly.value)
@@ -909,6 +1059,11 @@ const dragDrop = useFileExplorerDragDrop({
   countLabel: count => messages.value.items(count),
 })
 provideSharedDragDrop(dragDrop)
+useTouchDragDrop(root, {
+  enabled: dragDropEnabled,
+  countLabel: count => messages.value.items(count),
+  count: () => dragDrop.draggingIds.value.length,
+})
 
 function canDropOnLocation(entry: FileExplorerLocation) {
   if (!entry.trash || !has('onTrash')) return false
@@ -1014,12 +1169,15 @@ provideFileExplorerContext({
   multiple: toRef(props, 'multiple'),
   draggable: dragDropEnabled,
   dragDrop,
+  draggingIds: computed(() => new Set(dragDrop.draggingIds.value)),
+  slots: slots as FileExplorerContext['slots'],
   messages,
   onItemClick,
   onItemToggle,
   onItemOpen: openItem,
   onItemContextMenu,
   renamingId: actions.renamingId,
+  renameLayer: `#${renameLayerId}`,
   validateRename: actions.validateRename,
   commitRename: actions.commitRename,
   cancelRename: actions.cancelRename,
@@ -1037,6 +1195,10 @@ defineExpose({
   refresh: () => commands.resolve([], 'background').find(action => action.id === 'refresh')?.run(),
   undo: () => operations.undo(),
   redo: () => operations.redo(),
+  /** Moves focus into the explorer: the item holding the tab stop, else the list. */
+  focus: () => focusElement(findItemElement(focusedId.value ?? '') ?? contentElement.value),
+  /** Opens the command palette (needs `command-palette`). */
+  openCommandPalette: () => { if (props.commandPalette) paletteOpen.value = true },
   /** Opens the conflict dialog for conflicts your server reported. */
   resolveConflicts: conflicts.resolve,
   /** Available actions for items (by id), or for the open folder when empty — e.g. for a command palette. */
@@ -1066,6 +1228,7 @@ function onDeleteDialogCloseAutoFocus(event: Event) {
   <div
     ref="root"
     data-slot="file-explorer"
+    @keydown="onRootKeydown"
     :dir="props.dir"
     :data-disabled="disabled ? '' : undefined"
     :data-readonly="readonly ? '' : undefined"
@@ -1110,6 +1273,7 @@ function onDeleteDialogCloseAutoFocus(event: Event) {
     <div class="relative flex min-h-0 flex-1">
       <FileExplorerSidebar
         v-if="sidebar"
+        @keydown="onSidebarKeydown"
         v-model:expanded="treeExpanded"
         :items="items"
         :folder="navigation.current.value"
@@ -1141,7 +1305,7 @@ function onDeleteDialogCloseAutoFocus(event: Event) {
 
       <div class="flex min-w-0 flex-1 flex-col">
         <div class="relative flex min-h-0 flex-1 flex-col">
-          <ContextMenuRoot :dir="dir" @update:open="contextMenuOpen = $event">
+          <ContextMenuRoot :dir="dir" :modal="false" @update:open="contextMenuOpen = $event">
             <ContextMenuTrigger as-child :disabled="loading || disabled">
               <FileExplorerContent
                 ref="content"
@@ -1156,14 +1320,20 @@ function onDeleteDialogCloseAutoFocus(event: Event) {
                 :load-state-kind="contentLoad.kind"
                 :multiple="multiple"
                 :uploadable="uploadable"
+                :empty-kind="listing ? (listing.trash ? 'trash' : 'listing') : 'folder'"
                 :external-drag="externalDrag"
                 :folder-name="currentFolder?.name ?? rootLabel"
                 :label="label"
                 :has-more="hasMore"
+                :resizable-columns="resizableColumns"
+                :reorderable-columns="reorderableColumns"
+                :dir="dir"
                 :more-state="moreLoader.state(moreKey)"
                 :get-icon="getIcon"
                 class="outline-none"
                 @update:sort="sort = $event"
+                @resize-column="resizeColumn"
+                @move-column="moveColumn"
                 @pick="pickFiles(false)"
                 @load-more="loadMore"
                 @retry="retryContent"
@@ -1174,15 +1344,6 @@ function onDeleteDialogCloseAutoFocus(event: Event) {
                 @dragleave="onContentDragLeave"
                 @drop="onContentDrop"
               >
-                <template v-if="$slots.preview" #preview="scope">
-                  <slot name="preview" v-bind="scope" />
-                </template>
-                <template v-if="$slots.empty" #empty="scope">
-                  <slot name="empty" v-bind="scope" />
-                </template>
-                <template v-if="$slots.cell" #cell="scope">
-                  <slot name="cell" v-bind="scope" />
-                </template>
               </FileExplorerContent>
             </ContextMenuTrigger>
 
@@ -1262,5 +1423,17 @@ function onDeleteDialogCloseAutoFocus(event: Event) {
       aria-hidden="true"
       @change="onFileInput"
     >
+    <FileExplorerCommandPalette
+      v-if="commandPalette"
+      v-model:open="paletteOpen"
+      :commands="paletteCommands"
+      :messages="messages"
+      :dir="dir"
+      @run="runPaletteCommand"
+      @close-auto-focus="onPaletteCloseAutoFocus"
+    />
+
+    <!-- Rename inputs are drawn here, over their item (see FileExplorerRenameInput). -->
+    <div :id="renameLayerId" class="pointer-events-none absolute inset-0 z-30 overflow-hidden" />
   </div>
 </template>
