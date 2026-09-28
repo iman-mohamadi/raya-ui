@@ -21,6 +21,7 @@ import {
   type FileExplorerView,
 } from '@/components/raya/ui/file-explorer'
 import { arabicMessages } from './fileExplorerArabic'
+import { createZip, saveBlob, type ZipEntry } from './fileExplorerZip'
 
 const props = defineProps<{
   multiple: boolean
@@ -139,6 +140,8 @@ const index = computed(() => indexFileTree(files.value))
 let counter = 0
 const newId = (prefix: string) => `${prefix}-${Date.now().toString(36)}-${++counter}`
 const objectUrls: string[] = []
+/** What was uploaded, so downloading an uploaded file gives it back unchanged. */
+const uploadedFiles = new Map<string, Blob>()
 onBeforeUnmount(() => objectUrls.forEach(url => URL.revokeObjectURL(url)))
 
 /** Waits like a network call would, reporting progress, and fails when asked to. */
@@ -199,7 +202,9 @@ const handlers = {
     const added = uploaded.filter(file => !failed.includes(file)).map((file): Item => {
       const thumbnail = file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined
       if (thumbnail) objectUrls.push(thumbnail)
-      return { id: newId('upload'), name: nameFor(file), type: 'file', size: file.size, mimeType: file.type || undefined, modifiedAt: new Date(), owner: 'You', thumbnail }
+      const id = newId('upload')
+      uploadedFiles.set(id, file)
+      return { id, name: nameFor(file), type: 'file', size: file.size, mimeType: file.type || undefined, modifiedAt: new Date(), owner: 'You', thumbnail }
     })
     files.value = insert(files.value, target?.id ?? null, added)
     return { select: added.map(item => item.id), failed: failed.map(file => ({ source: file, error: 'Quota exceeded (demo)' })) }
@@ -293,7 +298,20 @@ const handlers = {
 
   async onDownload(event: { items: Item[] }, context: FileExplorerOperationContext): Promise<Result> {
     await server(context, 6)
-    return { message: t(`Prepared ${count(event.items.length, 'download')} (nothing is saved in this demo)`, `تم تجهيز ${count(event.items.length, 'download')} (لا يُحفظ شيء في هذا العرض)`) }
+    const [single] = event.items
+    if (event.items.length === 1 && single && single.type === 'file') {
+      const blob = new Blob([await contentOf(single)] as BlobPart[], { type: single.mimeType ?? 'application/octet-stream' })
+      if (context.signal.aborted) return {}
+      saveBlob(blob, single.name)
+      return { message: t(`Downloaded ${single.name}`, `تم تنزيل ${single.name}`) }
+    }
+    // Several items, or a folder: one archive, folders kept.
+    const entries: ZipEntry[] = []
+    for (const item of event.items) await addToZip(entries, item, '')
+    const name = event.items.length === 1 && single ? `${single.name}.zip` : 'download.zip'
+    if (context.signal.aborted) return {}
+    saveBlob(createZip(entries), name)
+    return { message: t(`Downloaded ${count(event.items.length, 'item')} as ${name}`, `تم تنزيل ${count(event.items.length, 'item')} في ${name}`) }
   },
 
   async onRefresh(_: unknown, context: FileExplorerOperationContext) {
@@ -354,6 +372,37 @@ function moveItems(items: Item[], targetId: string | null, nameOf: (item: Item) 
       files.value = tree
     },
   }
+}
+
+// --- Downloads -----------------------------------------------------------------------
+
+const encoder = new TextEncoder()
+
+/**
+ * The bytes the pretend server would send: what was uploaded, the image behind a
+ * thumbnail, the text of a preview, or a short placeholder for demo-only files.
+ */
+async function contentOf(item: Item): Promise<Uint8Array> {
+  const uploaded = uploadedFiles.get(item.id)
+  if (uploaded) return new Uint8Array(await uploaded.arrayBuffer())
+  if (item.thumbnail) {
+    const response = await fetch(item.thumbnail).catch(() => undefined)
+    if (response?.ok) return new Uint8Array(await response.arrayBuffer())
+  }
+  if (item.preview) return encoder.encode(`${item.preview}\n`)
+  return encoder.encode(`${item.name}\n\nA demo file from the Raya UI File Explorer: the mock server has no real content for it.\n`)
+}
+
+async function addToZip(entries: ZipEntry[], item: Item, prefix: string) {
+  const modified = item.modifiedAt ? new Date(item.modifiedAt) : undefined
+  if (item.type === 'file') {
+    entries.push({ path: `${prefix}${item.name}`, data: await contentOf(item), modified })
+    return
+  }
+  const folder = `${prefix}${item.name}/`
+  entries.push({ path: folder, modified })
+  // Only what is loaded: a lazy folder that was never opened goes in empty.
+  for (const child of item.children ?? []) await addToZip(entries, child, folder)
 }
 
 function restoreEntries(ids: string[]) {

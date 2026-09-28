@@ -354,3 +354,30 @@ test.describe('touch', () => {
     await expect(page.getByRole('menu')).toBeVisible()
   })
 })
+
+test.describe('download', () => {
+  test('a file downloads with its name and content', async ({ page }) => {
+    await item(page, 'components/ui/nuxt.config.ts').click()
+    const download = page.waitForEvent('download')
+    await toolbarButton(page, 'download').click()
+    const file = await download
+    expect(file.suggestedFilename()).toBe('nuxt.config.ts')
+    const path = await file.path()
+    const { readFile } = await import('node:fs/promises')
+    expect(await readFile(path, 'utf8')).toContain('defineNuxtConfig')
+    await expect(operations(page)).toContainText('Downloaded nuxt.config.ts')
+  })
+
+  test('a folder downloads as a zip with its contents', async ({ page }) => {
+    await item(page, 'components/ui/ui-primitives').click({ button: 'right' })
+    const download = page.waitForEvent('download')
+    await page.getByRole('menu').locator('[data-action="download"]').click()
+    const file = await download
+    expect(file.suggestedFilename()).toBe('ui-primitives.zip')
+    const { readFile, copyFile } = await import('node:fs/promises')
+    const bytes = await readFile(await file.path())
+    expect(bytes.subarray(0, 4).toString('latin1')).toBe('PK\x03\x04')
+    expect(bytes.includes(Buffer.from('ui-primitives/Button.vue'))).toBe(true)
+    if (process.env.KEEP_DOWNLOADS) await copyFile(await file.path(), `${process.env.KEEP_DOWNLOADS}/ui-primitives.zip`)
+  })
+})
