@@ -2,7 +2,7 @@
   "title": "File Upload",
   "description": "File upload component with drag and drop support",
   "dependencies": [
-    "lucide-vue-next",
+    "@lucide/vue",
     "@vueuse/core",
     "reka-ui"
   ],

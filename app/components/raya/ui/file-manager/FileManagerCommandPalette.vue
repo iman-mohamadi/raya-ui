@@ -14,7 +14,7 @@ import {
   ListboxItem,
   ListboxRoot,
 } from 'reka-ui'
-import { Search } from 'lucide-vue-next'
+import { Search } from '@lucide/vue'
 import { cn } from '@/lib/utils'
 import type { FileManagerMessages } from './messages'
 import type { FileManagerCommand } from './types'

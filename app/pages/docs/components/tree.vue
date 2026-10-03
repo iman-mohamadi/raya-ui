@@ -2,7 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { Tree } from '@/components/raya/ui/tree'
 import { CodeBlock } from '@/components/raya/ui/code-block'
-import { Folder, File, FileCode, Image as ImageIcon, Archive } from 'lucide-vue-next'
+import { Folder, File, FileCode, Image as ImageIcon, Archive } from '@lucide/vue'
 
 definePageMeta({ layout: 'docs' })
 
@@ -91,7 +91,7 @@ const installCommands = computed(() => {
 
   return {
     cli: cliCmd,
-    manual: `npm install reka-ui lucide-vue-next clsx tailwind-merge`,
+    manual: `npm install reka-ui @lucide/vue clsx tailwind-merge`,
     css: `/* Inherits seamlessly from your main.css theme variables */`
   }
 })
@@ -107,7 +107,7 @@ const codeString = computed(() => {
   return `<script setup lang="ts">
 import { ref } from 'vue'
 import { Tree } from '@/components/ui/tree'
-import { Folder, File, FileCode, Image as ImageIcon, Archive } from 'lucide-vue-next'
+import { Folder, File, FileCode, Image as ImageIcon, Archive } from '@lucide/vue'
 
 const items = [
   {

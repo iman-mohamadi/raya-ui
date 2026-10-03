@@ -18,7 +18,7 @@ import {
   Folder,
   FolderOpen,
   Presentation,
-} from 'lucide-vue-next'
+} from '@lucide/vue'
 import { defaultFileManagerMessages, type FileManagerMessages, type FileManagerSizeUnit, type FileManagerTimeUnit } from './messages'
 import type {
   FileManagerColumn,

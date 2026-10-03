@@ -68,7 +68,7 @@ const installCommands = computed(() => {
 
   return {
     cli: cliCmd,
-    manual: `npm install lucide-vue-next`, // Assuming lucide for copy icon
+    manual: `npm install @lucide/vue`, // Assuming lucide for copy icon
     css: `/* Inherits seamlessly from your main.css theme variables */`
   }
 })

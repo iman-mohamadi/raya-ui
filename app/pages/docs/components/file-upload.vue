@@ -14,7 +14,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { CodeBlock } from '@/components/raya/ui/code-block'
-import { CloudUpload, X, Upload, Paperclip, ArrowUp } from 'lucide-vue-next'
+import { CloudUpload, X, Upload, Paperclip, ArrowUp } from '@lucide/vue'
 import { toast } from 'vue-sonner'
 
 definePageMeta({ layout: 'docs' })
@@ -138,7 +138,7 @@ const installCommands = computed(() => {
 
   return {
     cli: cliCmd,
-    manual: `npm install lucide-vue-next @vueuse/core reka-ui`,
+    manual: `npm install @lucide/vue @vueuse/core reka-ui`,
     css: `/* Inherits seamlessly from your main.css theme variables */`
   }
 })
@@ -147,7 +147,7 @@ const installCommands = computed(() => {
 const validationCode = `<script setup lang="ts">
 import { FileUpload, FileUploadDropzone, FileUploadTrigger, FileUploadList, FileUploadItem, FileUploadItemPreview, FileUploadItemMetadata, FileUploadItemDelete } from '@/components/ui/file-upload'
 import { Button } from '@/components/ui/button'
-import { Upload, X } from 'lucide-vue-next'
+import { Upload, X } from '@lucide/vue'
 import { ref } from 'vue'
 import { toast } from 'vue-sonner'
 

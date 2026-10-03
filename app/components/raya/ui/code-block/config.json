@@ -3,7 +3,7 @@
   "description": "Syntax highlighted code block component",
   "dependencies": [
     "highlight.js",
-    "lucide-vue-next",
+    "@lucide/vue",
     "clsx",
     "tailwind-merge"
   ],

@@ -12,7 +12,7 @@ export interface RayaButtonAvatar {
 }
 
 /**
- * An icon is either a component (e.g. any `lucide-vue-next` icon) or a class
+ * An icon is either a component (e.g. any `@lucide/vue` icon) or a class
  * string for a CSS icon set (e.g. `i-lucide-rocket` with Iconify/UnoCSS).
  */
 export type RayaButtonIcon = Component | string
@@ -109,7 +109,7 @@ export interface RayaButtonProps {
 <script setup lang="ts">
 import { computed, getCurrentInstance, ref } from 'vue'
 import { Primitive } from 'reka-ui'
-import { LoaderCircle } from 'lucide-vue-next'
+import { LoaderCircle } from '@lucide/vue'
 import { rayaButton } from './variants'
 import { cn } from '@/lib/utils'
 

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Motion } from 'motion-v'
-import { Github, Menu, X } from 'lucide-vue-next'
+import { Menu, X } from '@lucide/vue'
+import { Github } from './brand-icons'
 
 const isOpen = ref(false)
 const navLinks = [

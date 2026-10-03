@@ -38,7 +38,7 @@ const installCommands = computed(() => {
 
   return {
     cli: cliCmd,
-    manual: `npm install lucide-vue-next clsx tailwind-merge`,
+    manual: `npm install @lucide/vue clsx tailwind-merge`,
     css: `/* Inherits seamlessly from your main.css theme variables */`
   }
 })

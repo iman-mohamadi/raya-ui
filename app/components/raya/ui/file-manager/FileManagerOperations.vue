@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch, type Ref } from 'vue'
-import { CircleAlert, CircleCheck, LoaderCircle, X } from 'lucide-vue-next'
+import { CircleAlert, CircleCheck, LoaderCircle, X } from '@lucide/vue'
 import { cn } from '@/lib/utils'
 import type { FileManagerMessages } from './messages'
 import type { FileManagerOperationState } from './types'

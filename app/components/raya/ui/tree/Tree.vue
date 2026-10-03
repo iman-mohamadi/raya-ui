@@ -1,7 +1,7 @@
 <script setup lang="ts" generic="T extends Record<string, any>">
 import { computed } from 'vue'
 import { TreeRoot, TreeItem, useForwardPropsEmits, type TreeRootEmits, type TreeRootProps } from 'reka-ui'
-import { ChevronRight, ChevronDown } from 'lucide-vue-next'
+import { ChevronRight, ChevronDown } from '@lucide/vue'
 import { cn } from '@/lib/utils'
 
 // Use Omit to exclude the mandatory 'getKey' from TreeRootProps

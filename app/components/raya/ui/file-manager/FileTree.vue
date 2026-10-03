@@ -2,7 +2,7 @@
 import { computed, nextTick, ref, toRef, useId, useSlots, useTemplateRef, watch } from 'vue'
 import { ContextMenuContent, ContextMenuPortal, ContextMenuRoot, ContextMenuTrigger, useDirection } from 'reka-ui'
 import { useVModel } from '@vueuse/core'
-import { FolderOpen, Search, X } from 'lucide-vue-next'
+import { FolderOpen, Search, X } from '@lucide/vue'
 import { cn } from '@/lib/utils'
 import FileManagerDeleteDialog from './FileManagerDeleteDialog.vue'
 import FileTreeRoot from './FileTreeRoot.vue'

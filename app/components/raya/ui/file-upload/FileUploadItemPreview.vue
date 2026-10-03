@@ -2,7 +2,7 @@
 import { inject, type HTMLAttributes, computed, toRaw } from 'vue'
 import { Primitive, type PrimitiveProps } from 'reka-ui'
 import { cn } from '@/lib/utils'
-import { FileIcon, FileTextIcon, FileCodeIcon, FileArchiveIcon, FileVideoIcon, FileAudioIcon, FileCogIcon } from 'lucide-vue-next'
+import { FileIcon, FileTextIcon, FileCodeIcon, FileArchiveIcon, FileVideoIcon, FileAudioIcon, FileCogIcon } from '@lucide/vue'
 
 const props = defineProps<PrimitiveProps & { class?: HTMLAttributes['class'] }>()
 const itemContext = inject<any>('FileUploadItemContext')!

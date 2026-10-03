@@ -40,7 +40,7 @@ const installCommands = computed(() => {
 
   return {
     cli: cliCmd,
-    manual: `npm install lucide-vue-next`,
+    manual: `npm install @lucide/vue`,
     css: `/* Inherits seamlessly from your main.css theme variables */`
   }
 })

@@ -2,7 +2,7 @@
   "title": "Animated Theme Toggler",
   "description": "Theme switcher with smooth animation",
   "dependencies": [
-    "lucide-vue-next",
+    "@lucide/vue",
     "clsx",
     "tailwind-merge"
   ],

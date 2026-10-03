@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="TData">
 import { computed } from 'vue'
-import { Circle, CircleAlert, CircleCheck, Star } from 'lucide-vue-next'
+import { Circle, CircleAlert, CircleCheck, Star } from '@lucide/vue'
 import { cn } from '@/lib/utils'
 import FileManagerFileIcon from './FileManagerFileIcon.vue'
 import FileManagerRenameInput from './FileManagerRenameInput.vue'

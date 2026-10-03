@@ -64,7 +64,7 @@ const installCommands = computed(() => {
   }
   return {
     cli: cliCmd,
-    manual: 'npm install reka-ui lucide-vue-next @vueuse/core class-variance-authority clsx tailwind-merge',
+    manual: 'npm install reka-ui @lucide/vue @vueuse/core class-variance-authority clsx tailwind-merge',
   }
 })
 
@@ -421,7 +421,7 @@ function open(item: FileManagerItem) {
     title: 'Sidebar locations and listings',
     description: 'Sections above the directory tree come from `locations`. An entry with `folder` is a shortcut to a folder (`null` is the root). Any other entry sets `v-model:location`, and you show its items through `listing` — Recent, Starred, Shared with me, a search, a storage provider. Listings are flat and may contain items from anywhere; entries with `trash` accept drops that move items to the trash.',
     code: `<script setup lang="ts">
-import { Clock, House, Star, Trash2 } from 'lucide-vue-next'
+import { Clock, House, Star, Trash2 } from '@lucide/vue'
 
 const location = ref<string | null>(null)
 const locations = [

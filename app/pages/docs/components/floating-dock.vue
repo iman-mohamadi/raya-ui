@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import {
   Home, Terminal, CircleUser, Settings,
   LayoutGrid, FolderGit2, Ghost
-} from 'lucide-vue-next'
+} from '@lucide/vue'
 
 definePageMeta({ layout: 'docs' })
 
@@ -51,7 +51,7 @@ const installCommands = computed(() => {
 
   return {
     cli: cliCmd,
-    manual: `npm install @vueuse/core clsx tailwind-merge lucide-vue-next`,
+    manual: `npm install @vueuse/core clsx tailwind-merge @lucide/vue`,
     css: `/* Inherits seamlessly from your main.css theme variables */`
   }
 })
@@ -67,7 +67,7 @@ const codeString = computed(() => {
 
   return `<script setup lang="ts">
 import { FloatingDock } from '@/components/ui/floating-dock'
-import { ${iconImports} } from 'lucide-vue-next'
+import { ${iconImports} } from '@lucide/vue'
 
 const items = [
 ${itemsArray}
@@ -209,7 +209,7 @@ ${itemsArray}
             <div class="flex items-center gap-2 min-w-0">
               <code class="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">Array&lt;{ title: string, icon: Component, href: string }&gt;</code>
             </div>
-            <p class="text-sm text-muted-foreground leading-relaxed mt-2">Array of items to render in the dock. Each requires a title, a Vue component for the icon (e.g., from lucide-vue-next), and an href link.</p>
+            <p class="text-sm text-muted-foreground leading-relaxed mt-2">Array of items to render in the dock. Each requires a title, a Vue component for the icon (e.g., from @lucide/vue), and an href link.</p>
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { Box, Lock, Search, Settings, Sparkles } from 'lucide-vue-next'
+import { Box, Lock, Search, Settings, Sparkles } from '@lucide/vue'
 import { GlowingEffect } from '@/components/raya/ui/glowing-effect'
 import { CodeBlock } from '@/components/raya/ui/code-block'
 
@@ -82,7 +82,7 @@ const installCommands = computed(() => {
 
   return {
     cli: cliCmd,
-    manual: `npm install motion-v clsx tailwind-merge lucide-vue-next`,
+    manual: `npm install motion-v clsx tailwind-merge @lucide/vue`,
     css: `/* Inherits seamlessly from your main.css theme variables */`
   }
 })

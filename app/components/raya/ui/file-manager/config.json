@@ -3,7 +3,7 @@
   "description": "A desktop-style, backend-agnostic file manager: directory tree, sidebar locations, breadcrumbs, grid and details views with configurable columns, keyboard navigation, multi-selection, clipboard, drag and drop, uploads, conflict resolution, trash, permissions, lazy loading and pagination, and async operations with progress, retry, cancel and undo. Also exports the standalone FileTree.",
   "dependencies": [
     "reka-ui",
-    "lucide-vue-next",
+    "@lucide/vue",
     "@vueuse/core",
     "class-variance-authority",
     "clsx",

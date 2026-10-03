@@ -6,7 +6,7 @@
     "tailwind-merge",
     "tailwind-variants",
     "reka-ui",
-    "lucide-vue-next"
+    "@lucide/vue"
   ],
   "registryDependencies": [],
   "files": [

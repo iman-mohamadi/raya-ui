@@ -7,7 +7,7 @@ import {
   type TreeItemSelectEvent,
   type TreeItemToggleEvent,
 } from 'reka-ui'
-import { ChevronRight, CircleAlert, LoaderCircle } from 'lucide-vue-next'
+import { ChevronRight, CircleAlert, LoaderCircle } from '@lucide/vue'
 import { cn } from '@/lib/utils'
 import FileManagerRenameInput from './FileManagerRenameInput.vue'
 import FileTreeNode from './FileTreeNode.vue'

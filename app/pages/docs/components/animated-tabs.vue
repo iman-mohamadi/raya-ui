@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { User, Lock, Sliders } from 'lucide-vue-next'
+import { User, Lock, Sliders } from '@lucide/vue'
 
 definePageMeta({ layout: 'docs' })
 
@@ -187,7 +187,7 @@ const codeString = computed(() => {
   return `<script setup lang="ts">
 import { ref } from 'vue'
 import { AnimatedTabs, type TabsItem } from '@/components/ui/animated-tabs'
-import { User, Lock, Sliders } from 'lucide-vue-next'
+import { User, Lock, Sliders } from '@lucide/vue'
 
 const active = ref('account')
 
@@ -227,7 +227,7 @@ const props = [
 
 const itemProps = [
   { name: 'label', type: 'string', description: 'The text of the trigger.' },
-  { name: 'icon', type: 'Component | string', description: 'Leading icon. Accepts a component (any lucide-vue-next icon) or a CSS icon class such as `i-lucide-user`.' },
+  { name: 'icon', type: 'Component | string', description: 'Leading icon. Accepts a component (any @lucide/vue icon) or a CSS icon class such as `i-lucide-user`.' },
   { name: 'avatar', type: '{ src?, alt?, text?, loading? }', description: 'Leading avatar, shown when there is no icon. Falls back to `text` initials.' },
   { name: 'badge', type: 'string | number | { label?, class? }', description: 'Trailing badge, sized to the tab.' },
   { name: 'content', type: 'string', description: 'Panel text, used when no matching slot is provided.' },
@@ -289,7 +289,7 @@ const examples = [
     description: 'Pass an array of objects. Each one becomes a trigger, and — unless `content` is `false` — a panel.',
     code: `<script setup lang="ts">
 import { AnimatedTabs, type TabsItem } from '@/components/ui/animated-tabs'
-import { User, Lock } from 'lucide-vue-next'
+import { User, Lock } from '@lucide/vue'
 
 const items: TabsItem[] = [
   { label: 'Account', icon: User, content: 'This is the account content.' },

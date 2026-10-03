@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="TData">
 import { computed, nextTick, ref, useTemplateRef } from 'vue'
-import { ArrowDown, ArrowUp } from 'lucide-vue-next'
+import { ArrowDown, ArrowUp } from '@lucide/vue'
 import { cn } from '@/lib/utils'
 import { trackMinWidth, type ResolvedColumn } from './columns'
 import { injectFileManagerContext } from './context'

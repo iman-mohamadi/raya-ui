@@ -3,7 +3,8 @@ import { ref, computed } from 'vue'
 import { Magnetic } from '@/components/raya/ui/magnetic'
 import { CodeBlock } from '@/components/raya/ui/code-block'
 import { Button } from '@/components/ui/button'
-import { Plus, Github, Twitter, Instagram } from 'lucide-vue-next'
+import { Plus } from '@lucide/vue'
+import { Github, Instagram, Twitter } from '@/components/app/brand-icons'
 
 definePageMeta({ layout: 'docs' })
 
@@ -62,7 +63,8 @@ const codeString = computed(() => {
   if (activeExample.value === 'social') {
     return `<script setup lang="ts">
 import { Magnetic } from '@/components/ui/magnetic'
-import { Github, Twitter, Instagram } from 'lucide-vue-next'
+// Lucide has no brand logos: use your own SVGs or a set such as simple-icons.
+import { Github, Twitter, Instagram } from '@/components/icons/brands'
 
 const links = [
   { icon: Github, label: 'Github' },
@@ -109,7 +111,7 @@ import { Magnetic } from '@/components/ui/magnetic'
   return `<script setup lang="ts">
 import { Magnetic } from '@/components/ui/magnetic'
 import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-vue-next'
+import { Plus } from '@lucide/vue'
 <\/script>
 
 <template>

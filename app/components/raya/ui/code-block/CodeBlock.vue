@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Check, Copy } from 'lucide-vue-next'
+import { Check, Copy } from '@lucide/vue'
 import { useClipboard } from '@vueuse/core'
 import { cn } from '@/lib/utils'
 import hljs from 'highlight.js'

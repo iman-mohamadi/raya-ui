@@ -14,7 +14,7 @@ import {
 } from 'vue'
 import { ContextMenuContent, ContextMenuPortal, ContextMenuRoot, ContextMenuTrigger, useDirection } from 'reka-ui'
 import { useNow, useVModel } from '@vueuse/core'
-import { Folder as FolderIcon } from 'lucide-vue-next'
+import { Folder as FolderIcon } from '@lucide/vue'
 import { cn } from '@/lib/utils'
 import FileManagerCommandPalette from './FileManagerCommandPalette.vue'
 import FileManagerConflictDialog from './FileManagerConflictDialog.vue'

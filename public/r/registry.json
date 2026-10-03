@@ -186,7 +186,7 @@
       "title": "Animated Theme Toggler",
       "description": "Theme switcher with smooth animation",
       "dependencies": [
-        "lucide-vue-next",
+        "@lucide/vue",
         "clsx",
         "tailwind-merge"
       ],
@@ -273,7 +273,7 @@
       "description": "Syntax highlighted code block component",
       "dependencies": [
         "highlight.js",
-        "lucide-vue-next",
+        "@lucide/vue",
         "clsx",
         "tailwind-merge"
       ],
@@ -339,7 +339,7 @@
       "description": "A desktop-style, backend-agnostic file manager: directory tree, sidebar locations, breadcrumbs, grid and details views with configurable columns, keyboard navigation, multi-selection, clipboard, drag and drop, uploads, conflict resolution, trash, permissions, lazy loading and pagination, and async operations with progress, retry, cancel and undo. Also exports the standalone FileTree.",
       "dependencies": [
         "reka-ui",
-        "lucide-vue-next",
+        "@lucide/vue",
         "@vueuse/core",
         "class-variance-authority",
         "clsx",
@@ -526,7 +526,7 @@
       "title": "File Upload",
       "description": "File upload component with drag and drop support",
       "dependencies": [
-        "lucide-vue-next",
+        "@lucide/vue",
         "@vueuse/core",
         "reka-ui"
       ],
@@ -827,7 +827,7 @@
         "tailwind-merge",
         "tailwind-variants",
         "reka-ui",
-        "lucide-vue-next"
+        "@lucide/vue"
       ],
       "registryDependencies": [],
       "cssVars": {
@@ -1034,7 +1034,7 @@
       "title": "Tree",
       "description": "Nested tree component for hierarchical data",
       "dependencies": [
-        "lucide-vue-next",
+        "@lucide/vue",
         "clsx",
         "tailwind-merge"
       ],

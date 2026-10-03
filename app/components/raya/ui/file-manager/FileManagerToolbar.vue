@@ -25,7 +25,7 @@ import {
   Search,
   Upload,
   X,
-} from 'lucide-vue-next'
+} from '@lucide/vue'
 import { cn } from '@/lib/utils'
 import FileManagerBreadcrumbs from './FileManagerBreadcrumbs.vue'
 import FileManagerMenuItems from './FileManagerMenuItems.vue'

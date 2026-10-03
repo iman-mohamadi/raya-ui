@@ -2,7 +2,7 @@
 import {computed, ref, onMounted, onBeforeUnmount} from 'vue'
 import {Motion} from 'motion-v'
 import {useNavigationStore} from "~/stores/navigation"
-import { ArrowRight } from 'lucide-vue-next'
+import { ArrowRight } from '@lucide/vue'
 import EncryptedText from '~/components/raya/ui/encrypted-text/EncryptedText.vue'
 
 // Import background components for live previews

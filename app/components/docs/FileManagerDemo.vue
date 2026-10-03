@@ -6,7 +6,7 @@
  * Nothing touches a real filesystem or network.
  */
 import { computed, onBeforeUnmount, ref, shallowRef } from 'vue'
-import { Clock, House, Star, Trash2, X } from 'lucide-vue-next'
+import { Clock, House, Star, Trash2, X } from '@lucide/vue'
 import {
   FileManager,
   formatBytes,

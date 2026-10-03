@@ -1,7 +1,7 @@
 <script setup lang="ts" generic="TData">
 import { computed, nextTick, ref, useTemplateRef, watch, type ComponentPublicInstance } from 'vue'
 import { useElementSize, useIntersectionObserver } from '@vueuse/core'
-import { CircleAlert, CloudUpload, FolderOpen, Inbox, LoaderCircle, SearchX, Trash2 } from 'lucide-vue-next'
+import { CircleAlert, CloudUpload, FolderOpen, Inbox, LoaderCircle, SearchX, Trash2 } from '@lucide/vue'
 import { cn } from '@/lib/utils'
 import FileManagerCard from './FileManagerCard.vue'
 import FileManagerDetailsHeader from './FileManagerDetailsHeader.vue'

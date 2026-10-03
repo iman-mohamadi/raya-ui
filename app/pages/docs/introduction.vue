@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {Accessibility, AlertTriangle, ArrowRight, Box, Paintbrush} from 'lucide-vue-next'
+import {Accessibility, AlertTriangle, ArrowRight, Box, Paintbrush} from '@lucide/vue'
 import {Button} from '@/components/ui/button'
 
 const config = useAppConfig().raya

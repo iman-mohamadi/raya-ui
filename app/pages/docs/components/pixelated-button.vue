@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import { PixelatedButton } from '@/components/raya/ui/pixelated-button'
 import { CodeBlock } from '@/components/raya/ui/code-block'
-import { Crown, Ghost, Sword } from 'lucide-vue-next'
+import { Crown, Ghost, Sword } from '@lucide/vue'
 
 definePageMeta({ layout: 'docs' })
 
@@ -59,7 +59,7 @@ const codeString = computed(() => {
 
   return `<script setup lang="ts">
 import { PixelatedButton } from '@/components/ui/pixelated-button'
-import { Crown } from 'lucide-vue-next'
+import { Crown } from '@lucide/vue'
 <\/script>
 
 <template>

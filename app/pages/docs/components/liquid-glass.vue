@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { GripVertical } from 'lucide-vue-next'
+import { GripVertical } from '@lucide/vue'
 import { useElementBounding, useDraggable } from '@vueuse/core'
 import { LiquidGlass, type GlassSurface } from '@/components/raya/ui/liquid-glass'
 import { AmbientGrid } from '@/components/raya/ui/ambient-grid'
@@ -113,7 +113,7 @@ const installCommands = computed(() => {
 
   return {
     cli: cliCmd,
-    manual: `npm install @vueuse/core lucide-vue-next`,
+    manual: `npm install @vueuse/core @lucide/vue`,
     css: `/* Inherits seamlessly from your main.css theme variables */`
   }
 })

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { h, nextTick } from 'vue'
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
-import { FileCode2 } from 'lucide-vue-next'
+import { FileCode2 } from '@lucide/vue'
 import {
   FileTree,
   filterFileTree,

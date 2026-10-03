@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import { AnimatedTabs } from '@/components/raya/ui/animated-tabs'
 import { CodeBlock } from '@/components/raya/ui/code-block'
-import { Terminal, Box, Info } from 'lucide-vue-next'
+import { Terminal, Box, Info } from '@lucide/vue'
 
 const config = useAppConfig().raya
 
@@ -29,7 +29,7 @@ const frameworkCommands = {
     add: `npx raya-ui@latest add tree`
   },
   manual: {
-    deps: 'npm install tailwindcss-animate class-variance-authority clsx tailwind-merge lucide-vue-next reka-ui @vueuse/core',
+    deps: 'npm install tailwindcss-animate class-variance-authority clsx tailwind-merge @lucide/vue reka-ui @vueuse/core',
     utils: `import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 

@@ -1,5 +1,5 @@
 import {defineStore} from 'pinia'
-import {Book, Package, Image as ImageIcon} from 'lucide-vue-next'
+import {Book, Package, Image as ImageIcon} from '@lucide/vue'
 
 export const useNavigationStore = defineStore('navigation', () => {
     const navGroups = [

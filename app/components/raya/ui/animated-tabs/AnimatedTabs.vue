@@ -2,7 +2,7 @@
 import type { Component, HTMLAttributes } from 'vue'
 import type { AnimatedTabsVariants } from './variants'
 
-/** An icon is either a component (any `lucide-vue-next` icon) or a CSS icon class. */
+/** An icon is either a component (any `@lucide/vue` icon) or a CSS icon class. */
 export type TabsIcon = Component | string
 
 export interface TabsItemAvatar {

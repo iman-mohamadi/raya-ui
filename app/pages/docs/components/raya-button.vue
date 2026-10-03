@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { Rocket, ArrowRight } from 'lucide-vue-next'
+import { Rocket, ArrowRight } from '@lucide/vue'
 
 definePageMeta({ layout: 'docs' })
 
@@ -166,7 +166,7 @@ const installCommands = computed(() => {
 
   return {
     cli: cliCmd,
-    manual: `npm install tailwind-variants tailwind-merge clsx reka-ui lucide-vue-next`,
+    manual: `npm install tailwind-variants tailwind-merge clsx reka-ui @lucide/vue`,
     css: cssVarsSnippet
   }
 })
@@ -183,9 +183,9 @@ const codeString = computed(() => {
   if (isDisabled.value) attrs.push(`disabled`)
 
   const imports = iconMode.value === 'leading'
-    ? `\nimport { Rocket } from 'lucide-vue-next'`
+    ? `\nimport { Rocket } from '@lucide/vue'`
     : iconMode.value === 'trailing'
-      ? `\nimport { ArrowRight } from 'lucide-vue-next'`
+      ? `\nimport { ArrowRight } from '@lucide/vue'`
       : ''
 
   return `<script setup lang="ts">
@@ -212,7 +212,7 @@ const props = [
   { name: 'square', type: 'boolean', default: 'false', description: 'Equal padding on all sides. Applied automatically when there is no label and no default slot.' },
   { name: 'block', type: 'boolean', default: 'false', description: 'Render the button full width, centering its content and pushing the trailing icon to the end.' },
   { name: 'field-group', type: '"horizontal" | "vertical"', default: '—', description: 'Flatten the shared edges when several buttons sit in one group.' },
-  { name: 'icon', type: 'Component | string', default: '—', description: 'Icon displayed on the side chosen by `leading` / `trailing`. Accepts a component (any lucide-vue-next icon) or a CSS icon class such as `i-lucide-rocket`.' },
+  { name: 'icon', type: 'Component | string', default: '—', description: 'Icon displayed on the side chosen by `leading` / `trailing`. Accepts a component (any @lucide/vue icon) or a CSS icon class such as `i-lucide-rocket`.' },
   { name: 'leading-icon', type: 'Component | string', default: '—', description: 'Icon pinned to the left side.' },
   { name: 'trailing-icon', type: 'Component | string', default: '—', description: 'Icon pinned to the right side.' },
   { name: 'leading', type: 'boolean', default: 'false', description: 'Force `icon` onto the left side.' },
@@ -309,9 +309,9 @@ const examples = [
   },
   {
     title: 'Icon',
-    description: 'Pass any `lucide-vue-next` component — or a CSS icon class like `i-lucide-rocket` if you use Iconify. Use `leading-icon` and `trailing-icon` to set a different icon per side. With no label, the button becomes square automatically.',
+    description: 'Pass any `@lucide/vue` component — or a CSS icon class like `i-lucide-rocket` if you use Iconify. Use `leading-icon` and `trailing-icon` to set a different icon per side. With no label, the button becomes square automatically.',
     code: `<script setup lang="ts">
-import { Rocket, ArrowRight, Search } from 'lucide-vue-next'
+import { Rocket, ArrowRight, Search } from '@lucide/vue'
 <\/script>
 
 <template>
@@ -364,7 +364,7 @@ import { Rocket, ArrowRight, Search } from 'lucide-vue-next'
     title: 'Loading',
     description: 'The `loading` prop swaps in a spinner and disables the button. `loading-auto` does it for you while the `@click` handler\'s promise is pending, and `loading-icon` swaps the spinner.',
     code: `<script setup lang="ts">
-import { Loader } from 'lucide-vue-next'
+import { Loader } from '@lucide/vue'
 
 async function onClick() {
   return new Promise<void>(res => setTimeout(res, 1000))

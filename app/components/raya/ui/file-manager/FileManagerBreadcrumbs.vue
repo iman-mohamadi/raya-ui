@@ -2,7 +2,7 @@
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
 import { DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuRoot, DropdownMenuTrigger } from 'reka-ui'
 import { useElementSize } from '@vueuse/core'
-import { Ellipsis, Folder, FolderOpen } from 'lucide-vue-next'
+import { Ellipsis, Folder, FolderOpen } from '@lucide/vue'
 import { cn } from '@/lib/utils'
 import { injectFileManagerContext } from './context'
 import type { FileManagerItem } from './types'

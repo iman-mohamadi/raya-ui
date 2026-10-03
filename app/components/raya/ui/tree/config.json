@@ -2,7 +2,7 @@
   "title": "Tree",
   "description": "Nested tree component for hierarchical data",
   "dependencies": [
-    "lucide-vue-next",
+    "@lucide/vue",
     "clsx",
     "tailwind-merge"
   ],

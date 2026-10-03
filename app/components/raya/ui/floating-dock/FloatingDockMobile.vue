@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { LayoutGrid } from 'lucide-vue-next' // Generic fallback icon
+import { LayoutGrid } from '@lucide/vue' // Generic fallback icon
 import { cn } from '@/lib/utils'
 
 interface DockItem {

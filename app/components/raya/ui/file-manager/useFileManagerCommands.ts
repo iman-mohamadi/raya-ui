@@ -20,7 +20,7 @@ import {
   Trash,
   Trash2,
   Upload,
-} from 'lucide-vue-next'
+} from '@lucide/vue'
 import type { Component } from 'vue'
 import type { FileManagerMessages } from './messages'
 import type { FileManagerAction, FileManagerActionId, FileManagerItem } from './types'
